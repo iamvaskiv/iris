@@ -1,0 +1,2 @@
+/* Latitude design system: Tailwind, Inter, tokens and component styles. Import nothing else for theming. */
+@import '@latitudelabs/design-system/theme.css';
