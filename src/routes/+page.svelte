@@ -13,9 +13,6 @@
 	let error = $state('');
 	let draft = $state('');
 
-	const hour = new Date().getHours();
-	const greeting = hour < 12 ? 'Good morning!' : hour < 18 ? 'Good afternoon!' : 'Good evening!';
-
 	const openProject = (id: string, question?: string) =>
 		goto(question ? `/projects/${id}?q=${encodeURIComponent(question)}` : `/projects/${id}`);
 
@@ -67,7 +64,10 @@
 
 	<main class="mx-auto mt-12 grid w-full max-w-[970px] grid-cols-1 gap-8 px-4 pb-56 sm:grid-cols-2">
 		{#each data.projects as project (project.id)}
-			<a href="/projects/{project.id}" class="rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+			<a
+				href="/projects/{project.id}"
+				class="rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+			>
 				<Card.Root class="relative h-72 overflow-hidden transition-shadow hover:shadow-raised">
 					<Card.Header>
 						<Card.Title>{project.name}</Card.Title>
@@ -83,7 +83,8 @@
 							class={[
 								'absolute -bottom-10 aspect-video w-48 rounded-md object-cover shadow-raised',
 								project.thumbnails.length === 1 && 'left-1/2 -translate-x-1/2 rotate-3',
-								project.thumbnails.length === 2 && (i === 0 ? 'left-1/4 -rotate-6' : 'left-1/2 rotate-3')
+								project.thumbnails.length === 2 &&
+									(i === 0 ? 'left-1/4 -rotate-6' : 'left-1/2 rotate-3')
 							]}
 						/>
 					{/each}
@@ -100,5 +101,11 @@
 		</button>
 	</main>
 
-	<AiDock reply={workspaceChat.reply || greeting} thinking={thinking || creating} {error} bind:draft onsubmit={send} />
+	<AiDock
+		reply={workspaceChat.reply}
+		thinking={thinking || creating}
+		{error}
+		bind:draft
+		onsubmit={send}
+	/>
 </div>

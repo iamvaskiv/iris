@@ -2,7 +2,7 @@
 	import { onMount, tick } from 'svelte';
 	import { page } from '$app/state';
 	import { replaceState } from '$app/navigation';
-	import AiDock from '#lib/components/AiDock.svelte';
+	import AiDock, { timeOfDayGreeting } from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import { cardComponent } from '#lib/cards/registry.js';
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
@@ -267,17 +267,7 @@
 			class="-mb-25"
 			crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]}
 		/>
-		{#if project.cards.length === 0}
-			<div class="flex h-full flex-col items-center justify-center gap-8 pb-40">
-				<div class="relative size-20" role="img" aria-label="Lumi AI">
-					<div class="absolute inset-0 rounded-full bg-brand blur-sm"></div>
-				</div>
-				<h1 class="text-heading">What are we analysing?</h1>
-				<p class="text-body text-muted-foreground">
-					Ask about a video, or drop one here to upload it.
-				</p>
-			</div>
-		{:else}
+		{#if project.cards.length > 0}
 			<div
 				class="mx-auto flex max-w-3xl flex-col gap-5 px-4"
 				style:padding-top="{padTop}px"
@@ -304,6 +294,10 @@
 	</main>
 
 	<AiDock
+		centered={project.cards.length === 0}
+		greeting={project.cards.length
+			? `${timeOfDayGreeting()} What would you like to know about ${project.name}?`
+			: `${timeOfDayGreeting()} Drop a video here, or ask me about one you already have.`}
 		reply={project.reply}
 		{thinking}
 		{error}
