@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Card, Label, Switch } from '@latitudelabs/design-system';
+	import { setMode, userPrefersMode } from 'mode-watcher';
+	import { Button, Card, Label, Switch } from '@latitudelabs/design-system';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import type { PageProps } from './$types';
 
@@ -7,6 +8,12 @@
 	// svelte-ignore state_referenced_locally
 	let libraryAccess = $state(data.settings.libraryAccess);
 	let error = $state('');
+
+	const themes = [
+		{ value: 'light', label: 'Light' },
+		{ value: 'dark', label: 'Dark' },
+		{ value: 'system', label: 'System' }
+	] as const;
 
 	// Applies immediately, like every switch.
 	async function save(checked: boolean) {
@@ -30,6 +37,31 @@
 
 	<main class="mx-auto mt-12 flex w-full max-w-[640px] flex-col gap-4 px-4">
 		<h1 class="text-heading">Settings</h1>
+		<Card.Root>
+			<Card.Header>
+				<Card.Title>Appearance</Card.Title>
+			</Card.Header>
+			<Card.Content>
+				<div class="flex items-center justify-between gap-4">
+					<Label id="theme-label">Theme</Label>
+					<div class="flex gap-1" role="radiogroup" aria-labelledby="theme-label">
+						{#each themes as t (t.value)}
+							{@const selected = userPrefersMode.current === t.value}
+							<Button
+								variant={selected ? 'secondary' : 'ghost'}
+								size="sm"
+								role="radio"
+								aria-checked={selected}
+								onclick={() => setMode(t.value)}
+							>
+								{t.label}
+							</Button>
+						{/each}
+					</div>
+				</div>
+			</Card.Content>
+		</Card.Root>
+
 		<Card.Root>
 			<Card.Header>
 				<Card.Title>Assistant</Card.Title>

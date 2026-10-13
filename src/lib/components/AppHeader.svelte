@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { toggleMode } from 'mode-watcher';
 	import { Breadcrumb, Button } from '@latitudelabs/design-system';
-	import { Moon, Sun } from '@latitudelabs/design-system/icons';
 
 	type Crumb = { label: string; href?: string };
 	type NavItem = { label: string; href?: string; onclick?: () => void };
@@ -29,9 +27,5 @@
 				{item.label}
 			</Button>
 		{/each}
-		<Button variant="ghost" size="icon" onclick={toggleMode} aria-label="Toggle theme">
-			<Sun class="dark:hidden" />
-			<Moon class="hidden dark:block" />
-		</Button>
 	</nav>
 </header>

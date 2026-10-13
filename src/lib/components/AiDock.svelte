@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { Button, ChatMessage, PromptInput } from '@latitudelabs/design-system';
-	import { Upload } from '@latitudelabs/design-system/icons';
+	import { ChatMessage, PromptInput } from '@latitudelabs/design-system';
 
 	type Props = {
 		reply?: string;
@@ -9,8 +8,6 @@
 		draft?: string;
 		placeholder?: string;
 		onsubmit: (message: string) => void;
-		/** Shows an upload button when set. */
-		onupload?: (file: File) => void;
 	};
 	let {
 		reply,
@@ -18,11 +15,8 @@
 		error,
 		draft = $bindable(''),
 		placeholder = 'What are we analysing today..?',
-		onsubmit,
-		onupload
+		onsubmit
 	}: Props = $props();
-
-	let fileInput = $state<HTMLInputElement>();
 </script>
 
 <!-- The assistant's latest message only; answers worth looking at live in cards above. -->
@@ -40,23 +34,5 @@
 			{/if}
 		</ChatMessage>
 	{/if}
-	<div class="flex items-center gap-2">
-		{#if onupload}
-			<Button variant="ghost" size="icon" aria-label="Upload a video" onclick={() => fileInput?.click()}>
-				<Upload />
-			</Button>
-			<input
-				bind:this={fileInput}
-				type="file"
-				accept="video/*"
-				class="hidden"
-				onchange={(e) => {
-					const file = e.currentTarget.files?.[0];
-					if (file) onupload(file);
-					e.currentTarget.value = '';
-				}}
-			/>
-		{/if}
-		<PromptInput bind:value={draft} {placeholder} disabled={thinking} {onsubmit} />
-	</div>
+	<PromptInput bind:value={draft} {placeholder} disabled={thinking} {onsubmit} />
 </div>

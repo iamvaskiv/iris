@@ -157,7 +157,7 @@
 			<p class="text-title">Drop a video to analyse it</p>
 		</div>
 	{/if}
-	<AppHeader crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]} nav={[{ label: 'Settings', href: '/settings' }]} />
+	<AppHeader crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]} />
 
 	<main bind:this={scroller} class="flex-1 overflow-y-auto">
 		{#if project.cards.length === 0}
@@ -186,5 +186,5 @@
 		{/if}
 	</main>
 
-	<AiDock reply={project.reply} {thinking} {error} bind:draft onsubmit={send} onupload={upload} />
+	<AiDock reply={project.reply} {thinking} {error} bind:draft onsubmit={send} />
 </div>
