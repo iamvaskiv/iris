@@ -60,6 +60,9 @@ export const lumiere = {
 		call<{ status: 'pending' | 'uploading' | 'processing' | 'completed' | 'failed'; progress: number; errorMessage?: string }>(
 			`/ingestions/${id}`
 		),
+	/** Signed thumbnail URL; taken a few seconds in, since trailers usually open on a black frame. */
+	thumbnail: (id: string, width = 480) =>
+		lumiere.assetUrl(id, { assetType: 'thumbnail', width, time: 10 }).then((a) => a.url),
 	assetUrl: (id: string, body: Record<string, unknown>) =>
 		call<{ url: string }>(`/videos/${id}/assets/url`, { method: 'POST', body: JSON.stringify(body) })
 };

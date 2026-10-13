@@ -60,6 +60,7 @@
 		crumbs={[{ label: 'Jinn' }, { label: 'Projects' }]}
 		nav={[
 			{ label: 'New', onclick: () => newProject() },
+			{ label: 'Assets', href: '/assets' },
 			{ label: 'Settings', href: '/settings' }
 		]}
 	/>
