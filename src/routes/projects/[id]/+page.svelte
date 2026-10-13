@@ -157,9 +157,10 @@
 			<p class="text-title">Drop a video to analyse it</p>
 		</div>
 	{/if}
-	<AppHeader crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]} />
-
 	<main bind:this={scroller} class="flex-1 overflow-y-auto">
+		<!-- Sticky inside the scroll area (so the scrollbar stays outside the blur); the negative margin lets
+		     cards scroll up underneath it instead of the header taking space in the flow. -->
+		<AppHeader class="-mb-25" crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]} />
 		{#if project.cards.length === 0}
 			<div class="flex h-full flex-col items-center justify-center gap-8 pb-40">
 				<div class="relative size-20" role="img" aria-label="Lumi AI">
@@ -170,7 +171,7 @@
 			</div>
 		{:else}
 			<!-- Newest card sits just above the dock; older ones are pushed up. -->
-			<div class="mx-auto flex min-h-full max-w-3xl flex-col justify-end gap-5 px-4 pt-8 pb-56">
+			<div class="mx-auto flex min-h-full max-w-3xl flex-col justify-end gap-5 px-4 pt-33 pb-56">
 				{#each project.cards as card (card.id)}
 					{@const CardView = cardComponent(card.type)}
 					<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
