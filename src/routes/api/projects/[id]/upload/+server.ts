@@ -1,4 +1,5 @@
 import { error, json } from '@sveltejs/kit';
+import { assets } from '#lib/server/assets.js';
 import { lumiere } from '#lib/server/lumiere.js';
 import { projects } from '#lib/server/projects.js';
 import type { Card } from '#lib/cards/types.js';
@@ -34,6 +35,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		subtitle: 'Uploading…',
 		data: { ...ingestion, phase: 'uploading', progress: 0 }
 	};
+	assets.addUpload(ingestion.videoId, fileName);
 	projects.update(project.id, (latest) => {
 		latest.cards.push(card);
 		latest.focusedId = card.id;
@@ -81,6 +83,11 @@ export const GET: RequestHandler = async ({ params, url }) => {
 		subtitle:
 			phase === 'failed' ? `Failed: ${errorMessage ?? 'unknown error'}` : phase === 'processing' ? `Analysing… ${progress}%` : 'Uploading…'
 	};
+	assets.setStatus(
+		card.data!.videoId as string,
+		status === 'completed' ? 'analysed' : status === 'failed' ? 'failed' : status === 'processing' ? 'analysing' : 'uploading',
+		video?.duration
+	);
 	projects.update(project.id, (latest) => {
 		if (status === 'completed') {
 			latest.cards = latest.cards.filter((c) => c.id !== card.id);

@@ -1,4 +1,4 @@
-import { lumiere } from '#lib/server/lumiere.js';
+import { thumbnail } from '#lib/server/assets.js';
 import { projects } from '#lib/server/projects.js';
 import type { PageServerLoad } from './$types';
 
@@ -12,7 +12,7 @@ export const load: PageServerLoad = async () => ({
 			// Up to two video thumbnails peek out of the bottom of the tile.
 			thumbnails: await Promise.all(
 				p.videoIds.slice(0, 2).map((id) =>
-					lumiere.thumbnail(id).catch(() => null)
+					thumbnail(id)
 				)
 			).then((urls) => urls.filter((u): u is string => !!u))
 		}))

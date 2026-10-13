@@ -4,7 +4,7 @@ import { BRAND, LIBRARY, LIBRARY_ONLY, libraryTools, llmUnavailable, runLibraryT
 import { lumiere } from './lumiere.js';
 import { projects } from './projects.js';
 import { settings } from './settings.js';
-import { describeAssets, listAssets } from './assets.js';
+import { assets, describeAssets } from './assets.js';
 
 function systemPrompt(library: boolean) {
 	return `${BRAND}
@@ -125,8 +125,8 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 	let refresh = false;
 	const awaitingConfirmation = pendingDeletions(history);
 	const { libraryAccess: library } = settings.get();
-	const assets = await listAssets();
-	const assetIds = new Set(assets.map((a) => a.id));
+	const userAssets = await assets.list();
+	const assetIds = new Set(userAssets.map((a) => a.id));
 
 	async function exec(name: string, input: Record<string, unknown>) {
 		if (libraryTools.some((t) => t.name === name)) {
@@ -139,7 +139,7 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 		if (name === 'create_project') {
 			const videoIds = ((input.videoIds as string[] | undefined) ?? []).filter((id) => library || assetIds.has(id));
 			// Check first: a project for an unanalysed video has nothing to show.
-			const unanalysed = await Promise.all(videoIds.map(async (id) => !(await lumiere.isAnalysed(id))));
+			const unanalysed = await Promise.all(videoIds.map(async (id) => (await assets.ensure(id)).status !== 'analysed'));
 			if (unanalysed.some(Boolean) && !input.allowUnanalysed) {
 				throw new Error(
 					'Not created: this video has no analysis. Tell the user and suggest uploading the file into a new project; create anyway only if they insist (allowUnanalysed: true).'
@@ -180,7 +180,7 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 
 	try {
 		const res = await runLoop({
-			system: `${systemPrompt(library)}\n\n${describeProjects()}\n${describeAssets(assets)}`,
+			system: `${systemPrompt(library)}\n\n${describeProjects()}\n${describeAssets(userAssets)}`,
 			tools: toolsFor(library),
 			history,
 			message,

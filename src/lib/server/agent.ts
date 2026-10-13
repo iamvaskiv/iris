@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import * as env from '$app/env/private';
 import { lumiere } from './lumiere.js';
 import { settings } from './settings.js';
-import { describeAssets, listAssets } from './assets.js';
+import { assets, describeAssets } from './assets.js';
 import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
 const MODEL = 'claude-sonnet-5-5';
@@ -258,7 +258,7 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 			if (input.summary) project.summary = input.summary as string;
 			return { updated: true };
 		case 'add_video': {
-			const analysed = await lumiere.isAnalysed(id); // also validates the id
+			const analysed = (await assets.ensure(id)).status === 'analysed'; // also validates and registers it
 			if (!project.videoIds.includes(id)) project.videoIds.push(id);
 			return analysed
 				? { added: true, analysed, videoIds: project.videoIds }
@@ -340,10 +340,10 @@ export async function runLoop(opts: {
 
 async function agent({ message, project }: ChatRequest): Promise<ChatResponse> {
 	const { libraryAccess: library } = settings.get();
-	const assets = await listAssets();
-	const turn: Turn = { project, ops: [], library, assetIds: new Set(assets.map((a) => a.id)) };
+	const userAssets = await assets.list();
+	const turn: Turn = { project, ops: [], library, assetIds: new Set(userAssets.map((a) => a.id)) };
 	const { text, history } = await runLoop({
-		system: `${systemPrompt(library)}\n\n${describeProject(project)}\n${describeAssets(assets)}\n${describeCards(project.cards, project.focusedId)}`,
+		system: `${systemPrompt(library)}\n\n${describeProject(project)}\n${describeAssets(userAssets)}\n${describeCards(project.cards, project.focusedId)}`,
 		tools: toolsFor(library),
 		history: project.history as Anthropic.MessageParam[],
 		message,

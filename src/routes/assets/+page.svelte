@@ -8,9 +8,11 @@
 	let { data }: PageProps = $props();
 
 	const statusLabel = {
-		analysed: 'Analysed',
+		uploading: 'Uploading…',
 		analysing: 'Analysing…',
-		'not-analysed': 'Not analysed'
+		analysed: 'Analysed',
+		'not-analysed': 'Not analysed',
+		failed: 'Failed'
 	} as const;
 	const date = (iso?: string) =>
 		iso
