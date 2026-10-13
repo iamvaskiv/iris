@@ -1,6 +1,14 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import * as env from '$app/env/private';
-import { BRAND, LIBRARY, LIBRARY_ONLY, libraryTools, llmUnavailable, runLibraryTool, runLoop } from './agent.js';
+import {
+	BRAND,
+	LIBRARY,
+	LIBRARY_ONLY,
+	libraryTools,
+	llmUnavailable,
+	runLibraryTool,
+	runLoop
+} from './agent.js';
 import { lumiere } from './lumiere.js';
 import { projects } from './projects.js';
 import { settings } from './settings.js';
@@ -34,7 +42,8 @@ const allTools: Anthropic.Tool[] = [
 	...libraryTools,
 	{
 		name: 'create_project',
-		description: 'Create a new project and take the user into it. Only after the user asked or agreed.',
+		description:
+			'Create a new project and take the user into it. Only after the user asked or agreed.',
 		input_schema: {
 			type: 'object',
 			properties: {
@@ -42,12 +51,17 @@ const allTools: Anthropic.Tool[] = [
 				videoIds: {
 					type: 'array',
 					items: { type: 'string' },
-					description: "Videos to attach: the user's videos (assets), or video library videos with library access"
+					description:
+						"Videos to attach: the user's videos (assets), or video library videos with library access"
 				},
-				firstMessage: { type: 'string', description: 'Question to ask the assistant inside the new project' },
+				firstMessage: {
+					type: 'string',
+					description: 'Question to ask the assistant inside the new project'
+				},
 				allowUnanalysed: {
 					type: 'boolean',
-					description: 'Only after telling the user the video has no analysis and they still want it'
+					description:
+						'Only after telling the user the video has no analysis and they still want it'
 				}
 			},
 			required: ['name']
@@ -80,7 +94,8 @@ function toolsFor(library: boolean): Anthropic.Tool[] {
 	return allTools.filter((t) => !LIBRARY_ONLY.includes(t.name));
 }
 
-export type Navigate = { projectId: string; message?: string };
+/** Where to take the user: an existing project, or (no projectId) a draft with this name that saves on first content. */
+export type Navigate = { projectId?: string; name?: string; message?: string };
 export type WorkspaceResponse = {
 	text: string;
 	history: unknown[];
@@ -106,20 +121,25 @@ function describeProjects() {
  */
 function pendingDeletions(history: Anthropic.MessageParam[]): Set<string> {
 	const isUserText = (m: Anthropic.MessageParam) =>
-		m.role === 'user' && (typeof m.content === 'string' || m.content.some((b) => b.type === 'text'));
+		m.role === 'user' &&
+		(typeof m.content === 'string' || m.content.some((b) => b.type === 'text'));
 	const lastUser = history.findLastIndex(isUserText);
 	const ids = new Set<string>();
 	for (const m of history.slice(lastUser + 1)) {
 		if (m.role !== 'assistant' || typeof m.content === 'string') continue;
 		for (const b of m.content) {
-			const input = b.type === 'tool_use' ? (b.input as { id?: string; confirmed?: boolean }) : null;
+			const input =
+				b.type === 'tool_use' ? (b.input as { id?: string; confirmed?: boolean }) : null;
 			if (b.type === 'tool_use' && b.name === 'delete_project' && input?.id) ids.add(input.id);
 		}
 	}
 	return ids;
 }
 
-export async function workspaceChat(message: string, history: Anthropic.MessageParam[]): Promise<WorkspaceResponse> {
+export async function workspaceChat(
+	message: string,
+	history: Anthropic.MessageParam[]
+): Promise<WorkspaceResponse> {
 	if (!env.ANTHROPIC_API_KEY) return scripted(message, history);
 	let navigate: Navigate | undefined;
 	let refresh = false;
@@ -137,16 +157,25 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 		}
 		const firstMessage = input.firstMessage as string | undefined;
 		if (name === 'create_project') {
-			const videoIds = ((input.videoIds as string[] | undefined) ?? []).filter((id) => library || assetIds.has(id));
+			const videoIds = ((input.videoIds as string[] | undefined) ?? []).filter(
+				(id) => library || assetIds.has(id)
+			);
 			// Check first: a project for an unanalysed video has nothing to show.
-			const unanalysed = await Promise.all(videoIds.map(async (id) => (await assets.ensure(id)).status !== 'analysed'));
+			const unanalysed = await Promise.all(
+				videoIds.map(async (id) => (await assets.ensure(id)).status !== 'analysed')
+			);
 			if (unanalysed.some(Boolean) && !input.allowUnanalysed) {
 				throw new Error(
 					'Not created: this video has no analysis. Tell the user and suggest uploading the file into a new project; create anyway only if they insist (allowUnanalysed: true).'
 				);
 			}
+			// Without videos there's nothing to save yet: open a draft, which is saved once it gets content.
+			if (!videoIds.length) {
+				navigate = { name: input.name as string, message: firstMessage };
+				return { created: true };
+			}
 			const project = projects.create(input.name as string);
-			if (videoIds.length) projects.update(project.id, (p) => p.videoIds.push(...videoIds));
+			projects.update(project.id, (p) => p.videoIds.push(...videoIds));
 			navigate = { projectId: project.id, message: firstMessage };
 			return { created: true, id: project.id };
 		}
@@ -162,7 +191,11 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 			if (!input.confirmed) {
 				return {
 					deleted: false,
-					wouldDelete: { name: project.name, cards: project.cards.length, videos: project.videoIds.length },
+					wouldDelete: {
+						name: project.name,
+						cards: project.cards.length,
+						videos: project.videoIds.length
+					},
 					next: 'Ask the user to confirm.'
 				};
 			}
@@ -194,6 +227,10 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 }
 
 function scripted(message: string, history: Anthropic.MessageParam[]): WorkspaceResponse {
-	const text = 'I need an LLM to chat here. Use New to start a project. (scripted mode, no LLM connected)';
-	return { text, history: [...history, { role: 'user', content: message }, { role: 'assistant', content: text }] };
+	const text =
+		'I need an LLM to chat here. Use New to start a project. (scripted mode, no LLM connected)';
+	return {
+		text,
+		history: [...history, { role: 'user', content: message }, { role: 'assistant', content: text }]
+	};
 }

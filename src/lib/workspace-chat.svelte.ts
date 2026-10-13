@@ -5,7 +5,7 @@ export type WorkspaceResponse = {
 	text: string;
 	history: unknown[];
 	/** Set when the assistant created or opened a project. */
-	navigate?: { projectId: string; message?: string };
+	navigate?: { projectId?: string; name?: string; message?: string };
 	/** The project list changed (e.g. a project was deleted). */
 	refresh?: boolean;
 	error?: string;

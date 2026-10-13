@@ -53,8 +53,21 @@
 		if (i >= 0) project.cards[i] = card;
 	}
 
+	/** Drafts are saved the moment they get content; the URL then becomes the real project's. */
+	async function ensureSaved() {
+		if (project.id) return;
+		const res = await fetch('/api/projects', {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({ name: project.name === 'New project' ? undefined : project.name })
+		});
+		project.id = (await res.json()).id;
+		replaceState(`/projects/${project.id}`, {});
+	}
+
 	async function upload(file: File) {
 		error = '';
+		await ensureSaved();
 		const res = await fetch(`/api/projects/${project.id}/upload`, {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
@@ -225,6 +238,7 @@
 		error = '';
 		thinking = true;
 		try {
+			await ensureSaved();
 			const res = await fetch('/api/chat', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
