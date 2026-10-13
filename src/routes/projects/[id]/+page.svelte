@@ -57,7 +57,11 @@
 			xhr.open('PUT', `/api/projects/${project.id}/upload?ingestionId=${card.data!.ingestionId}`);
 			xhr.setRequestHeader('content-type', file.type || 'video/mp4');
 			xhr.upload.onprogress = (e) => {
-				if (e.lengthComputable) replaceCard({ ...card, data: { ...card.data, progress: Math.round((e.loaded / e.total) * 100) } });
+				if (e.lengthComputable)
+					replaceCard({
+						...card,
+						data: { ...card.data, progress: Math.round((e.loaded / e.total) * 100) }
+					});
 			};
 			xhr.onload = () => resolve(xhr.status < 300);
 			xhr.onerror = () => resolve(false);
@@ -73,12 +77,16 @@
 	/** Polls until processing finishes, then asks the assistant to analyse the new video. */
 	async function watch(card: Card) {
 		while (true) {
-			const res = await fetch(`/api/projects/${project.id}/upload?ingestionId=${card.data!.ingestionId}`);
+			const res = await fetch(
+				`/api/projects/${project.id}/upload?ingestionId=${card.data!.ingestionId}`
+			);
 			if (!res.ok) return;
 			const status = await res.json();
 			if (status.status === 'completed') {
 				project.cards = project.cards.filter((c) => c.id !== card.id);
-				send(`I uploaded "${status.fileName}" (video ${status.videoId}) and it has finished processing. Give me the full analysis.`);
+				send(
+					`I uploaded "${status.fileName}" (video ${status.videoId}) and it has finished processing. Give me the full analysis.`
+				);
 				return;
 			}
 			replaceCard(status.card);
@@ -120,6 +128,15 @@
 	let dockHeight = $state(0);
 	let cardHeights = $state<Record<string, number>>({});
 	const snapArea = $derived(viewHeight - HEADER - dockHeight - DOCK_GAP);
+
+	// Just enough space before the first and after the last card to center them in the visible area (a tall card
+	// gets a small gap instead). With a single short card the content fits the view exactly: nothing to scroll.
+	const edgeSpace = (id: string | undefined, chrome: number) => {
+		const h = id ? (cardHeights[id] ?? 0) : 0;
+		return chrome + (h && h < snapArea ? (snapArea - h) / 2 : 32);
+	};
+	const padTop = $derived(edgeSpace(project.cards[0]?.id, HEADER));
+	const padBottom = $derived(edgeSpace(project.cards.at(-1)?.id, dockHeight + DOCK_GAP));
 
 	/** Visible region for cards, in scroller coordinates (below the header, above the dock). */
 	function region() {
@@ -165,7 +182,8 @@
 			const el = cardEl(card.id);
 			if (!el) continue;
 			const rect = el.getBoundingClientRect();
-			const visible = Math.min(rect.bottom - r.box.top, r.bottom) - Math.max(rect.top - r.box.top, r.top);
+			const visible =
+				Math.min(rect.bottom - r.box.top, r.bottom) - Math.max(rect.top - r.box.top, r.top);
 			if (visible > 0 && (!best || visible > best.visible)) best = { id: card.id, visible };
 		}
 		return best?.id;
@@ -228,7 +246,9 @@
 	ondrop={drop}
 >
 	{#if dragging}
-		<div class="pointer-events-none absolute inset-4 z-10 flex items-center justify-center rounded-xl bg-card/90 shadow-raised">
+		<div
+			class="pointer-events-none absolute inset-4 z-10 flex items-center justify-center rounded-xl bg-card/90 shadow-raised"
+		>
 			<p class="text-title">Drop a video to analyse it</p>
 		</div>
 	{/if}
@@ -243,18 +263,26 @@
 	>
 		<!-- Sticky inside the scroll area (so the scrollbar stays outside the blur); the negative margin lets
 		     cards scroll up underneath it instead of the header taking space in the flow. -->
-		<AppHeader class="-mb-25" crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]} />
+		<AppHeader
+			class="-mb-25"
+			crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]}
+		/>
 		{#if project.cards.length === 0}
 			<div class="flex h-full flex-col items-center justify-center gap-8 pb-40">
 				<div class="relative size-20" role="img" aria-label="Lumi AI">
 					<div class="absolute inset-0 rounded-full bg-brand blur-sm"></div>
 				</div>
 				<h1 class="text-heading">What are we analysing?</h1>
-				<p class="text-body text-muted-foreground">Ask about a video, or drop one here to upload it.</p>
+				<p class="text-body text-muted-foreground">
+					Ask about a video, or drop one here to upload it.
+				</p>
 			</div>
 		{:else}
-			<!-- Half a screen of space above and below, so the first and last cards can be centered too. -->
-			<div class="mx-auto flex max-w-3xl flex-col gap-5 px-4" style:padding-block="50dvh">
+			<div
+				class="mx-auto flex max-w-3xl flex-col gap-5 px-4"
+				style:padding-top="{padTop}px"
+				style:padding-bottom="{padBottom}px"
+			>
 				{#each project.cards as card (card.id)}
 					{@const CardView = cardComponent(card.type)}
 					<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
@@ -275,5 +303,12 @@
 		{/if}
 	</main>
 
-	<AiDock reply={project.reply} {thinking} {error} bind:draft bind:height={dockHeight} onsubmit={send} />
+	<AiDock
+		reply={project.reply}
+		{thinking}
+		{error}
+		bind:draft
+		bind:height={dockHeight}
+		onsubmit={send}
+	/>
 </div>
