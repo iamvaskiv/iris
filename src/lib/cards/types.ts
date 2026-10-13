@@ -13,7 +13,7 @@ export type CardItem = {
 
 export type Card = {
 	id: string;
-	type: 'video' | 'list' | 'quotes' | 'text' | (string & {});
+	type: 'video' | 'list' | 'quotes' | 'text' | 'upload' | (string & {});
 	title: string;
 	subtitle?: string;
 	body?: string;

@@ -5,7 +5,7 @@
 	import AiDock from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import { cardComponent } from '#lib/cards/registry.js';
-	import type { CardOp, ChatResponse } from '#lib/cards/types.js';
+	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -16,6 +16,7 @@
 	let thinking = $state(false);
 	let error = $state('');
 	let draft = $state('');
+	let dragging = $state(false);
 	let scroller: HTMLElement;
 
 	onMount(() => {
@@ -27,7 +28,71 @@
 		} else {
 			focus(project.focusedId, 'instant');
 		}
+		// Resume watching uploads that were still processing when the page was left.
+		for (const card of project.cards) {
+			if (card.type === 'upload' && card.data?.phase === 'processing') watch(card);
+		}
 	});
+
+	function replaceCard(card: Card) {
+		const i = project.cards.findIndex((c) => c.id === card.id);
+		if (i >= 0) project.cards[i] = card;
+	}
+
+	async function upload(file: File) {
+		error = '';
+		const res = await fetch(`/api/projects/${project.id}/upload`, {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({ fileName: file.name, fileSize: file.size })
+		});
+		if (!res.ok) return (error = `Couldn't start the upload (${res.status}).`);
+		const card: Card = await res.json();
+		project.cards.push(card);
+		await focus(card.id);
+
+		// XHR rather than fetch, for upload progress.
+		const ok = await new Promise<boolean>((resolve) => {
+			const xhr = new XMLHttpRequest();
+			xhr.open('PUT', `/api/projects/${project.id}/upload?ingestionId=${card.data!.ingestionId}`);
+			xhr.setRequestHeader('content-type', file.type || 'video/mp4');
+			xhr.upload.onprogress = (e) => {
+				if (e.lengthComputable) replaceCard({ ...card, data: { ...card.data, progress: Math.round((e.loaded / e.total) * 100) } });
+			};
+			xhr.onload = () => resolve(xhr.status < 300);
+			xhr.onerror = () => resolve(false);
+			xhr.send(file);
+		});
+		if (!ok) {
+			replaceCard({ ...card, subtitle: 'Upload failed', data: { ...card.data, phase: 'failed' } });
+			return;
+		}
+		watch(card);
+	}
+
+	/** Polls Lumiere until processing finishes, then asks the assistant to analyse the new video. */
+	async function watch(card: Card) {
+		while (true) {
+			const res = await fetch(`/api/projects/${project.id}/upload?ingestionId=${card.data!.ingestionId}`);
+			if (!res.ok) return;
+			const status = await res.json();
+			if (status.status === 'completed') {
+				project.cards = project.cards.filter((c) => c.id !== card.id);
+				send(`I uploaded "${status.fileName}" (video ${status.videoId}) and Lumiere has finished processing it. Give me the full analysis.`);
+				return;
+			}
+			replaceCard(status.card);
+			if (status.status === 'failed') return;
+			await new Promise((r) => setTimeout(r, status.status === 'processing' ? 10_000 : 5_000));
+		}
+	}
+
+	function drop(e: DragEvent) {
+		e.preventDefault();
+		dragging = false;
+		const file = [...(e.dataTransfer?.files ?? [])].find((f) => f.type.startsWith('video/'));
+		if (file) upload(file);
+	}
 
 	function apply(op: CardOp) {
 		if (op.op === 'add') project.cards.push(op.card);
@@ -74,7 +139,24 @@
 
 <svelte:head><title>{project.name} · Jinn</title></svelte:head>
 
-<div class="flex h-dvh flex-col bg-background">
+<div
+	class="relative flex h-dvh flex-col bg-background"
+	role="region"
+	aria-label="Project"
+	ondragover={(e) => {
+		e.preventDefault();
+		dragging = true;
+	}}
+	ondragleave={(e) => {
+		if (e.currentTarget === e.target) dragging = false;
+	}}
+	ondrop={drop}
+>
+	{#if dragging}
+		<div class="pointer-events-none absolute inset-4 z-10 flex items-center justify-center rounded-xl bg-card/90 shadow-raised">
+			<p class="text-title">Drop a video to analyse it</p>
+		</div>
+	{/if}
 	<AppHeader crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]} />
 
 	<main bind:this={scroller} class="flex-1 overflow-y-auto">
@@ -84,6 +166,7 @@
 					<div class="absolute inset-0 rounded-full bg-brand blur-sm"></div>
 				</div>
 				<h1 class="text-heading">What are we analysing?</h1>
+				<p class="text-body text-muted-foreground">Ask about a video, or drop one here to upload it.</p>
 			</div>
 		{:else}
 			<!-- Newest card sits just above the dock; older ones are pushed up. -->
@@ -103,5 +186,5 @@
 		{/if}
 	</main>
 
-	<AiDock reply={project.reply} {thinking} {error} bind:draft onsubmit={send} />
+	<AiDock reply={project.reply} {thinking} {error} bind:draft onsubmit={send} onupload={upload} />
 </div>

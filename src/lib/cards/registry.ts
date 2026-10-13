@@ -3,6 +3,7 @@ import type { Card } from './types';
 import ListCard from './ListCard.svelte';
 import QuotesCard from './QuotesCard.svelte';
 import TextCard from './TextCard.svelte';
+import UploadCard from './UploadCard.svelte';
 import VideoCard from './VideoCard.svelte';
 
 /** Card type → component. Unknown types render as TextCard. */
@@ -10,7 +11,8 @@ const registry: Record<string, Component<{ card: Card }>> = {
 	video: VideoCard,
 	list: ListCard,
 	quotes: QuotesCard,
-	text: TextCard
+	text: TextCard,
+	upload: UploadCard
 };
 
 export const cardComponent = (type: string) => registry[type] ?? TextCard;
