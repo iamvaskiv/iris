@@ -1,32 +1,35 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import * as env from '$app/env/private';
-import { libraryTools, llmUnavailable, runLibraryTool, runLoop } from './agent.js';
+import { BRAND, LIBRARY, LIBRARY_ONLY, libraryTools, llmUnavailable, runLibraryTool, runLoop } from './agent.js';
 import { lumiere } from './lumiere.js';
 import { projects } from './projects.js';
+import { settings } from './settings.js';
 
-const SYSTEM = `You are Lumi, the assistant inside a video intelligence platform backed by Lumiere.
+function systemPrompt(library: boolean) {
+	return `${BRAND}
 
 Where you are: the PROJECTS page (workspace level), not inside a project.
 - The user sees a grid of their projects and your latest reply in a small bubble above the input. There are no cards here.
-- Reply in one or two short, friendly sentences. Plain text only: no markdown, no bullet lists, no headings. For many items, give the count and name a few ("Seven trailers, including House Party and Women Talking."). Answer quick questions directly: about their projects, or about videos in the Lumiere library (you can browse and read it).
+- Reply in one or two short, friendly sentences. Plain text only: no markdown, no bullet lists, no headings. For many items, give the count and name a few ("Four projects, including Women Talking and Inside Out 2."). Answer quick questions directly about their projects and the videos in them (you can read each project video's analysis).
 
 Projects:
 - Deep work on a video (cards, analysis, quotes, comparisons) happens inside a project.
+- New videos get into Jinn by uploading them inside a project (drop the file onto the project page).
 - When a request needs that, suggest opening a relevant existing project, or offer to create a new one, and ask. Don't create a project on your own initiative.
 - Create a project only when the user asks for one or agrees to your offer. Then call create_project and tell them in your reply ("Creating 'Women Talking' and taking you there."). The app shows your reply, then moves them into the project.
-- Pass firstMessage when there is a question to continue inside the new project, and videoId when you know which video it is about.
+- Pass firstMessage when there is a question to continue inside the new project${library ? ', and videoId when it is about a video from the video library' : ''}.
 - open_project works the same way for existing projects: say where you're taking them.
 
 Deleting projects:
-- Delete a project only when the user asks. Always confirm first: call delete_project without confirmed to see what would be deleted, then ask the user, naming the project ("Delete 'Movie Trailers' and its 3 cards? Its videos stay in Lumiere."). Never confirm on their behalf.
-- Call it with confirmed: true only after the user clearly says yes in their latest message. If the request is ambiguous (several matching projects), ask which one.
+- Delete a project only when the user asks. Always confirm first: call delete_project without confirmed to see what would be deleted, then ask the user, naming the project ("Delete 'Movie Trailers' and its 3 cards?"). Never confirm on their behalf.
+- Call it with confirmed: true only after the user clearly says yes in their latest message. If the request is ambiguous (several matching projects), ask which one.${
+		library
+			? `\n\n${LIBRARY}\nIf the user still wants a project for an unanalysed library video, create it with allowUnanalysed: true.`
+			: ''
+	}`;
+}
 
-Analysis status:
-- Many library videos have never been analysed by Lumiere (list_folder / get_video show \`analysed\`). An unanalysed video has no summary, characters, scenes or transcript, so a project about it has little to work with.
-- Check before offering a project for a video. If it isn't analysed, say so in your offer and suggest uploading the video file into a new project instead (Lumiere analyses uploads automatically, in a few minutes).
-- If the user still wants a project for an unanalysed video, create it with allowUnanalysed: true.`;
-
-const tools: Anthropic.Tool[] = [
+const allTools: Anthropic.Tool[] = [
 	...libraryTools,
 	{
 		name: 'create_project',
@@ -35,11 +38,11 @@ const tools: Anthropic.Tool[] = [
 			type: 'object',
 			properties: {
 				name: { type: 'string', description: 'Short name, 2-4 words' },
-				videoId: { type: 'string', description: 'Lumiere video to attach, if known' },
+				videoId: { type: 'string', description: 'Video library video to attach (library access only)' },
 				firstMessage: { type: 'string', description: 'Question to ask the assistant inside the new project' },
 				allowUnanalysed: {
 					type: 'boolean',
-					description: 'Only after telling the user the video has no Lumiere analysis and they still want it'
+					description: 'Only after telling the user the video has no analysis and they still want it'
 				}
 			},
 			required: ['name']
@@ -48,7 +51,7 @@ const tools: Anthropic.Tool[] = [
 	{
 		name: 'delete_project',
 		description:
-			"Delete a project (its cards and conversation; videos stay in Lumiere). Without confirmed it only describes what would be deleted. Use confirmed: true only after the user said yes.",
+			'Delete a project (its cards and conversation). Without confirmed it only describes what would be deleted. Use confirmed: true only after the user said yes.',
 		input_schema: {
 			type: 'object',
 			properties: { id: { type: 'string' }, confirmed: { type: 'boolean' } },
@@ -65,6 +68,18 @@ const tools: Anthropic.Tool[] = [
 		}
 	}
 ];
+
+function toolsFor(library: boolean): Anthropic.Tool[] {
+	if (library) return allTools;
+	// Without library access: no browsing, and create_project can't attach library videos.
+	return allTools
+		.filter((t) => !LIBRARY_ONLY.includes(t.name))
+		.map((t) => {
+			if (t.name !== 'create_project') return t;
+			const { videoId: _v, allowUnanalysed: _a, ...properties } = t.input_schema.properties as Record<string, unknown>;
+			return { ...t, input_schema: { ...t.input_schema, properties } };
+		});
+}
 
 export type Navigate = { projectId: string; message?: string };
 export type WorkspaceResponse = {
@@ -110,16 +125,23 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 	let navigate: Navigate | undefined;
 	let refresh = false;
 	const awaitingConfirmation = pendingDeletions(history);
+	const { libraryAccess: library } = settings.get();
+	const projectVideos = new Set(projects.list().flatMap((p) => p.videoIds));
 
 	async function exec(name: string, input: Record<string, unknown>) {
-		if (libraryTools.some((t) => t.name === name)) return runLibraryTool(name, input);
+		if (libraryTools.some((t) => t.name === name)) {
+			if (!library && (LIBRARY_ONLY.includes(name) || !projectVideos.has(input.videoId as string))) {
+				throw new Error('That video is not in any of the user\'s projects.');
+			}
+			return runLibraryTool(name, input);
+		}
 		const firstMessage = input.firstMessage as string | undefined;
 		if (name === 'create_project') {
-			const videoId = input.videoId as string | undefined;
+			const videoId = library ? (input.videoId as string | undefined) : undefined;
 			// Check first: a project for an unanalysed video has nothing to show.
 			if (videoId && !input.allowUnanalysed && !(await lumiere.isAnalysed(videoId))) {
 				throw new Error(
-					'Not created: this video has not been analysed by Lumiere. Tell the user and suggest uploading the file into a new project; create anyway only if they insist (allowUnanalysed: true).'
+					'Not created: this video has no analysis. Tell the user and suggest uploading the file into a new project; create anyway only if they insist (allowUnanalysed: true).'
 				);
 			}
 			const project = projects.create(input.name as string);
@@ -140,7 +162,7 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 				return {
 					deleted: false,
 					wouldDelete: { name: project.name, cards: project.cards.length, videos: project.videoIds.length },
-					next: 'Ask the user to confirm. Videos stay in Lumiere.'
+					next: 'Ask the user to confirm.'
 				};
 			}
 			projects.remove(project.id);
@@ -156,7 +178,13 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 	}
 
 	try {
-		const res = await runLoop({ system: `${SYSTEM}\n\n${describeProjects()}`, tools, history, message, exec });
+		const res = await runLoop({
+			system: `${systemPrompt(library)}\n\n${describeProjects()}`,
+			tools: toolsFor(library),
+			history,
+			message,
+			exec
+		});
 		return { ...res, navigate, refresh };
 	} catch (e) {
 		if (llmUnavailable(e)) return scripted(message, history);

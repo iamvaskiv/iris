@@ -70,7 +70,7 @@
 		watch(card);
 	}
 
-	/** Polls Lumiere until processing finishes, then asks the assistant to analyse the new video. */
+	/** Polls until processing finishes, then asks the assistant to analyse the new video. */
 	async function watch(card: Card) {
 		while (true) {
 			const res = await fetch(`/api/projects/${project.id}/upload?ingestionId=${card.data!.ingestionId}`);
@@ -78,7 +78,7 @@
 			const status = await res.json();
 			if (status.status === 'completed') {
 				project.cards = project.cards.filter((c) => c.id !== card.id);
-				send(`I uploaded "${status.fileName}" (video ${status.videoId}) and Lumiere has finished processing it. Give me the full analysis.`);
+				send(`I uploaded "${status.fileName}" (video ${status.videoId}) and it has finished processing. Give me the full analysis.`);
 				return;
 			}
 			replaceCard(status.card);
@@ -157,7 +157,7 @@
 			<p class="text-title">Drop a video to analyse it</p>
 		</div>
 	{/if}
-	<AppHeader crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]} />
+	<AppHeader crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]} nav={[{ label: 'Settings', href: '/settings' }]} />
 
 	<main bind:this={scroller} class="flex-1 overflow-y-auto">
 		{#if project.cards.length === 0}

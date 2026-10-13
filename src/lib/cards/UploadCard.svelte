@@ -29,9 +29,9 @@
 	</div>
 	<p class="text-caption text-muted-foreground">
 		{#if phase === 'uploading'}
-			Sending the file to Lumiere.
+			Uploading the file.
 		{:else if phase === 'processing'}
-			Lumiere is transcribing and analysing the video. This can take a few minutes; you can leave this page.
+			Transcribing and analysing the video. This can take a few minutes; you can leave this page.
 		{:else}
 			Something went wrong. Try uploading again.
 		{/if}

@@ -1,15 +1,24 @@
 import Anthropic from '@anthropic-ai/sdk';
 import * as env from '$app/env/private';
 import { lumiere } from './lumiere.js';
+import { settings } from './settings.js';
 import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
 const MODEL = 'claude-sonnet-5-5';
 const MAX_STEPS = 8;
 
-const SYSTEM = `You are Lumi, the assistant inside a video intelligence platform backed by Lumiere.
+/** Lumiere is an invisible service behind Jinn; both assistants share these rules. */
+export const BRAND = `You are Lumi, the assistant in Jinn, an app for understanding videos.
+Jinn's video analysis runs on a service the user never sees. Never mention Lumiere, the underlying service, APIs, ingestion, folders or processing pipelines: analysing videos is simply something you do. Talk about "your videos" and their analysis.`;
+
+/** Extra rules when the Lumiere library is exposed (Settings → Video library). */
+export const LIBRARY = `Video library access is ON: besides the user's own videos you can browse the team's video library with list_folder and read any video in it. Call it "the video library". Library videos only have an analysis (summary, characters, scenes, transcript) if \`analysed\` is true; check before relying on one, and if it isn't analysed, say so and suggest uploading the file instead.`;
+
+function systemPrompt(library: boolean) {
+	return `${BRAND}
 
 How the interface works (important):
-- The user only sees your LATEST text reply, in a small bubble above the input at the bottom of the screen. Keep it to one or two short, friendly sentences. Plain text only: no markdown, no bullet lists, no headings. For many items, give the count and name a few ("Seven trailers, including House Party and Women Talking.").
+- The user only sees your LATEST text reply, in a small bubble above the input at the bottom of the screen. Keep it to one or two short, friendly sentences. Plain text only: no markdown, no bullet lists, no headings. For many items, give the count and name a few ("Seven characters, including Ona and Salome.").
 - The center of the screen holds cards: visual answers that stay on screen. One card at a time is in focus; the others are dimmed.
 
 Choosing how to answer, in this order:
@@ -27,14 +36,14 @@ Card rules:
 Projects:
 - Every conversation lives in a project (shown as a tile on the projects page). Its details are below.
 - After the first real exchange, give the project a short name (2-4 words) with update_project. Keep its summary as one plain sentence with the current key takeaway, and refresh it when a new finding replaces the old one. Don't mention these updates in your reply.
-- If the project has no video yet, the user can drop one onto the page to upload it, or pick one from the library (list_folder) to attach with add_video.
-- When the user says a video finished processing, fetch its summary, entities, chapters and transcript, then show a video card for it plus at most one more card with the analysis.
+- If the project has no video yet, suggest dropping one onto the page to upload it${library ? ', or picking one from the video library (list_folder) to attach with add_video' : ''}.
+- When the user says a video finished uploading, fetch its summary, entities, chapters and transcript, then show a video card for it plus at most one more card with the analysis.
 
 Data:
-- Use the project's videos unless the user picks another. You can browse the team's folders with list_folder.
+- Work with the project's videos${library ? ' unless the user picks one from the video library' : ' only'}.
 - Always fetch data with tools before answering; never invent characters, quotes or timestamps.
-- If data is missing (e.g. an empty transcript), say so briefly and offer what is available instead.
-- Before attaching or analysing a library video, check that it's analysed (list_folder / get_video show \`analysed\`). If it isn't, say so up front: Lumiere only analyses videos uploaded through the app or API, so the user can upload the file here to get a full analysis.`;
+- If data is missing (e.g. an empty transcript), say so briefly and offer what is available instead.${library ? `\n\n${LIBRARY}` : ''}`;
+}
 
 function describeProject(p: Project) {
 	const videos = p.videoIds.length ? p.videoIds.join(', ') : 'none yet';
@@ -66,7 +75,7 @@ const itemsSchema = {
 	}
 };
 
-/** Read-only Lumiere tools, shared with the projects-level assistant. */
+/** Read-only Lumiere tools, shared with the projects-level assistant. list_folder is only offered with library access. */
 export const libraryTools: Anthropic.Tool[] = [
 	{
 		name: 'list_folder',
@@ -137,7 +146,7 @@ export async function runLibraryTool(name: string, input: Record<string, unknown
 	return undefined;
 }
 
-const tools: Anthropic.Tool[] = [
+const allTools: Anthropic.Tool[] = [
 	...libraryTools,
 	{
 		name: 'show_card',
@@ -187,10 +196,14 @@ const tools: Anthropic.Tool[] = [
 	},
 	{
 		name: 'add_video',
-		description: 'Attach a Lumiere video to the project.',
+		description: 'Attach a video from the video library to the project.',
 		input_schema: { type: 'object', properties: { videoId: { type: 'string' } }, required: ['videoId'] }
 	}
 ];
+
+/** Library-only tools; without library access the assistants only see videos in the user's projects. */
+export const LIBRARY_ONLY = ['list_folder', 'add_video'];
+const toolsFor = (library: boolean) => (library ? allTools : allTools.filter((t) => !LIBRARY_ONLY.includes(t.name)));
 
 type CardInput = Omit<Card, 'id' | 'data'> & { videoId?: string };
 
@@ -204,10 +217,14 @@ async function makeCard(input: CardInput): Promise<Card> {
 	return card;
 }
 
-type Turn = { project: Project; ops: CardOp[] };
+type Turn = { project: Project; ops: CardOp[]; library: boolean };
 
-async function runTool(name: string, input: Record<string, unknown>, { project, ops }: Turn): Promise<unknown> {
+async function runTool(name: string, input: Record<string, unknown>, { project, ops, library }: Turn): Promise<unknown> {
 	const id = (input.videoId as string) ?? project.videoIds[0];
+	if (!library && LIBRARY_ONLY.includes(name)) throw new Error(`Unknown tool ${name}`);
+	if (!library && name.startsWith('get_') && id && !project.videoIds.includes(id)) {
+		throw new Error('That video is not in this project.');
+	}
 	if (name.startsWith('get_') && !id) throw new Error('The project has no video yet.');
 	const find = () => {
 		const card = project.cards.find((c) => c.id === input.id);
@@ -318,10 +335,11 @@ export async function runLoop(opts: {
 }
 
 async function agent({ message, project }: ChatRequest): Promise<ChatResponse> {
-	const turn: Turn = { project, ops: [] };
+	const { libraryAccess: library } = settings.get();
+	const turn: Turn = { project, ops: [], library };
 	const { text, history } = await runLoop({
-		system: `${SYSTEM}\n\n${describeProject(project)}\n${describeCards(project.cards, project.focusedId)}`,
-		tools,
+		system: `${systemPrompt(library)}\n\n${describeProject(project)}\n${describeCards(project.cards, project.focusedId)}`,
+		tools: toolsFor(library),
 		history: project.history as Anthropic.MessageParam[],
 		message,
 		exec: (name, input) => runTool(name, input, turn)
