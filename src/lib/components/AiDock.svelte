@@ -24,6 +24,8 @@
 		height?: number;
 		/** Empty-state layout: in the middle of the screen, large avatar above a larger, centered message. */
 		centered?: boolean;
+		/** With `centered`: sit in the page flow (e.g. above the projects grid) instead of fixed in the middle of the screen. */
+		inline?: boolean;
 		onsubmit: (message: string) => void;
 	};
 	let {
@@ -35,6 +37,7 @@
 		placeholder = 'Press Enter to ask Jinn...',
 		height = $bindable(0),
 		centered = false,
+		inline = false,
 		onsubmit
 	}: Props = $props();
 
@@ -145,7 +148,10 @@
 		data-dock
 		bind:offsetHeight={height}
 		{onfocusin}
-		class="fixed top-1/2 left-1/2 flex w-full max-w-md -translate-1/2 flex-col items-center gap-8 px-4"
+		class={[
+			'flex w-full max-w-2xl flex-col items-center gap-8 px-4', // wide enough for long replies; the input stays narrower
+			inline ? 'mx-auto' : 'fixed top-1/2 left-1/2 -translate-1/2'
+		]}
 		style:view-transition-name="jinn-dock"
 	>
 		<Orb
@@ -156,13 +162,16 @@
 			transitionName="jinn-avatar"
 		/>
 		<p class="text-center text-heading" aria-live="polite">{@render message()}</p>
-		<PromptField
-			bind:ref={input}
-			bind:value={draft}
-			{placeholder}
-			disabled={thinking}
-			onsubmit={send}
-		/>
+		<div class="w-full max-w-md">
+			<PromptField
+				bind:ref={input}
+				bind:value={draft}
+				{placeholder}
+				focusedPlaceholder="What interests you?"
+				disabled={thinking}
+				onsubmit={send}
+			/>
+		</div>
 	</div>
 {:else}
 	<div
@@ -199,6 +208,7 @@
 			bind:ref={input}
 			bind:value={draft}
 			{placeholder}
+			focusedPlaceholder="What interests you?"
 			disabled={thinking}
 			onsubmit={send}
 		/>

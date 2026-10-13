@@ -49,43 +49,54 @@
 <div class="min-h-dvh bg-background">
 	<AppHeader />
 
-	<main class="mx-auto mt-12 grid w-full max-w-[970px] grid-cols-1 gap-8 px-4 pb-56 sm:grid-cols-2">
-		{#each data.projects as project (project.id)}
-			<a
-				href="/projects/{project.id}"
-				class="rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+	<main class="mx-auto mt-12 flex w-full max-w-[970px] flex-col gap-16 px-4 pb-16">
+		<!-- Lumi, large: the projects-level assistant above the grid. -->
+		<AiDock
+			centered
+			inline
+			reply={workspaceChat.reply}
+			{thinking}
+			{error}
+			bind:draft
+			onsubmit={send}
+		/>
+
+		<div class="grid grid-cols-1 gap-8 sm:grid-cols-2">
+			{#each data.projects as project (project.id)}
+				<a
+					href="/projects/{project.id}"
+					class="rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+				>
+					<Card.Root class="relative h-72 overflow-hidden transition-shadow hover:shadow-raised">
+						<Card.Header>
+							<Card.Title>{project.name}</Card.Title>
+							{#if project.summary}<Card.Description>{project.summary}</Card.Description>{/if}
+							{#if project.status}
+								<Card.Action><Badge variant="secondary">{project.status}</Badge></Card.Action>
+							{/if}
+						</Card.Header>
+						{#each project.thumbnails as src, i (src)}
+							<img
+								{src}
+								alt=""
+								class={[
+									'absolute -bottom-10 aspect-video w-48 rounded-md object-cover shadow-raised',
+									project.thumbnails.length === 1 && 'left-1/2 -translate-x-1/2 rotate-3',
+									project.thumbnails.length === 2 &&
+										(i === 0 ? 'left-1/4 -rotate-6' : 'left-1/2 rotate-3')
+								]}
+							/>
+						{/each}
+					</Card.Root>
+				</a>
+			{/each}
+
+			<button
+				class="flex h-72 cursor-pointer items-center justify-center gap-2 rounded-xl bg-card text-title text-muted-foreground shadow-hairline transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+				onclick={() => newProject()}
 			>
-				<Card.Root class="relative h-72 overflow-hidden transition-shadow hover:shadow-raised">
-					<Card.Header>
-						<Card.Title>{project.name}</Card.Title>
-						{#if project.summary}<Card.Description>{project.summary}</Card.Description>{/if}
-						{#if project.status}
-							<Card.Action><Badge variant="secondary">{project.status}</Badge></Card.Action>
-						{/if}
-					</Card.Header>
-					{#each project.thumbnails as src, i (src)}
-						<img
-							{src}
-							alt=""
-							class={[
-								'absolute -bottom-10 aspect-video w-48 rounded-md object-cover shadow-raised',
-								project.thumbnails.length === 1 && 'left-1/2 -translate-x-1/2 rotate-3',
-								project.thumbnails.length === 2 &&
-									(i === 0 ? 'left-1/4 -rotate-6' : 'left-1/2 rotate-3')
-							]}
-						/>
-					{/each}
-				</Card.Root>
-			</a>
-		{/each}
-
-		<button
-			class="flex h-72 cursor-pointer items-center justify-center gap-2 rounded-xl bg-card text-title text-muted-foreground shadow-hairline transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
-			onclick={() => newProject()}
-		>
-			<Plus class="size-4" />New
-		</button>
+				<Plus class="size-4" />New
+			</button>
+		</div>
 	</main>
-
-	<AiDock reply={workspaceChat.reply} {thinking} {error} bind:draft onsubmit={send} />
 </div>

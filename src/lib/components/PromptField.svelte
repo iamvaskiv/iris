@@ -10,6 +10,7 @@
 		value = $bindable(''),
 		ref = $bindable(null),
 		placeholder,
+		focusedPlaceholder,
 		disabled = false,
 		label,
 		submitLabel = 'Send',
@@ -19,6 +20,8 @@
 		value?: string;
 		ref?: HTMLTextAreaElement | null;
 		placeholder?: string;
+		/** Placeholder shown while the field has focus (the regular one otherwise). */
+		focusedPlaceholder?: string;
 		/** Blocks typing and sending (e.g. while the assistant is thinking) but keeps focus: the field is made read-only
 		 *  rather than disabled, because browsers drop focus from disabled fields. */
 		disabled?: boolean;
@@ -31,6 +34,7 @@
 	} = $props();
 
 	const canSubmit = $derived(!disabled && value.trim().length > 0);
+	let focused = $state(false);
 
 	function submit() {
 		if (canSubmit) onsubmit?.(value);
@@ -73,7 +77,9 @@
 		bind:this={ref}
 		bind:value
 		rows="1"
-		{placeholder}
+		placeholder={focused ? (focusedPlaceholder ?? placeholder) : placeholder}
+		onfocus={() => (focused = true)}
+		onblur={() => (focused = false)}
 		readonly={disabled}
 		aria-disabled={disabled}
 		{onkeydown}
