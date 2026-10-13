@@ -17,6 +17,10 @@ Projects:
 - Pass firstMessage when there is a question to continue inside the new project, and videoId when you know which video it is about.
 - open_project works the same way for existing projects: say where you're taking them.
 
+Deleting projects:
+- Delete a project only when the user asks. Always confirm first: call delete_project without confirmed to see what would be deleted, then ask the user, naming the project ("Delete 'Movie Trailers' and its 3 cards? Its videos stay in Lumiere."). Never confirm on their behalf.
+- Call it with confirmed: true only after the user clearly says yes in their latest message. If the request is ambiguous (several matching projects), ask which one.
+
 Analysis status:
 - Many library videos have never been analysed by Lumiere (list_folder / get_video show \`analysed\`). An unanalysed video has no summary, characters, scenes or transcript, so a project about it has little to work with.
 - Check before offering a project for a video. If it isn't analysed, say so in your offer and suggest uploading the video file into a new project instead (Lumiere analyses uploads automatically, in a few minutes).
@@ -42,6 +46,16 @@ const tools: Anthropic.Tool[] = [
 		}
 	},
 	{
+		name: 'delete_project',
+		description:
+			"Delete a project (its cards and conversation; videos stay in Lumiere). Without confirmed it only describes what would be deleted. Use confirmed: true only after the user said yes.",
+		input_schema: {
+			type: 'object',
+			properties: { id: { type: 'string' }, confirmed: { type: 'boolean' } },
+			required: ['id']
+		}
+	},
+	{
 		name: 'open_project',
 		description: 'Take the user into an existing project.',
 		input_schema: {
@@ -53,7 +67,14 @@ const tools: Anthropic.Tool[] = [
 ];
 
 export type Navigate = { projectId: string; message?: string };
-export type WorkspaceResponse = { text: string; history: unknown[]; navigate?: Navigate; error?: string };
+export type WorkspaceResponse = {
+	text: string;
+	history: unknown[];
+	navigate?: Navigate;
+	/** The project list changed (e.g. a project was deleted). */
+	refresh?: boolean;
+	error?: string;
+};
 
 function describeProjects() {
 	const list = projects.list();
@@ -65,9 +86,30 @@ function describeProjects() {
 	return `Projects, most recently updated first:\n${lines.join('\n')}`;
 }
 
+/**
+ * Projects the assistant asked the user to confirm deleting in its previous reply: any delete_project call
+ * since the last user text message (an unconfirmed one, or a confirmed one that was refused for lack of it).
+ */
+function pendingDeletions(history: Anthropic.MessageParam[]): Set<string> {
+	const isUserText = (m: Anthropic.MessageParam) =>
+		m.role === 'user' && (typeof m.content === 'string' || m.content.some((b) => b.type === 'text'));
+	const lastUser = history.findLastIndex(isUserText);
+	const ids = new Set<string>();
+	for (const m of history.slice(lastUser + 1)) {
+		if (m.role !== 'assistant' || typeof m.content === 'string') continue;
+		for (const b of m.content) {
+			const input = b.type === 'tool_use' ? (b.input as { id?: string; confirmed?: boolean }) : null;
+			if (b.type === 'tool_use' && b.name === 'delete_project' && input?.id) ids.add(input.id);
+		}
+	}
+	return ids;
+}
+
 export async function workspaceChat(message: string, history: Anthropic.MessageParam[]): Promise<WorkspaceResponse> {
 	if (!env.ANTHROPIC_API_KEY) return scripted(message, history);
 	let navigate: Navigate | undefined;
+	let refresh = false;
+	const awaitingConfirmation = pendingDeletions(history);
 
 	async function exec(name: string, input: Record<string, unknown>) {
 		if (libraryTools.some((t) => t.name === name)) return runLibraryTool(name, input);
@@ -85,6 +127,26 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 			navigate = { projectId: project.id, message: firstMessage };
 			return { created: true, id: project.id };
 		}
+		if (name === 'delete_project') {
+			const project = projects.get(input.id as string);
+			if (!project) throw new Error(`No project with id ${input.id}`);
+			// Enforced here, not just in the prompt: deleting needs a confirmation question in the previous reply.
+			if (input.confirmed && !awaitingConfirmation.has(project.id)) {
+				throw new Error(
+					`Not deleted yet. Ask the user to confirm deleting "${project.name}" and wait for their answer; their yes will go through. Don't mention this check.`
+				);
+			}
+			if (!input.confirmed) {
+				return {
+					deleted: false,
+					wouldDelete: { name: project.name, cards: project.cards.length, videos: project.videoIds.length },
+					next: 'Ask the user to confirm. Videos stay in Lumiere.'
+				};
+			}
+			projects.remove(project.id);
+			refresh = true;
+			return { deleted: true, name: project.name };
+		}
 		if (name === 'open_project') {
 			if (!projects.get(input.id as string)) throw new Error(`No project with id ${input.id}`);
 			navigate = { projectId: input.id as string, message: firstMessage };
@@ -95,7 +157,7 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 
 	try {
 		const res = await runLoop({ system: `${SYSTEM}\n\n${describeProjects()}`, tools, history, message, exec });
-		return { ...res, navigate };
+		return { ...res, navigate, refresh };
 	} catch (e) {
 		if (llmUnavailable(e)) return scripted(message, history);
 		throw e;

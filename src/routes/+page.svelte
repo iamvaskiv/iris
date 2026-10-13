@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { Badge, Button, Card } from '@latitudelabs/design-system';
 	import { Plus } from '@latitudelabs/design-system/icons';
 	import AiDock from '#lib/components/AiDock.svelte';
@@ -39,6 +39,7 @@
 			workspaceChat.history = res.history;
 			workspaceChat.reply = res.text;
 			error = res.error ?? '';
+			if (res.refresh) await invalidateAll();
 			if (res.navigate) {
 				// Let the user read where they're being taken before moving.
 				const { projectId, message: question } = res.navigate;

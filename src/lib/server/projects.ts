@@ -60,6 +60,9 @@ export const projects = {
 		write(all);
 		return project;
 	},
+	remove(id: string) {
+		write(read().filter((p) => p.id !== id));
+	},
 	/** Replaces the whole project. Only for freshly created projects; otherwise use `update`. */
 	save(project: Project) {
 		project.updatedAt = new Date().toISOString();
