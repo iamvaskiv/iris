@@ -9,13 +9,22 @@ export const POST: RequestHandler = async ({ request }) => {
 	if (!project) error(404, 'Project not found');
 
 	try {
+		// The agent works on the copy loaded above; the turn can take a while, so its results are merged into
+		// the latest saved copy rather than overwriting it (an upload may have changed cards in the meantime).
 		const res = await chat({ message, project });
-		const last = res.ops.at(-1);
-		if (last) project.focusedId = last.op === 'focus' ? last.id : last.card.id;
-		project.history = res.history;
-		project.reply = res.text;
-		projects.save(project);
-		return json({ ...res, project: { name: project.name, summary: project.summary } });
+		const saved = projects.update(project.id, (latest) => {
+			for (const op of res.ops) {
+				if (op.op === 'add') latest.cards.push(op.card);
+				if (op.op === 'update') latest.cards = latest.cards.map((c) => (c.id === op.card.id ? op.card : c));
+				latest.focusedId = op.op === 'focus' ? op.id : op.card.id;
+			}
+			latest.name = project.name;
+			latest.summary = project.summary;
+			latest.videoIds = [...new Set([...latest.videoIds, ...project.videoIds])];
+			latest.history = res.history;
+			latest.reply = res.text;
+		});
+		return json({ ...res, project: { name: saved!.name, summary: saved!.summary } });
 	} catch (e) {
 		console.error(e);
 		return json({ text: 'Something went wrong on my side.', ops: [], history: project.history, error: String(e) });

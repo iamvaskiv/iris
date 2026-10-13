@@ -23,10 +23,23 @@ const q = (params: Record<string, string | number | boolean | undefined>) => {
 	return str ? `?${str}` : '';
 };
 
+type FolderItem = { id: string; name: string; type: string; [k: string]: unknown };
+
 export const lumiere = {
 	teamId: () => env.LUMIERE_TEAM_ID,
-	listFolder: (folderId = 'ROOT') =>
-		call(`/folders/${folderId}/items${q({ teamId: env.LUMIERE_TEAM_ID, limit: 50 })}`),
+	/** Folder items; videos get `analysed`, since the listing's own processingStatus is always empty. */
+	async listFolder(folderId = 'ROOT') {
+		const res = await call<{ items: FolderItem[] }>(`/folders/${folderId}/items${q({ teamId: env.LUMIERE_TEAM_ID, limit: 50 })}`);
+		await Promise.all(
+			res.items
+				.filter((i) => i.type === 'video')
+				.slice(0, 30)
+				.map(async (i) => (i.analysed = await lumiere.isAnalysed(i.id).catch(() => null)))
+		);
+		return res;
+	},
+	/** Whether Lumiere's AI analysis (summary, entities, scenes, transcript) is available for a video. */
+	isAnalysed: async (id: string) => (await lumiere.video(id)).processingStatus === 'completed',
 	video: (id: string) =>
 		call<{ name: string; summary?: string; duration?: number; processingStatus?: string | null }>(`/videos/${id}`),
 	entities: (id: string, types?: string) => call(`/videos/${id}/entities${q({ types })}`),

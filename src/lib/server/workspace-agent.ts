@@ -15,7 +15,12 @@ Projects:
 - When a request needs that, suggest opening a relevant existing project, or offer to create a new one, and ask. Don't create a project on your own initiative.
 - Create a project only when the user asks for one or agrees to your offer. Then call create_project and tell them in your reply ("Creating 'Women Talking' and taking you there."). The app shows your reply, then moves them into the project.
 - Pass firstMessage when there is a question to continue inside the new project, and videoId when you know which video it is about.
-- open_project works the same way for existing projects: say where you're taking them.`;
+- open_project works the same way for existing projects: say where you're taking them.
+
+Analysis status:
+- Many library videos have never been analysed by Lumiere (list_folder / get_video show \`analysed\`). An unanalysed video has no summary, characters, scenes or transcript, so a project about it has little to work with.
+- Check before offering a project for a video. If it isn't analysed, say so in your offer and suggest uploading the video file into a new project instead (Lumiere analyses uploads automatically, in a few minutes).
+- If the user still wants a project for an unanalysed video, create it with allowUnanalysed: true.`;
 
 const tools: Anthropic.Tool[] = [
 	...libraryTools,
@@ -27,7 +32,11 @@ const tools: Anthropic.Tool[] = [
 			properties: {
 				name: { type: 'string', description: 'Short name, 2-4 words' },
 				videoId: { type: 'string', description: 'Lumiere video to attach, if known' },
-				firstMessage: { type: 'string', description: 'Question to ask the assistant inside the new project' }
+				firstMessage: { type: 'string', description: 'Question to ask the assistant inside the new project' },
+				allowUnanalysed: {
+					type: 'boolean',
+					description: 'Only after telling the user the video has no Lumiere analysis and they still want it'
+				}
 			},
 			required: ['name']
 		}
@@ -64,12 +73,15 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 		if (libraryTools.some((t) => t.name === name)) return runLibraryTool(name, input);
 		const firstMessage = input.firstMessage as string | undefined;
 		if (name === 'create_project') {
-			const project = projects.create(input.name as string);
-			if (input.videoId) {
-				await lumiere.video(input.videoId as string); // validates the id
-				project.videoIds.push(input.videoId as string);
-				projects.save(project);
+			const videoId = input.videoId as string | undefined;
+			// Check first: a project for an unanalysed video has nothing to show.
+			if (videoId && !input.allowUnanalysed && !(await lumiere.isAnalysed(videoId))) {
+				throw new Error(
+					'Not created: this video has not been analysed by Lumiere. Tell the user and suggest uploading the file into a new project; create anyway only if they insist (allowUnanalysed: true).'
+				);
 			}
+			const project = projects.create(input.name as string);
+			if (videoId) projects.update(project.id, (p) => p.videoIds.push(videoId));
 			navigate = { projectId: project.id, message: firstMessage };
 			return { created: true, id: project.id };
 		}

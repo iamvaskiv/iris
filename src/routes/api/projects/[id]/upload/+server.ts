@@ -34,11 +34,12 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		subtitle: 'Uploading…',
 		data: { ...ingestion, phase: 'uploading', progress: 0 }
 	};
-	project.cards.push(card);
-	project.focusedId = card.id;
-	project.status = 'Uploading video…';
-	if (!project.videoIds.includes(ingestion.videoId)) project.videoIds.push(ingestion.videoId);
-	projects.save(project);
+	projects.update(project.id, (latest) => {
+		latest.cards.push(card);
+		latest.focusedId = card.id;
+		latest.status = 'Uploading video…';
+		if (!latest.videoIds.includes(ingestion.videoId)) latest.videoIds.push(ingestion.videoId);
+	});
 	return json(card);
 };
 
@@ -73,17 +74,23 @@ export const GET: RequestHandler = async ({ params, url }) => {
 					? 'processing'
 					: ingestion.status;
 
-	if (status === 'completed') {
-		project.cards = project.cards.filter((c) => c.id !== card.id);
-		if (project.focusedId === card.id) project.focusedId = project.cards.at(-1)?.id;
-		project.status = undefined;
-	} else {
-		const phase = status === 'failed' ? 'failed' : status === 'processing' ? 'processing' : 'uploading';
-		card.data = { ...card.data, phase, progress };
-		card.subtitle =
-			phase === 'failed' ? `Failed: ${errorMessage ?? 'unknown error'}` : phase === 'processing' ? `Analysing… ${progress}%` : 'Uploading…';
-		project.status = phase === 'failed' ? 'Upload failed' : phase === 'processing' ? `Analysing video… ${progress}%` : 'Uploading video…';
-	}
-	projects.save(project);
-	return json({ status, progress, card, videoId: card.data!.videoId, fileName: card.title });
+	const phase = status === 'failed' ? 'failed' : status === 'processing' ? 'processing' : 'uploading';
+	const updated: Card = {
+		...card,
+		data: { ...card.data, phase, progress },
+		subtitle:
+			phase === 'failed' ? `Failed: ${errorMessage ?? 'unknown error'}` : phase === 'processing' ? `Analysing… ${progress}%` : 'Uploading…'
+	};
+	projects.update(project.id, (latest) => {
+		if (status === 'completed') {
+			latest.cards = latest.cards.filter((c) => c.id !== card.id);
+			if (latest.focusedId === card.id) latest.focusedId = latest.cards.at(-1)?.id;
+			latest.status = undefined;
+		} else {
+			latest.cards = latest.cards.map((c) => (c.id === card.id ? updated : c));
+			latest.status =
+				phase === 'failed' ? 'Upload failed' : phase === 'processing' ? `Analysing video… ${progress}%` : 'Uploading video…';
+		}
+	});
+	return json({ status, progress, card: updated, videoId: card.data!.videoId, fileName: card.title });
 };

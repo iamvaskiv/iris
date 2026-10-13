@@ -46,6 +46,21 @@ export const projects = {
 		write([...read(), project]);
 		return project;
 	},
+	/**
+	 * Applies `change` to the latest saved copy and writes it back. Read, change and write happen synchronously,
+	 * so concurrent requests (a chat turn and an upload poll) can't overwrite each other's edits.
+	 * Do any awaiting before calling this, never inside `change`.
+	 */
+	update(id: string, change: (project: Project) => void): Project | undefined {
+		const all = read();
+		const project = all.find((p) => p.id === id);
+		if (!project) return undefined;
+		change(project);
+		project.updatedAt = new Date().toISOString();
+		write(all);
+		return project;
+	},
+	/** Replaces the whole project. Only for freshly created projects; otherwise use `update`. */
 	save(project: Project) {
 		project.updatedAt = new Date().toISOString();
 		write(read().map((p) => (p.id === project.id ? project : p)));

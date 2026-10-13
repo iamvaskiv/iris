@@ -33,7 +33,8 @@ Projects:
 Data:
 - Use the project's videos unless the user picks another. You can browse the team's folders with list_folder.
 - Always fetch data with tools before answering; never invent characters, quotes or timestamps.
-- If data is missing (e.g. an empty transcript), say so briefly and offer what is available instead.`;
+- If data is missing (e.g. an empty transcript), say so briefly and offer what is available instead.
+- Before attaching or analysing a library video, check that it's analysed (list_folder / get_video show \`analysed\`). If it isn't, say so up front: Lumiere only analyses videos uploaded through the app or API, so the user can upload the file here to get a full analysis.`;
 
 function describeProject(p: Project) {
 	const videos = p.videoIds.length ? p.videoIds.join(', ') : 'none yet';
@@ -69,7 +70,8 @@ const itemsSchema = {
 export const libraryTools: Anthropic.Tool[] = [
 	{
 		name: 'list_folder',
-		description: "List folders and videos in the team's Lumiere library. Use folderId 'ROOT' for the top level.",
+		description:
+			"List folders and videos in the team's Lumiere library. Use folderId 'ROOT' for the top level. Videos have `analysed`: false means Lumiere has no AI analysis for it (no summary, entities, scenes or transcript).",
 		input_schema: { type: 'object', properties: { folderId: { type: 'string' } } }
 	},
 	{
@@ -119,8 +121,10 @@ export async function runLibraryTool(name: string, input: Record<string, unknown
 	switch (name) {
 		case 'list_folder':
 			return lumiere.listFolder(input.folderId as string);
-		case 'get_video':
-			return lumiere.video(id!);
+		case 'get_video': {
+			const video = await lumiere.video(id!);
+			return { ...video, analysed: video.processingStatus === 'completed' };
+		}
 		case 'get_entities':
 			return lumiere.entities(id!, input.types as string);
 		case 'get_chapters':
@@ -232,10 +236,13 @@ async function runTool(name: string, input: Record<string, unknown>, { project, 
 			if (input.name) project.name = input.name as string;
 			if (input.summary) project.summary = input.summary as string;
 			return { updated: true };
-		case 'add_video':
-			await lumiere.video(id); // validates the id
+		case 'add_video': {
+			const analysed = await lumiere.isAnalysed(id); // also validates the id
 			if (!project.videoIds.includes(id)) project.videoIds.push(id);
-			return { added: true, videoIds: project.videoIds };
+			return analysed
+				? { added: true, analysed, videoIds: project.videoIds }
+				: { added: true, analysed, note: 'Not analysed: tell the user there is no summary, entities, scenes or transcript for it.' };
+		}
 		default:
 			throw new Error(`Unknown tool ${name}`);
 	}
