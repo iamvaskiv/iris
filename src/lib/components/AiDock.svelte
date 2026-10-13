@@ -6,7 +6,8 @@
 </script>
 
 <script lang="ts">
-	import { ChatMessage, PromptInput } from '@latitudelabs/design-system';
+	import { ChatMessage } from '@latitudelabs/design-system';
+	import PromptField from './PromptField.svelte';
 	import Orb from './Orb.svelte';
 	import { onMount } from 'svelte';
 	import { loadOrbVariant, orbVariant } from '#lib/orb-variant.svelte.js';
@@ -37,7 +38,36 @@
 		onsubmit
 	}: Props = $props();
 
-	let input = $state<HTMLInputElement | null>(null);
+	let input = $state<HTMLTextAreaElement | null>(null);
+
+	// Keep the conversation going without re-clicking: if the field had focus when a message was sent, and the user
+	// hasn't moved focus elsewhere since, refocus it when the dock swaps layouts (empty project → bottom panel creates
+	// a new field). Within one layout the field stays focused anyway (it's read-only, not disabled, while thinking).
+	let keepFocus = false;
+	function send(message: string) {
+		keepFocus = document.activeElement === input;
+		onsubmit(message);
+	}
+	$effect(() => {
+		if (input && keepFocus && document.activeElement !== input)
+			input.focus({ preventScroll: true });
+	});
+	$effect(() => {
+		const onfocusmove = (e: FocusEvent) => {
+			if (e.target !== input) keepFocus = false;
+		};
+		window.addEventListener('focusin', onfocusmove);
+		return () => window.removeEventListener('focusin', onfocusmove);
+	});
+
+	/** A subtle pop of the whole dock when its input gets focus (click, Tab or Enter). */
+	function onfocusin(e: FocusEvent) {
+		if (e.target !== input) return;
+		const dock = e.currentTarget as HTMLElement;
+		dock.classList.remove('dock-pop');
+		void dock.offsetWidth; // reflow, so the animation restarts on every focus
+		dock.classList.add('dock-pop');
+	}
 	onMount(loadOrbVariant);
 
 	// The orb reacts to the conversation: thinking while waiting, a pop and a livelier swirl when a message lands.
@@ -80,7 +110,7 @@
 			el.closest('input, textarea, select, button, a, [contenteditable], [role=button]')
 		)
 			return;
-		if (!input || input.disabled) return;
+		if (!input || thinking) return;
 		e.preventDefault();
 		input.focus();
 	}
@@ -114,6 +144,7 @@
 	<div
 		data-dock
 		bind:offsetHeight={height}
+		{onfocusin}
 		class="fixed top-1/2 left-1/2 flex w-full max-w-md -translate-1/2 flex-col items-center gap-8 px-4"
 		style:view-transition-name="jinn-dock"
 	>
@@ -125,12 +156,19 @@
 			transitionName="jinn-avatar"
 		/>
 		<p class="text-center text-heading" aria-live="polite">{@render message()}</p>
-		<PromptInput bind:ref={input} bind:value={draft} {placeholder} disabled={thinking} {onsubmit} />
+		<PromptField
+			bind:ref={input}
+			bind:value={draft}
+			{placeholder}
+			disabled={thinking}
+			onsubmit={send}
+		/>
 	</div>
 {:else}
 	<div
 		data-dock
 		bind:offsetHeight={height}
+		{onfocusin}
 		class="fixed bottom-8 left-1/2 flex w-full max-w-md -translate-x-1/2 flex-col gap-5 rounded-xl bg-card p-2 shadow-raised"
 		style:view-transition-name="jinn-dock"
 	>
@@ -157,7 +195,13 @@
 				</div>
 			</div>
 		</div>
-		<PromptInput bind:ref={input} bind:value={draft} {placeholder} disabled={thinking} {onsubmit} />
+		<PromptField
+			bind:ref={input}
+			bind:value={draft}
+			{placeholder}
+			disabled={thinking}
+			onsubmit={send}
+		/>
 	</div>
 {/if}
 
@@ -186,9 +230,20 @@
 			opacity: 0.45;
 		}
 	}
+	/* Focusing the input: a subtle pop of the whole box. Uses `scale`, not `transform`, so it doesn't fight the
+	   translate that positions the dock. Added from script, hence :global. */
+	:global([data-dock].dock-pop) {
+		animation: dock-pop 380ms cubic-bezier(0.33, 1, 0.68, 1); /* gentle ease-out, no overshoot */
+	}
+	@keyframes dock-pop {
+		40% {
+			scale: 1.01;
+		}
+	}
 	@media (prefers-reduced-motion: reduce) {
 		.reveal-word,
-		.thinking {
+		.thinking,
+		:global([data-dock].dock-pop) {
 			animation: none;
 		}
 	}
