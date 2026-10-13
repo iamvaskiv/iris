@@ -53,14 +53,7 @@
 <svelte:head><title>Projects · Jinn</title></svelte:head>
 
 <div class="min-h-dvh bg-background">
-	<AppHeader
-		crumbs={[{ label: 'Jinn' }, { label: 'Projects' }]}
-		nav={[
-			{ label: 'New', onclick: () => newProject() },
-			{ label: 'Assets', href: '/assets' },
-			{ label: 'Settings', href: '/settings' }
-		]}
-	/>
+	<AppHeader />
 
 	<main class="mx-auto mt-12 grid w-full max-w-[970px] grid-cols-1 gap-8 px-4 pb-56 sm:grid-cols-2">
 		{#each data.projects as project (project.id)}

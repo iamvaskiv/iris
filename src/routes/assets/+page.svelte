@@ -27,7 +27,7 @@
 <svelte:head><title>Assets · Jinn</title></svelte:head>
 
 <div class="min-h-dvh bg-background">
-	<AppHeader crumbs={[{ label: 'Projects', href: '/' }, { label: 'Assets' }]} />
+	<AppHeader />
 
 	<main class="mx-auto mt-12 flex w-full max-w-[970px] flex-col gap-4 px-4 pb-16">
 		<h1 class="text-heading">Assets</h1>

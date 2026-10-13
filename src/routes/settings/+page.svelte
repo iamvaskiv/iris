@@ -33,7 +33,7 @@
 <svelte:head><title>Settings · Jinn</title></svelte:head>
 
 <div class="min-h-dvh bg-background">
-	<AppHeader crumbs={[{ label: 'Projects', href: '/' }, { label: 'Settings' }]} />
+	<AppHeader />
 
 	<main class="mx-auto mt-12 flex w-full max-w-[640px] flex-col gap-4 px-4">
 		<h1 class="text-heading">Settings</h1>

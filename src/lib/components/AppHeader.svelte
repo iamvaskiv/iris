@@ -1,9 +1,22 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { Breadcrumb, Button, cn } from '@latitudelabs/design-system';
+	import { newProject } from '#lib/new-project.js';
 
 	type Crumb = { label: string; href?: string };
-	type NavItem = { label: string; href?: string; onclick?: () => void };
-	let { crumbs, nav = [], class: className }: { crumbs: Crumb[]; nav?: NavItem[]; class?: string } = $props();
+	/**
+	 * Workspace pages (no `crumbs`): "Jinn" on the left and the app nav, with the current page selected.
+	 * Inside a project: pass `crumbs` for "Projects / name" and no nav.
+	 */
+	let { crumbs, class: className }: { crumbs?: Crumb[]; class?: string } = $props();
+
+	const nav = [
+		{ label: 'New', onclick: () => newProject() },
+		{ label: 'Projects', href: '/' },
+		{ label: 'Assets', href: '/assets' },
+		{ label: 'Settings', href: '/settings' }
+	];
+	const isCurrent = (href?: string) => href !== undefined && page.url.pathname === href;
 
 	// Progressive blur: stacked backdrop blurs, each masked to fade out sooner than the last, so content scrolling
 	// under the header is most blurred at the top edge and clear at the bottom. No background colour.
@@ -28,26 +41,44 @@
 			></div>
 		{/each}
 	</div>
-	<Breadcrumb.Root>
-		<Breadcrumb.List>
-			{#each crumbs as crumb, i (i)}
-				{#if i > 0}<Breadcrumb.Separator>/</Breadcrumb.Separator>{/if}
-				<Breadcrumb.Item>
-					{#if crumb.href}
-						<Breadcrumb.Link href={crumb.href}>{crumb.label}</Breadcrumb.Link>
-					{:else}
-						<Breadcrumb.Page>{crumb.label}</Breadcrumb.Page>
-					{/if}
-				</Breadcrumb.Item>
-			{/each}
-		</Breadcrumb.List>
-	</Breadcrumb.Root>
-	<!-- Fixed height (one button tall) so the breadcrumb sits at the same spot with or without nav items. -->
+	{#if crumbs}
+		<Breadcrumb.Root>
+			<Breadcrumb.List>
+				{#each crumbs as crumb, i (i)}
+					{#if i > 0}<Breadcrumb.Separator>/</Breadcrumb.Separator>{/if}
+					<Breadcrumb.Item>
+						{#if crumb.href}
+							<Breadcrumb.Link href={crumb.href}>{crumb.label}</Breadcrumb.Link>
+						{:else}
+							<Breadcrumb.Page>{crumb.label}</Breadcrumb.Page>
+						{/if}
+					</Breadcrumb.Item>
+				{/each}
+			</Breadcrumb.List>
+		</Breadcrumb.Root>
+	{:else}
+		<!-- Placeholder for the logo. -->
+		<a
+			href="/"
+			class="rounded-sm text-title outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+			>Jinn</a
+		>
+	{/if}
+	<!-- Fixed height (one button tall) so the left side sits at the same spot with or without nav items. -->
 	<nav class="flex h-9 items-center gap-1" aria-label="App">
-		{#each nav as item (item.label)}
-			<Button variant="ghost" href={item.href} onclick={item.onclick} class="text-title text-muted-foreground">
-				{item.label}
-			</Button>
-		{/each}
+		{#if !crumbs}
+			{#each nav as item (item.label)}
+				{@const current = isCurrent(item.href)}
+				<Button
+					variant="ghost"
+					href={item.href}
+					onclick={item.onclick}
+					aria-current={current ? 'page' : undefined}
+					class={['text-title', current ? 'text-foreground' : 'text-muted-foreground']}
+				>
+					{item.label}
+				</Button>
+			{/each}
+		{/if}
 	</nav>
 </header>
