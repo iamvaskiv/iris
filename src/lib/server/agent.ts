@@ -9,7 +9,7 @@ const MAX_STEPS = 8;
 const SYSTEM = `You are Lumi, the assistant inside a video intelligence platform backed by Lumiere.
 
 How the interface works (important):
-- The user only sees your LATEST text reply, in a small bubble above the input at the bottom of the screen. Keep it to one or two short, friendly sentences.
+- The user only sees your LATEST text reply, in a small bubble above the input at the bottom of the screen. Keep it to one or two short, friendly sentences. Plain text only: no markdown, no bullet lists, no headings. For many items, give the count and name a few ("Seven trailers, including House Party and Women Talking.").
 - The center of the screen holds cards: visual answers that stay on screen. One card at a time is in focus; the others are dimmed.
 
 Choosing how to answer, in this order:
@@ -65,7 +65,8 @@ const itemsSchema = {
 	}
 };
 
-const tools: Anthropic.Tool[] = [
+/** Read-only Lumiere tools, shared with the projects-level assistant. */
+export const libraryTools: Anthropic.Tool[] = [
 	{
 		name: 'list_folder',
 		description: "List folders and videos in the team's Lumiere library. Use folderId 'ROOT' for the top level.",
@@ -109,7 +110,31 @@ const tools: Anthropic.Tool[] = [
 		name: 'get_transcript',
 		description: 'Diarized transcript: utterances with time, speaker and speakerEntityId.',
 		input_schema: { type: 'object', properties: { videoId: { type: 'string' } }, required: ['videoId'] }
-	},
+	}
+];
+
+export async function runLibraryTool(name: string, input: Record<string, unknown>, defaultVideoId?: string) {
+	const id = (input.videoId as string) ?? defaultVideoId;
+	if (name !== 'list_folder' && !id) throw new Error('No video given.');
+	switch (name) {
+		case 'list_folder':
+			return lumiere.listFolder(input.folderId as string);
+		case 'get_video':
+			return lumiere.video(id!);
+		case 'get_entities':
+			return lumiere.entities(id!, input.types as string);
+		case 'get_chapters':
+			return lumiere.chapters(id!);
+		case 'get_moments':
+			return lumiere.moments(id!, input.granularity as string);
+		case 'get_transcript':
+			return lumiere.transcript(id!);
+	}
+	return undefined;
+}
+
+const tools: Anthropic.Tool[] = [
+	...libraryTools,
 	{
 		name: 'show_card',
 		description: `Add a NEW card for a subject no existing card covers. It becomes the focused card. Types:
@@ -185,19 +210,8 @@ async function runTool(name: string, input: Record<string, unknown>, { project, 
 		if (!card) throw new Error(`No card with id ${input.id}. Cards: ${project.cards.map((c) => c.id).join(', ')}`);
 		return card;
 	};
+	if (libraryTools.some((t) => t.name === name)) return runLibraryTool(name, input, id);
 	switch (name) {
-		case 'list_folder':
-			return lumiere.listFolder(input.folderId as string);
-		case 'get_video':
-			return lumiere.video(id);
-		case 'get_entities':
-			return lumiere.entities(id, input.types as string);
-		case 'get_chapters':
-			return lumiere.chapters(id);
-		case 'get_moments':
-			return lumiere.moments(id, input.granularity as string);
-		case 'get_transcript':
-			return lumiere.transcript(id);
 		case 'show_card': {
 			const card = await makeCard(input as unknown as CardInput);
 			project.cards.push(card);
@@ -236,28 +250,40 @@ export async function chat(req: ChatRequest): Promise<ChatResponse> {
 		return await agent(req);
 	} catch (e) {
 		// No working LLM (bad key, missing workspace id…): keep the prototype usable.
-		if (e instanceof Anthropic.APIError && (e.status === 400 || e.status === 401 || e.status === 403)) {
-			console.warn('Anthropic unavailable, using scripted mode:', e.message);
+		if (llmUnavailable(e)) {
+			console.warn('Anthropic unavailable, using scripted mode:', String(e));
 			return scripted(req);
 		}
 		throw e;
 	}
 }
 
-async function agent({ message, project }: ChatRequest): Promise<ChatResponse> {
+/** Whether an error means "no usable LLM" (bad key, missing workspace id…), so callers can fall back. */
+export const llmUnavailable = (e: unknown) =>
+	e instanceof Anthropic.APIError && (e.status === 400 || e.status === 401 || e.status === 403);
+
+/** Runs the model with tools until it answers in text. */
+export async function runLoop(opts: {
+	system: string;
+	tools: Anthropic.Tool[];
+	history: Anthropic.MessageParam[];
+	message: string;
+	exec: (name: string, input: Record<string, unknown>) => Promise<unknown>;
+}): Promise<{ text: string; history: Anthropic.MessageParam[] }> {
 	const client = new Anthropic({
 		apiKey: env.ANTHROPIC_API_KEY,
 		defaultHeaders: env.ANTHROPIC_WORKSPACE_ID ? { 'anthropic-workspace-id': env.ANTHROPIC_WORKSPACE_ID } : undefined
 	});
-	const messages: Anthropic.MessageParam[] = [
-		...(project.history as Anthropic.MessageParam[]),
-		{ role: 'user', content: message }
-	];
-	const turn: Turn = { project, ops: [] };
-	const system = `${SYSTEM}\n\n${describeProject(project)}\n${describeCards(project.cards, project.focusedId)}`;
+	const messages: Anthropic.MessageParam[] = [...opts.history, { role: 'user', content: opts.message }];
 
 	for (let step = 0; step < MAX_STEPS; step++) {
-		const res = await client.messages.create({ model: MODEL, max_tokens: 4096, system, tools, messages });
+		const res = await client.messages.create({
+			model: MODEL,
+			max_tokens: 4096,
+			system: opts.system,
+			tools: opts.tools,
+			messages
+		});
 		messages.push({ role: 'assistant', content: res.content });
 
 		const toolUses = res.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
@@ -267,13 +293,13 @@ async function agent({ message, project }: ChatRequest): Promise<ChatResponse> {
 				.map((b) => b.text)
 				.join('\n')
 				.trim();
-			return { text, ops: turn.ops, history: messages };
+			return { text, history: messages };
 		}
 
 		const results: Anthropic.ToolResultBlockParam[] = [];
 		for (const use of toolUses) {
 			try {
-				const out = await runTool(use.name, use.input as Record<string, unknown>, turn);
+				const out = await opts.exec(use.name, use.input as Record<string, unknown>);
 				results.push({ type: 'tool_result', tool_use_id: use.id, content: JSON.stringify(out).slice(0, 40_000) });
 			} catch (e) {
 				results.push({ type: 'tool_result', tool_use_id: use.id, content: String(e), is_error: true });
@@ -281,7 +307,19 @@ async function agent({ message, project }: ChatRequest): Promise<ChatResponse> {
 		}
 		messages.push({ role: 'user', content: results });
 	}
-	return { text: 'That took more steps than I expected. Try asking again?', ops: turn.ops, history: messages };
+	return { text: 'That took more steps than I expected. Try asking again?', history: messages };
+}
+
+async function agent({ message, project }: ChatRequest): Promise<ChatResponse> {
+	const turn: Turn = { project, ops: [] };
+	const { text, history } = await runLoop({
+		system: `${SYSTEM}\n\n${describeProject(project)}\n${describeCards(project.cards, project.focusedId)}`,
+		tools,
+		history: project.history as Anthropic.MessageParam[],
+		message,
+		exec: (name, input) => runTool(name, input, turn)
+	});
+	return { text, ops: turn.ops, history };
 }
 
 /** Keyword-based stand-in for the LLM so the UI can be tried without an Anthropic key. Uses real Lumiere data. */

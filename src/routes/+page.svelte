@@ -4,19 +4,51 @@
 	import { Plus } from '@latitudelabs/design-system/icons';
 	import AiDock from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
+	import { workspaceChat, type WorkspaceResponse } from '#lib/workspace-chat.svelte.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 	let creating = $state(false);
+	let thinking = $state(false);
+	let error = $state('');
+	let draft = $state('');
 
 	const hour = new Date().getHours();
 	const greeting = hour < 12 ? 'Good morning!' : hour < 18 ? 'Good afternoon!' : 'Good evening!';
 
-	/** Starts a project; an optional first question is asked as soon as it opens. */
-	async function newProject(question?: string) {
+	const openProject = (id: string, question?: string) =>
+		goto(question ? `/projects/${id}?q=${encodeURIComponent(question)}` : `/projects/${id}`);
+
+	async function newProject() {
 		creating = true;
 		const { id } = await fetch('/api/projects', { method: 'POST' }).then((r) => r.json());
-		await goto(question ? `/projects/${id}?q=${encodeURIComponent(question)}` : `/projects/${id}`);
+		await openProject(id);
+	}
+
+	/** Chat at the projects level: quick answers above the input; the assistant creates/opens projects only when asked. */
+	async function send(message: string) {
+		draft = '';
+		error = '';
+		thinking = true;
+		try {
+			const res: WorkspaceResponse = await fetch('/api/workspace', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ message, history: workspaceChat.history })
+			}).then((r) => r.json());
+			workspaceChat.history = res.history;
+			workspaceChat.reply = res.text;
+			error = res.error ?? '';
+			if (res.navigate) {
+				// Let the user read where they're being taken before moving.
+				const { projectId, message: question } = res.navigate;
+				setTimeout(() => openProject(projectId, question), 1500);
+			}
+		} catch (e) {
+			error = String(e);
+		} finally {
+			thinking = false;
+		}
 	}
 </script>
 
@@ -60,5 +92,5 @@
 		</button>
 	</main>
 
-	<AiDock reply={greeting} thinking={creating} onsubmit={newProject} />
+	<AiDock reply={workspaceChat.reply || greeting} thinking={thinking || creating} {error} bind:draft onsubmit={send} />
 </div>
