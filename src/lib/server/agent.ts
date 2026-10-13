@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import * as env from '$app/env/private';
 import { lumiere } from './lumiere.js';
 import { settings } from './settings.js';
+import { describeAssets, listAssets } from './assets.js';
 import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
 const MODEL = 'claude-sonnet-5-5';
@@ -36,11 +37,12 @@ Card rules:
 Projects:
 - Every conversation lives in a project (shown as a tile on the projects page). Its details are below.
 - After the first real exchange, give the project a short name (2-4 words) with update_project. Keep its summary as one plain sentence with the current key takeaway, and refresh it when a new finding replaces the old one. Don't mention these updates in your reply.
-- If the project has no video yet, suggest dropping one onto the page to upload it${library ? ', or picking one from the video library (list_folder) to attach with add_video' : ''}.
+- The user's own videos (assets, listed below) can be used in any project. When they mention a video they already have, attach it with add_video instead of asking them to upload it again. To compare videos, attach each one.
+- If the project has no video yet and none of their videos fits, suggest dropping one onto the page to upload it${library ? ', or picking one from the video library (list_folder)' : ''}.
 - When the user says a video finished uploading, fetch its summary, entities, chapters and transcript, then show a video card for it plus at most one more card with the analysis.
 
 Data:
-- Work with the project's videos${library ? ' unless the user picks one from the video library' : ' only'}.
+- Work with the project's videos and the user's other videos${library ? ', or a video from the video library' : ''}.
 - Always fetch data with tools before answering; never invent characters, quotes or timestamps.
 - If data is missing (e.g. an empty transcript), say so briefly and offer what is available instead.${library ? `\n\n${LIBRARY}` : ''}`;
 }
@@ -196,13 +198,13 @@ const allTools: Anthropic.Tool[] = [
 	},
 	{
 		name: 'add_video',
-		description: 'Attach a video from the video library to the project.',
+		description: "Attach one of the user's videos (assets) to the project" + ' (or, with library access, a video library video).',
 		input_schema: { type: 'object', properties: { videoId: { type: 'string' } }, required: ['videoId'] }
 	}
 ];
 
 /** Library-only tools; without library access the assistants only see videos in the user's projects. */
-export const LIBRARY_ONLY = ['list_folder', 'add_video'];
+export const LIBRARY_ONLY = ['list_folder'];
 const toolsFor = (library: boolean) => (library ? allTools : allTools.filter((t) => !LIBRARY_ONLY.includes(t.name)));
 
 type CardInput = Omit<Card, 'id' | 'data'> & { videoId?: string };
@@ -217,13 +219,15 @@ async function makeCard(input: CardInput): Promise<Card> {
 	return card;
 }
 
-type Turn = { project: Project; ops: CardOp[]; library: boolean };
+type Turn = { project: Project; ops: CardOp[]; library: boolean; assetIds: Set<string> };
 
-async function runTool(name: string, input: Record<string, unknown>, { project, ops, library }: Turn): Promise<unknown> {
+async function runTool(name: string, input: Record<string, unknown>, turn: Turn): Promise<unknown> {
+	const { project, ops, library, assetIds } = turn;
 	const id = (input.videoId as string) ?? project.videoIds[0];
 	if (!library && LIBRARY_ONLY.includes(name)) throw new Error(`Unknown tool ${name}`);
-	if (!library && name.startsWith('get_') && id && !project.videoIds.includes(id)) {
-		throw new Error('That video is not in this project.');
+	// Without library access, only the user's own videos (assets) are reachable.
+	if (!library && (name.startsWith('get_') || name === 'add_video') && id && !assetIds.has(id) && !project.videoIds.includes(id)) {
+		throw new Error("That video isn't one of the user's videos.");
 	}
 	if (name.startsWith('get_') && !id) throw new Error('The project has no video yet.');
 	const find = () => {
@@ -336,9 +340,10 @@ export async function runLoop(opts: {
 
 async function agent({ message, project }: ChatRequest): Promise<ChatResponse> {
 	const { libraryAccess: library } = settings.get();
-	const turn: Turn = { project, ops: [], library };
+	const assets = await listAssets();
+	const turn: Turn = { project, ops: [], library, assetIds: new Set(assets.map((a) => a.id)) };
 	const { text, history } = await runLoop({
-		system: `${systemPrompt(library)}\n\n${describeProject(project)}\n${describeCards(project.cards, project.focusedId)}`,
+		system: `${systemPrompt(library)}\n\n${describeProject(project)}\n${describeAssets(assets)}\n${describeCards(project.cards, project.focusedId)}`,
 		tools: toolsFor(library),
 		history: project.history as Anthropic.MessageParam[],
 		message,

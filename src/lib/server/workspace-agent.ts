@@ -4,20 +4,21 @@ import { BRAND, LIBRARY, LIBRARY_ONLY, libraryTools, llmUnavailable, runLibraryT
 import { lumiere } from './lumiere.js';
 import { projects } from './projects.js';
 import { settings } from './settings.js';
+import { describeAssets, listAssets } from './assets.js';
 
 function systemPrompt(library: boolean) {
 	return `${BRAND}
 
 Where you are: the PROJECTS page (workspace level), not inside a project.
 - The user sees a grid of their projects and your latest reply in a small bubble above the input. There are no cards here.
-- Reply in one or two short, friendly sentences. Plain text only: no markdown, no bullet lists, no headings. For many items, give the count and name a few ("Four projects, including Women Talking and Inside Out 2."). Answer quick questions directly about their projects and the videos in them (you can read each project video's analysis).
+- Reply in one or two short, friendly sentences. Plain text only: no markdown, no bullet lists, no headings. For many items, give the count and name a few ("Four projects, including Women Talking and Inside Out 2."). Answer quick questions directly about their projects and their videos (assets, listed below; you can read each one's analysis).
 
 Projects:
 - Deep work on a video (cards, analysis, quotes, comparisons) happens inside a project.
 - New videos get into Jinn by uploading them inside a project (drop the file onto the project page).
 - When a request needs that, suggest opening a relevant existing project, or offer to create a new one, and ask. Don't create a project on your own initiative.
 - Create a project only when the user asks for one or agrees to your offer. Then call create_project and tell them in your reply ("Creating 'Women Talking' and taking you there."). The app shows your reply, then moves them into the project.
-- Pass firstMessage when there is a question to continue inside the new project${library ? ', and videoId when it is about a video from the video library' : ''}.
+- Pass firstMessage when there is a question to continue inside the new project, and videoIds for the videos it's about: any of the user's videos${library ? ' or video library videos' : ''}. Never ask them to upload a video they already have.
 - open_project works the same way for existing projects: say where you're taking them.
 
 Deleting projects:
@@ -38,7 +39,11 @@ const allTools: Anthropic.Tool[] = [
 			type: 'object',
 			properties: {
 				name: { type: 'string', description: 'Short name, 2-4 words' },
-				videoId: { type: 'string', description: 'Video library video to attach (library access only)' },
+				videoIds: {
+					type: 'array',
+					items: { type: 'string' },
+					description: "Videos to attach: the user's videos (assets), or video library videos with library access"
+				},
 				firstMessage: { type: 'string', description: 'Question to ask the assistant inside the new project' },
 				allowUnanalysed: {
 					type: 'boolean',
@@ -71,14 +76,8 @@ const allTools: Anthropic.Tool[] = [
 
 function toolsFor(library: boolean): Anthropic.Tool[] {
 	if (library) return allTools;
-	// Without library access: no browsing, and create_project can't attach library videos.
-	return allTools
-		.filter((t) => !LIBRARY_ONLY.includes(t.name))
-		.map((t) => {
-			if (t.name !== 'create_project') return t;
-			const { videoId: _v, allowUnanalysed: _a, ...properties } = t.input_schema.properties as Record<string, unknown>;
-			return { ...t, input_schema: { ...t.input_schema, properties } };
-		});
+	// Without library access: no browsing; the user's own videos stay available.
+	return allTools.filter((t) => !LIBRARY_ONLY.includes(t.name));
 }
 
 export type Navigate = { projectId: string; message?: string };
@@ -126,26 +125,28 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 	let refresh = false;
 	const awaitingConfirmation = pendingDeletions(history);
 	const { libraryAccess: library } = settings.get();
-	const projectVideos = new Set(projects.list().flatMap((p) => p.videoIds));
+	const assets = await listAssets();
+	const assetIds = new Set(assets.map((a) => a.id));
 
 	async function exec(name: string, input: Record<string, unknown>) {
 		if (libraryTools.some((t) => t.name === name)) {
-			if (!library && (LIBRARY_ONLY.includes(name) || !projectVideos.has(input.videoId as string))) {
-				throw new Error('That video is not in any of the user\'s projects.');
+			if (!library && (LIBRARY_ONLY.includes(name) || !assetIds.has(input.videoId as string))) {
+				throw new Error("That video isn't one of the user's videos.");
 			}
 			return runLibraryTool(name, input);
 		}
 		const firstMessage = input.firstMessage as string | undefined;
 		if (name === 'create_project') {
-			const videoId = library ? (input.videoId as string | undefined) : undefined;
+			const videoIds = ((input.videoIds as string[] | undefined) ?? []).filter((id) => library || assetIds.has(id));
 			// Check first: a project for an unanalysed video has nothing to show.
-			if (videoId && !input.allowUnanalysed && !(await lumiere.isAnalysed(videoId))) {
+			const unanalysed = await Promise.all(videoIds.map(async (id) => !(await lumiere.isAnalysed(id))));
+			if (unanalysed.some(Boolean) && !input.allowUnanalysed) {
 				throw new Error(
 					'Not created: this video has no analysis. Tell the user and suggest uploading the file into a new project; create anyway only if they insist (allowUnanalysed: true).'
 				);
 			}
 			const project = projects.create(input.name as string);
-			if (videoId) projects.update(project.id, (p) => p.videoIds.push(videoId));
+			if (videoIds.length) projects.update(project.id, (p) => p.videoIds.push(...videoIds));
 			navigate = { projectId: project.id, message: firstMessage };
 			return { created: true, id: project.id };
 		}
@@ -179,7 +180,7 @@ export async function workspaceChat(message: string, history: Anthropic.MessageP
 
 	try {
 		const res = await runLoop({
-			system: `${systemPrompt(library)}\n\n${describeProjects()}`,
+			system: `${systemPrompt(library)}\n\n${describeProjects()}\n${describeAssets(assets)}`,
 			tools: toolsFor(library),
 			history,
 			message,
