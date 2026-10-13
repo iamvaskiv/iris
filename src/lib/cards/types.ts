@@ -13,11 +13,14 @@ export type CardItem = {
 
 export type Card = {
 	id: string;
-	type: 'video' | 'list' | 'quotes' | 'text' | 'upload' | (string & {});
+	type: 'video' | 'list' | 'quotes' | 'table' | 'text' | 'upload' | (string & {});
 	title: string;
 	subtitle?: string;
 	body?: string;
 	items?: CardItem[];
+	/** Table cards: column headings and rows of cells (first column labels the row). */
+	columns?: string[];
+	rows?: (string | number)[][];
 	/** Free-form extras, e.g. `videoId` and `streamUrl` for video cards. */
 	data?: Record<string, unknown>;
 };

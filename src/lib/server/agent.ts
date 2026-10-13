@@ -58,10 +58,21 @@ function describeCards(cards: Card[], focusedId?: string) {
 	const lines = cards.map((c) => {
 		const items = c.items?.length ? ` | items: ${c.items.map((i) => i.title).join('; ').slice(0, 300)}` : '';
 		const body = c.body ? ` | body: ${c.body.slice(0, 150)}` : '';
-		return `- [${c.id}] ${c.type} "${c.title}"${c.subtitle ? ` (${c.subtitle})` : ''}${c.id === focusedId ? ' (in focus)' : ''}${items}${body}`;
+		const table = c.columns?.length
+			? ` | columns: ${c.columns.join(', ')} | rows: ${(c.rows ?? []).map((r) => r[0]).join('; ').slice(0, 300)}`
+			: '';
+		return `- [${c.id}] ${c.type} "${c.title}"${c.subtitle ? ` (${c.subtitle})` : ''}${c.id === focusedId ? ' (in focus)' : ''}${items}${table}${body}`;
 	});
 	return `Cards on screen, oldest first:\n${lines.join('\n')}`;
 }
+
+/** Card types the assistant can create (upload cards are the app's own). */
+const CARD_TYPES = ['video', 'list', 'quotes', 'table', 'text'];
+
+const tableSchema = {
+	columns: { type: 'array', items: { type: 'string' } },
+	rows: { type: 'array', items: { type: 'array', items: { type: ['string', 'number'] } } }
+};
 
 const itemsSchema = {
 	type: 'array',
@@ -156,16 +167,18 @@ const allTools: Anthropic.Tool[] = [
 - "video": a video preview with its summary. Pass videoId; the player is added for you. Use body for a short summary.
 - "list": a list of things (characters, scenes, themes, brands...). Fill items with title/subtitle/description and time (seconds) when known.
 - "quotes": lines spoken by someone. items: title = the quote, subtitle = speaker, time = seconds.
+- "table": numbers or short facts across a few dimensions (metrics per video, counts per character, side-by-side comparisons). Pass columns (headings; the first labels the rows) and rows (arrays of cells, same length as columns). Keep cells short; use numbers for numeric cells.
 - "text": anything else; put the content in body (plain text, line breaks allowed).`,
 		input_schema: {
 			type: 'object',
 			properties: {
-				type: { type: 'string', enum: ['video', 'list', 'quotes', 'text'] },
+				type: { type: 'string', enum: CARD_TYPES },
 				title: { type: 'string' },
 				subtitle: { type: 'string' },
 				body: { type: 'string' },
 				videoId: { type: 'string' },
-				items: itemsSchema
+				items: itemsSchema,
+				...tableSchema
 			},
 			required: ['type', 'title']
 		}
@@ -173,15 +186,17 @@ const allTools: Anthropic.Tool[] = [
 	{
 		name: 'update_card',
 		description:
-			'Edit an existing card in place and bring it into focus. Pass only the fields to change; items replaces the whole list, so include the items you want to keep.',
+			'Edit an existing card in place and bring it into focus. Pass only the fields to change; items, columns and rows replace the whole value, so include what you want to keep. Pass type to convert the card (e.g. a text card holding numbers into a table).',
 		input_schema: {
 			type: 'object',
 			properties: {
 				id: { type: 'string' },
+				type: { type: 'string', enum: CARD_TYPES },
 				title: { type: 'string' },
 				subtitle: { type: 'string' },
 				body: { type: 'string' },
-				items: itemsSchema
+				items: itemsSchema,
+				...tableSchema
 			},
 			required: ['id']
 		}
@@ -245,7 +260,15 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 		}
 		case 'update_card': {
 			const { id: _, ...changes } = input;
-			const card = Object.assign(find(), changes);
+			const card = find();
+			// Converting to another type: the old content doesn't belong to the new template.
+			if (changes.type && changes.type !== card.type) {
+				delete card.body;
+				delete card.items;
+				delete card.columns;
+				delete card.rows;
+			}
+			Object.assign(card, changes);
 			ops.push({ op: 'update', card: { ...card } });
 			return { updated: true };
 		}
