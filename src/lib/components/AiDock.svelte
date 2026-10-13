@@ -7,6 +7,9 @@
 
 <script lang="ts">
 	import { ChatMessage, PromptInput } from '@latitudelabs/design-system';
+	import Orb from './Orb.svelte';
+	import { onMount } from 'svelte';
+	import { loadOrbVariant, orbVariant } from '#lib/orb-variant.svelte.js';
 
 	type Props = {
 		reply?: string;
@@ -35,6 +38,21 @@
 	}: Props = $props();
 
 	let input = $state<HTMLInputElement | null>(null);
+	onMount(loadOrbVariant);
+
+	// The orb reacts to the conversation: thinking while waiting, a pop and a livelier swirl when a message lands.
+	const shown = $derived(thinking ? '' : error || reply || greeting);
+	let speaking = $state(false);
+	let firstMessage = true;
+	$effect(() => {
+		if (!shown) return;
+		// The greeting shown on page load isn't a new message: no "speaking" burst on first render.
+		if (firstMessage) return void (firstMessage = false);
+		speaking = true;
+		const t = setTimeout(() => (speaking = false), 1000);
+		return () => clearTimeout(t);
+	});
+	const orbState = $derived(thinking ? 'thinking' : speaking ? 'speaking' : 'idle');
 	/** Natural height of the docked message, so its box can animate between heights. */
 	let messageHeight = $state(0);
 
@@ -99,14 +117,13 @@
 		class="fixed top-1/2 left-1/2 flex w-full max-w-md -translate-1/2 flex-col items-center gap-8 px-4"
 		style:view-transition-name="jinn-dock"
 	>
-		<div
-			class="relative size-20 shrink-0"
-			role="img"
-			aria-label="AI assistant"
-			style:view-transition-name="jinn-avatar"
-		>
-			<div class="absolute inset-0 rounded-full bg-brand blur-sm"></div>
-		</div>
+		<Orb
+			size={80}
+			state={orbState}
+			pulse={shown}
+			variant={orbVariant.current}
+			transitionName="jinn-avatar"
+		/>
 		<p class="text-center text-heading" aria-live="polite">{@render message()}</p>
 		<PromptInput bind:ref={input} bind:value={draft} {placeholder} disabled={thinking} {onsubmit} />
 	</div>
@@ -124,10 +141,20 @@
 			style:height={messageHeight ? `${messageHeight + 16}px` : 'auto'}
 		>
 			<div bind:offsetHeight={messageHeight}>
-				<ChatMessage aria-live="polite">
-					<!-- At least orb height, centred: one line sits level with the orb; longer replies start at its top. -->
-					<div class="flex min-h-10 items-center"><p>{@render message()}</p></div>
-				</ChatMessage>
+				<!-- Our animated orb + ChatMessage's text-only mode (its built-in avatar can't be animated). -->
+				<div class="flex items-start gap-4">
+					<Orb
+						size={40}
+						state={orbState}
+						pulse={shown}
+						variant={orbVariant.current}
+						transitionName="jinn-avatar"
+					/>
+					<ChatMessage from="user" class="min-w-0 flex-1" aria-live="polite">
+						<!-- At least orb height, centred: one line sits level with the orb; longer replies start at its top. -->
+						<div class="flex min-h-10 items-center"><p>{@render message()}</p></div>
+					</ChatMessage>
+				</div>
 			</div>
 		</div>
 		<PromptInput bind:ref={input} bind:value={draft} {placeholder} disabled={thinking} {onsubmit} />
@@ -135,10 +162,7 @@
 {/if}
 
 <style>
-	/* Shared names so the avatar and the input morph between the centred and docked layouts. */
-	[data-dock] :global([data-slot='chat-message'] > [role='img']) {
-		view-transition-name: jinn-avatar;
-	}
+	/* Shared name so the input morphs between the centred and docked layouts (the orb sets its own). */
 	[data-dock] :global([data-slot='prompt-input']) {
 		view-transition-name: jinn-prompt;
 	}

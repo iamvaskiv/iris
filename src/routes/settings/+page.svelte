@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { setMode, userPrefersMode } from 'mode-watcher';
 	import { Button, Card, Label, Switch } from '@latitudelabs/design-system';
+	import { onMount } from 'svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
+	import Orb, { type OrbVariant } from '#lib/components/Orb.svelte';
+	import { loadOrbVariant, orbVariant, useOrbVariant } from '#lib/orb-variant.svelte.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -14,6 +17,12 @@
 		{ value: 'dark', label: 'Dark' },
 		{ value: 'system', label: 'System' }
 	] as const;
+
+	const orbs: { value: OrbVariant; label: string }[] = [
+		{ value: 'eye-spiral', label: 'Eye · Spiral' },
+		{ value: 'breathe-swirl', label: 'Breathe + swirl' }
+	];
+	onMount(loadOrbVariant);
 
 	// Applies immediately, like every switch.
 	async function save(checked: boolean) {
@@ -59,6 +68,30 @@
 						{/each}
 					</div>
 				</div>
+				<div class="flex items-center justify-between gap-4">
+					<div class="flex flex-col gap-1">
+						<Label id="orb-label">Orb</Label>
+						<p class="text-caption text-muted-foreground">How Jinn looks next to its messages.</p>
+					</div>
+					<div class="flex items-center gap-3">
+						<!-- Live preview of the chosen orb. -->
+						<Orb size={28} variant={orbVariant.current} />
+						<div class="flex gap-1" role="radiogroup" aria-labelledby="orb-label">
+							{#each orbs as o (o.value)}
+								{@const selected = orbVariant.current === o.value}
+								<Button
+									variant={selected ? 'secondary' : 'ghost'}
+									size="sm"
+									role="radio"
+									aria-checked={selected}
+									onclick={() => useOrbVariant(o.value)}
+								>
+									{o.label}
+								</Button>
+							{/each}
+						</div>
+					</div>
+				</div>
 			</Card.Content>
 		</Card.Root>
 
@@ -71,8 +104,8 @@
 					<div class="flex flex-col gap-1">
 						<Label for="library-access">Lumiere library</Label>
 						<p id="library-access-description" class="text-caption text-muted-foreground">
-							Let the assistant browse and use any video in the connected Lumiere workspace. When off, it only
-							knows the videos in your projects and never mentions Lumiere.
+							Let the assistant browse and use any video in the connected Lumiere workspace. When
+							off, it only knows the videos in your projects and never mentions Lumiere.
 						</p>
 					</div>
 					<Switch
