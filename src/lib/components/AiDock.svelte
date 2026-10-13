@@ -7,6 +7,8 @@
 		error?: string;
 		draft?: string;
 		placeholder?: string;
+		/** Rendered height, bindable (the project page keeps cards clear of the dock). */
+		height?: number;
 		onsubmit: (message: string) => void;
 	};
 	let {
@@ -15,12 +17,15 @@
 		error,
 		draft = $bindable(''),
 		placeholder = 'What are we analysing today..?',
+		height = $bindable(0),
 		onsubmit
 	}: Props = $props();
 </script>
 
 <!-- The assistant's latest message only; answers worth looking at live in cards above. -->
 <div
+	data-dock
+	bind:offsetHeight={height}
 	class="fixed bottom-8 left-1/2 flex w-full max-w-md -translate-x-1/2 flex-col gap-5 rounded-xl bg-card p-2 shadow-raised"
 >
 	{#if thinking || reply || error}
