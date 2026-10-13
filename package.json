@@ -16,6 +16,7 @@
 		"ds:update": "npm pack \"/Users/vitalii/Development/design-system-test/packages/design-system\" --pack-destination .latitude && pnpm add @latitudelabs/design-system@file:.latitude/latitudelabs-design-system-0.0.1.tgz"
 	},
 	"dependencies": {
+		"@anthropic-ai/sdk": "^0.133.0",
 		"@latitudelabs/design-system": "file:.latitude/latitudelabs-design-system-0.0.1.tgz",
 		"mode-watcher": "^1.1.0"
 	},
