@@ -30,5 +30,7 @@ export type ChatResponse = {
 	ops: CardOp[];
 	/** Opaque conversation history; send it back with the next message. */
 	history: unknown[];
+	/** Project name/summary after this turn (the assistant may rename it). */
+	project?: { name: string; summary?: string };
 	error?: string;
 };

@@ -2,8 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import * as env from '$app/env/private';
 import { lumiere } from './lumiere.js';
 import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
-
-export const DEFAULT_VIDEO_ID = 'vcnghIEcxyqz';
+import type { Project } from '#lib/projects.js';
 const MODEL = 'claude-sonnet-5-5';
 const MAX_STEPS = 8;
 
@@ -24,10 +23,20 @@ Card rules:
 - A card is about one subject. Keep titles short and stable so the card can be found and extended later.
 - Don't repeat a card's content in your text reply; point to it ("Added her scenes to Envy's card.").
 
+Projects:
+- Every conversation lives in a project (shown as a tile on the projects page). Its details are below.
+- After the first real exchange, give the project a short name (2-4 words) with update_project. Keep its summary as one plain sentence with the current key takeaway, and refresh it when a new finding replaces the old one. Don't mention these updates in your reply.
+- If the project has no video yet, help the user pick one from the library (list_folder) and attach it with add_video.
+
 Data:
-- The current video is ${DEFAULT_VIDEO_ID} unless the user picks another. You can browse the team's folders with list_folder.
+- Use the project's videos unless the user picks another. You can browse the team's folders with list_folder.
 - Always fetch data with tools before answering; never invent characters, quotes or timestamps.
 - If data is missing (e.g. an empty transcript), say so briefly and offer what is available instead.`;
+
+function describeProject(p: Project) {
+	const videos = p.videoIds.length ? p.videoIds.join(', ') : 'none yet';
+	return `Project: "${p.name}"${p.summary ? ` — summary: ${p.summary}` : ''}\nProject videos: ${videos}`;
+}
 
 /** Compact description of the cards on screen, so the model can focus/update instead of duplicating. */
 function describeCards(cards: Card[], focusedId?: string) {
@@ -139,6 +148,16 @@ const tools: Anthropic.Tool[] = [
 		name: 'focus_card',
 		description: 'Bring an existing card into focus (scrolls to it) when it already answers the question.',
 		input_schema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
+	},
+	{
+		name: 'update_project',
+		description: "Set the project's name and/or one-sentence summary shown on its tile.",
+		input_schema: { type: 'object', properties: { name: { type: 'string' }, summary: { type: 'string' } } }
+	},
+	{
+		name: 'add_video',
+		description: 'Attach a Lumiere video to the project.',
+		input_schema: { type: 'object', properties: { videoId: { type: 'string' } }, required: ['videoId'] }
 	}
 ];
 
@@ -154,13 +173,14 @@ async function makeCard(input: CardInput): Promise<Card> {
 	return card;
 }
 
-type Screen = { cards: Card[]; ops: CardOp[] };
+type Turn = { project: Project; ops: CardOp[] };
 
-async function runTool(name: string, input: Record<string, unknown>, screen: Screen): Promise<unknown> {
-	const id = (input.videoId as string) ?? DEFAULT_VIDEO_ID;
+async function runTool(name: string, input: Record<string, unknown>, { project, ops }: Turn): Promise<unknown> {
+	const id = (input.videoId as string) ?? project.videoIds[0];
+	if (name.startsWith('get_') && !id) throw new Error('The project has no video yet.');
 	const find = () => {
-		const card = screen.cards.find((c) => c.id === input.id);
-		if (!card) throw new Error(`No card with id ${input.id}. Cards: ${screen.cards.map((c) => c.id).join(', ')}`);
+		const card = project.cards.find((c) => c.id === input.id);
+		if (!card) throw new Error(`No card with id ${input.id}. Cards: ${project.cards.map((c) => c.id).join(', ')}`);
 		return card;
 	};
 	switch (name) {
@@ -178,31 +198,35 @@ async function runTool(name: string, input: Record<string, unknown>, screen: Scr
 			return lumiere.transcript(id);
 		case 'show_card': {
 			const card = await makeCard(input as unknown as CardInput);
-			screen.cards.push(card);
-			screen.ops.push({ op: 'add', card });
+			project.cards.push(card);
+			ops.push({ op: 'add', card });
 			return { shown: true, id: card.id };
 		}
 		case 'update_card': {
 			const { id: _, ...changes } = input;
 			const card = Object.assign(find(), changes);
-			screen.ops.push({ op: 'update', card: { ...card } });
+			ops.push({ op: 'update', card: { ...card } });
 			return { updated: true };
 		}
 		case 'focus_card': {
-			screen.ops.push({ op: 'focus', id: find().id });
+			ops.push({ op: 'focus', id: find().id });
 			return { focused: true };
 		}
+		case 'update_project':
+			if (input.name) project.name = input.name as string;
+			if (input.summary) project.summary = input.summary as string;
+			return { updated: true };
+		case 'add_video':
+			await lumiere.video(id); // validates the id
+			if (!project.videoIds.includes(id)) project.videoIds.push(id);
+			return { added: true, videoIds: project.videoIds };
 		default:
 			throw new Error(`Unknown tool ${name}`);
 	}
 }
 
-export type ChatRequest = {
-	message: string;
-	history: Anthropic.MessageParam[];
-	cards: Card[];
-	focusedId?: string;
-};
+/** `project` is mutated in place (cards, name, summary, videos); the caller saves it. */
+export type ChatRequest = { message: string; project: Project };
 
 export async function chat(req: ChatRequest): Promise<ChatResponse> {
 	if (!env.ANTHROPIC_API_KEY) return scripted(req);
@@ -218,14 +242,17 @@ export async function chat(req: ChatRequest): Promise<ChatResponse> {
 	}
 }
 
-async function agent({ message, history, cards, focusedId }: ChatRequest): Promise<ChatResponse> {
+async function agent({ message, project }: ChatRequest): Promise<ChatResponse> {
 	const client = new Anthropic({
 		apiKey: env.ANTHROPIC_API_KEY,
 		defaultHeaders: env.ANTHROPIC_WORKSPACE_ID ? { 'anthropic-workspace-id': env.ANTHROPIC_WORKSPACE_ID } : undefined
 	});
-	const messages: Anthropic.MessageParam[] = [...history, { role: 'user', content: message }];
-	const screen: Screen = { cards: structuredClone(cards), ops: [] };
-	const system = `${SYSTEM}\n\n${describeCards(cards, focusedId)}`;
+	const messages: Anthropic.MessageParam[] = [
+		...(project.history as Anthropic.MessageParam[]),
+		{ role: 'user', content: message }
+	];
+	const turn: Turn = { project, ops: [] };
+	const system = `${SYSTEM}\n\n${describeProject(project)}\n${describeCards(project.cards, project.focusedId)}`;
 
 	for (let step = 0; step < MAX_STEPS; step++) {
 		const res = await client.messages.create({ model: MODEL, max_tokens: 4096, system, tools, messages });
@@ -238,13 +265,13 @@ async function agent({ message, history, cards, focusedId }: ChatRequest): Promi
 				.map((b) => b.text)
 				.join('\n')
 				.trim();
-			return { text, ops: screen.ops, history: messages };
+			return { text, ops: turn.ops, history: messages };
 		}
 
 		const results: Anthropic.ToolResultBlockParam[] = [];
 		for (const use of toolUses) {
 			try {
-				const out = await runTool(use.name, use.input as Record<string, unknown>, screen);
+				const out = await runTool(use.name, use.input as Record<string, unknown>, turn);
 				results.push({ type: 'tool_result', tool_use_id: use.id, content: JSON.stringify(out).slice(0, 40_000) });
 			} catch (e) {
 				results.push({ type: 'tool_result', tool_use_id: use.id, content: String(e), is_error: true });
@@ -252,18 +279,21 @@ async function agent({ message, history, cards, focusedId }: ChatRequest): Promi
 		}
 		messages.push({ role: 'user', content: results });
 	}
-	return { text: 'That took more steps than I expected. Try asking again?', ops: screen.ops, history: messages };
+	return { text: 'That took more steps than I expected. Try asking again?', ops: turn.ops, history: messages };
 }
 
 /** Keyword-based stand-in for the LLM so the UI can be tried without an Anthropic key. Uses real Lumiere data. */
-async function scripted({ message, history, cards: onScreen }: ChatRequest): Promise<ChatResponse> {
+async function scripted({ message, project }: ChatRequest): Promise<ChatResponse> {
 	const m = message.toLowerCase();
-	const id = DEFAULT_VIDEO_ID;
+	const id = project.videoIds[0];
+	const { history, cards: onScreen } = project;
 	const done = (text: string, cards: Card[] = []): ChatResponse => {
 		// Same title already on screen → focus it instead of adding a duplicate.
 		const ops: CardOp[] = cards.map((card) => {
 			const existing = onScreen.find((c) => c.title === card.title);
-			return existing ? { op: 'focus', id: existing.id } : { op: 'add', card };
+			if (existing) return { op: 'focus', id: existing.id };
+			onScreen.push(card);
+			return { op: 'add', card };
 		});
 		return {
 			text: `${text} (scripted mode, no LLM connected)`,
@@ -271,6 +301,7 @@ async function scripted({ message, history, cards: onScreen }: ChatRequest): Pro
 			history: [...history, { role: 'user', content: message }, { role: 'assistant', content: text }]
 		};
 	};
+	if (!id) return done('This project has no video yet.');
 	type Entity = { name: string; type: string; description?: string; actor?: { name: string } | null };
 
 	if (/character|who|people|cast/.test(m)) {
