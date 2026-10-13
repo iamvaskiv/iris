@@ -4,9 +4,10 @@
 	import { Breadcrumb, Button, ChatMessage, PromptInput } from '@latitudelabs/design-system';
 	import { Moon, Sun } from '@latitudelabs/design-system/icons';
 	import { cardComponent } from '#lib/cards/registry.js';
-	import type { Card, ChatResponse } from '#lib/cards/types.js';
+	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 
 	let cards = $state<Card[]>([]);
+	let focusedId = $state<string>();
 	let history = $state<unknown[]>([]);
 	let reply = $state('');
 	let draft = $state('');
@@ -17,6 +18,25 @@
 	const hour = new Date().getHours();
 	const greeting = hour < 12 ? 'Good morning!' : hour < 18 ? 'Good afternoon!' : 'Good evening!';
 
+	function apply(op: CardOp) {
+		if (op.op === 'add') cards.push(op.card);
+		if (op.op === 'update') {
+			const i = cards.findIndex((c) => c.id === op.card.id);
+			if (i >= 0) cards[i] = op.card;
+		}
+		focusedId = op.op === 'focus' ? op.id : op.card.id;
+	}
+
+	async function focus(id: string | undefined) {
+		focusedId = id;
+		await tick();
+		const el = id && document.getElementById(`card-${id}`);
+		if (!el) return;
+		// The dock covers the bottom of the screen, so tall cards are aligned to the top instead of centered.
+		const block = el.offsetHeight > scroller.clientHeight - 240 ? 'start' : 'center';
+		el.scrollIntoView({ behavior: 'smooth', block });
+	}
+
 	async function send(message: string) {
 		draft = '';
 		error = '';
@@ -25,17 +45,14 @@
 			const res = await fetch('/api/chat', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ message, history })
+				body: JSON.stringify({ message, history, cards, focusedId })
 			});
 			const data: ChatResponse = await res.json();
 			reply = data.text;
 			history = data.history;
 			error = data.error ?? '';
-			if (data.cards.length) {
-				cards.push(...data.cards);
-				await tick();
-				scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
-			}
+			data.ops.forEach(apply);
+			if (data.ops.length) await focus(focusedId);
 		} catch (e) {
 			error = String(e);
 		} finally {
@@ -70,9 +87,14 @@
 		{:else}
 			<!-- Newest card sits just above the dock; older ones are pushed up. -->
 			<div class="mx-auto flex min-h-full max-w-3xl flex-col justify-end gap-5 px-4 pt-8 pb-56">
-				{#each cards as card, i (card.id)}
+				{#each cards as card (card.id)}
 					{@const CardView = cardComponent(card.type)}
-					<div class={['transition-opacity', i < cards.length - 1 && 'opacity-60 hover:opacity-100']}>
+					<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+					<div
+						id="card-{card.id}"
+						class={['scroll-my-24 transition-opacity', card.id !== focusedId && 'opacity-60 hover:opacity-100']}
+						onclick={() => (focusedId = card.id)}
+					>
 						<CardView {card} />
 					</div>
 				{/each}
