@@ -21,7 +21,8 @@
 			{/each}
 		</Breadcrumb.List>
 	</Breadcrumb.Root>
-	<nav class="flex items-center gap-1" aria-label="App">
+	<!-- Fixed height (one button tall) so the breadcrumb sits at the same spot with or without nav items. -->
+	<nav class="flex h-9 items-center gap-1" aria-label="App">
 		{#each nav as item (item.label)}
 			<Button variant="ghost" href={item.href} onclick={item.onclick} class="text-title text-muted-foreground">
 				{item.label}
