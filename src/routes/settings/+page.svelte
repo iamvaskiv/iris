@@ -2,6 +2,7 @@
 	import { setMode, userPrefersMode } from 'mode-watcher';
 	import { Button, Card, Label, Switch } from '@latitudelabs/design-system';
 	import { onMount } from 'svelte';
+	import { dev } from '$app/env';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import Orb, { type OrbVariant } from '#lib/components/Orb.svelte';
 	import { loadOrbVariant, orbVariant, useOrbVariant } from '#lib/orb-variant.svelte.js';
@@ -72,6 +73,12 @@
 					<div class="flex flex-col gap-1">
 						<Label id="orb-label">Orb</Label>
 						<p class="text-caption text-muted-foreground">How Jinn looks next to its messages.</p>
+						{#if dev}
+							<!-- Dev only: the orb page with the live tuning panel. -->
+							<Button variant="link" size="sm" href="/dev/orb" class="h-auto self-start p-0"
+								>Try in dev</Button
+							>
+						{/if}
 					</div>
 					<div class="flex items-center gap-3">
 						<!-- Live preview of the chosen orb. -->
