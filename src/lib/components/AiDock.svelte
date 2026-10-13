@@ -35,6 +35,13 @@
 	}: Props = $props();
 
 	let input = $state<HTMLInputElement | null>(null);
+	/** Natural height of the docked message, so its box can animate between heights. */
+	let messageHeight = $state(0);
+
+	/** Splits text into words and the whitespace between them; words reveal one after another. */
+	const words = (text: string) => text.split(/(\s+)/).filter(Boolean);
+	/** Delay step per word: quick for short replies, compressed so long ones finish within ~0.8s. */
+	const step = (text: string) => Math.min(35, 800 / Math.max(1, words(text).length));
 
 	/** Enter anywhere on the page focuses the prompt, unless the user is in another field or on a control. */
 	function onkeydown(e: KeyboardEvent) {
@@ -63,13 +70,24 @@
 
 <svelte:window {onkeydown} />
 
+{#snippet reveal(text: string)}
+	<!-- Keyed on the text so every new message replays the reveal. -->
+	{#key text}
+		{@const delay = step(text)}
+		{#each words(text) as word, i (i)}
+			{#if word.trim()}<span class="reveal-word" style:animation-delay="{i * delay}ms">{word}</span
+				>{:else}{word}{/if}
+		{/each}
+	{/key}
+{/snippet}
+
 {#snippet message()}
 	{#if thinking}
-		<span class="text-muted-foreground">hmm, give me a sec..</span>
+		<span class="thinking text-muted-foreground">hmm, give me a sec..</span>
 	{:else if error}
 		<span class="text-destructive">{error}</span>
 	{:else}
-		{reply || greeting}
+		{@render reveal(reply || greeting)}
 	{/if}
 {/snippet}
 
@@ -79,8 +97,14 @@
 		data-dock
 		bind:offsetHeight={height}
 		class="fixed top-1/2 left-1/2 flex w-full max-w-md -translate-1/2 flex-col items-center gap-8 px-4"
+		style:view-transition-name="jinn-dock"
 	>
-		<div class="relative size-20 shrink-0" role="img" aria-label="AI assistant">
+		<div
+			class="relative size-20 shrink-0"
+			role="img"
+			aria-label="AI assistant"
+			style:view-transition-name="jinn-avatar"
+		>
 			<div class="absolute inset-0 rounded-full bg-brand blur-sm"></div>
 		</div>
 		<p class="text-center text-heading" aria-live="polite">{@render message()}</p>
@@ -91,8 +115,63 @@
 		data-dock
 		bind:offsetHeight={height}
 		class="fixed bottom-8 left-1/2 flex w-full max-w-md -translate-x-1/2 flex-col gap-5 rounded-xl bg-card p-2 shadow-raised"
+		style:view-transition-name="jinn-dock"
 	>
-		<ChatMessage class="items-center" aria-live="polite">{@render message()}</ChatMessage>
+		<!-- Height animates to the message's natural height (auto until first measured). The clip box extends 8px
+		     past the content (-m-2 p-2) so the orb's blur isn't cut off; height includes that padding. -->
+		<div
+			class="-m-2 overflow-hidden p-2 transition-[height] duration-300 ease-out"
+			style:height={messageHeight ? `${messageHeight + 16}px` : 'auto'}
+		>
+			<div bind:offsetHeight={messageHeight}>
+				<ChatMessage aria-live="polite">
+					<!-- At least orb height, centred: one line sits level with the orb; longer replies start at its top. -->
+					<div class="flex min-h-10 items-center"><p>{@render message()}</p></div>
+				</ChatMessage>
+			</div>
+		</div>
 		<PromptInput bind:ref={input} bind:value={draft} {placeholder} disabled={thinking} {onsubmit} />
 	</div>
 {/if}
+
+<style>
+	/* Shared names so the avatar and the input morph between the centred and docked layouts. */
+	[data-dock] :global([data-slot='chat-message'] > [role='img']) {
+		view-transition-name: jinn-avatar;
+	}
+	[data-dock] :global([data-slot='prompt-input']) {
+		view-transition-name: jinn-prompt;
+	}
+	/* Words fade in out of a slight blur, one after another. */
+	.reveal-word {
+		display: inline-block;
+		animation: reveal 420ms cubic-bezier(0.2, 0, 0, 1) both;
+	}
+	@keyframes reveal {
+		from {
+			opacity: 0;
+			filter: blur(6px);
+			transform: translateY(3px);
+		}
+	}
+	.thinking {
+		animation: thinking 1.6s ease-in-out infinite;
+	}
+	@keyframes thinking {
+		50% {
+			opacity: 0.45;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.reveal-word,
+		.thinking {
+			animation: none;
+		}
+	}
+	:global(::view-transition-group(jinn-dock)),
+	:global(::view-transition-group(jinn-avatar)),
+	:global(::view-transition-group(jinn-prompt)) {
+		animation-duration: 450ms;
+		animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+	}
+</style>

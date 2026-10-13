@@ -17,6 +17,20 @@
 	let error = $state('');
 	let draft = $state('');
 	let dragging = $state(false);
+
+	// Empty projects show the dock centred; when the first card arrives it morphs down to the bottom panel
+	// (View Transitions where supported, an instant switch otherwise).
+	// svelte-ignore state_referenced_locally
+	let centered = $state(project.cards.length === 0);
+	$effect(() => {
+		const next = project.cards.length === 0;
+		if (next === centered) return;
+		if (!document.startViewTransition) return void (centered = next);
+		document.startViewTransition(async () => {
+			centered = next;
+			await tick();
+		});
+	});
 	let scroller: HTMLElement;
 
 	onMount(() => {
@@ -294,7 +308,7 @@
 	</main>
 
 	<AiDock
-		centered={project.cards.length === 0}
+		{centered}
 		greeting={project.cards.length
 			? `${timeOfDayGreeting()} What would you like to know about ${project.name}?`
 			: `${timeOfDayGreeting()} Drop a video here, or ask me about one you already have.`}
