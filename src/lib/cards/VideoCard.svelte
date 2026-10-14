@@ -111,11 +111,12 @@
 				<CardSection title="Characters" count={characters.length}>
 					{#each characters as person, i (i)}
 						<li class="flex w-28 shrink-0 snap-start flex-col items-center gap-1 text-center">
-							<Avatar.Root class="size-14">
+							<Avatar.Root class="size-14 overflow-hidden">
+								<!-- Zoomed in: widescreen films are letterboxed inside 16:9 frames, and the bars would show. -->
 								{#if person.image}<Avatar.Image
 										src={person.image}
 										alt=""
-										class="object-cover"
+										class="scale-150 object-cover"
 									/>{/if}
 								<Avatar.Fallback>{initials(person.name)}</Avatar.Fallback>
 							</Avatar.Root>
