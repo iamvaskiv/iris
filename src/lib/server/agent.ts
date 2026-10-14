@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import * as env from '$app/env/private';
 import { lumiere } from './lumiere.js';
 import { settings } from './settings.js';
+import { videoCardData } from './video-card.js';
 import { assets, describeAssets } from './assets.js';
 import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
@@ -191,7 +192,7 @@ const allTools: Anthropic.Tool[] = [
 	{
 		name: 'show_card',
 		description: `Add a NEW card for a subject no existing card covers. It becomes the focused card. Types:
-- "video": a video preview with its summary. Pass videoId; the player is added for you. Use body for a short summary.
+- "video": a video with its summary, scenes and characters. Pass videoId; the player, scenes and characters are added for you. Title: what the video is (e.g. "Women Talking trailer"), not the file name. Body: a two or three sentence summary.
 - "list": a list of things (characters, scenes, themes, brands...). Fill items with title/subtitle/description and time (seconds) when known.
 - "quotes": lines spoken by someone. items: title = the quote, subtitle = speaker, time = seconds.
 - "table": numbers or short facts across a few dimensions (metrics per video, counts per character, side-by-side comparisons). Pass columns (headings; the first labels the rows) and rows (arrays of cells, same length as columns). Keep cells short; use numbers for numeric cells.
@@ -254,10 +255,7 @@ type CardInput = Omit<Card, 'id' | 'data'> & { videoId?: string };
 async function makeCard(input: CardInput): Promise<Card> {
 	const { videoId, ...rest } = input;
 	const card: Card = { id: crypto.randomUUID().slice(0, 8), ...rest, data: videoId ? { videoId } : undefined };
-	if (card.type === 'video' && videoId) {
-		const asset = await lumiere.assetUrl(videoId, { assetType: 'download', fileName: 'low.mp4' }).catch(() => null);
-		card.data = { ...card.data, streamUrl: asset?.url };
-	}
+	if (card.type === 'video' && videoId) card.data = await videoCardData(videoId);
 	return card;
 }
 

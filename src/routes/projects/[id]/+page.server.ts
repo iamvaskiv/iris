@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { lumiere } from '#lib/server/lumiere.js';
+import { videoCardData } from '#lib/server/video-card.js';
 import { projects } from '#lib/server/projects.js';
 import type { Project } from '#lib/projects.js';
 import type { PageServerLoad } from './$types';
@@ -22,16 +22,11 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	if (!project) error(404, 'Project not found');
 	const { history: _, ...rest } = project;
 
-	// Signed stream URLs expire after a couple of hours, so refresh them on every visit.
+	// Signed media URLs expire after a couple of hours, so refresh video cards on every visit.
 	await Promise.all(
 		rest.cards
 			.filter((c) => c.type === 'video' && c.data?.videoId)
-			.map(async (c) => {
-				const asset = await lumiere
-					.assetUrl(c.data!.videoId as string, { assetType: 'download', fileName: 'low.mp4' })
-					.catch(() => null);
-				c.data = { ...c.data, streamUrl: asset?.url };
-			})
+			.map(async (c) => (c.data = await videoCardData(c.data!.videoId as string)))
 	);
 	return { project: rest };
 };

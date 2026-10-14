@@ -25,6 +25,16 @@ export type Card = {
 	data?: Record<string, unknown>;
 };
 
+/** What a video card shows besides its title and summary; filled in on the server, URLs are signed. */
+export type VideoCardData = {
+	videoId: string;
+	streamUrl?: string;
+	poster?: string;
+	duration?: number;
+	scenes?: { title: string; start: number; thumb?: string }[];
+	characters?: { name: string; role?: string; actor?: string; image?: string }[];
+};
+
 /** What the assistant did to the cards this turn, in order. */
 export type CardOp = { op: 'add'; card: Card } | { op: 'update'; card: Card } | { op: 'focus'; id: string };
 
