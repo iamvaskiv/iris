@@ -149,6 +149,7 @@
 	const DOCK_GAP = 32; // the dock sits bottom-8
 	const PEEK = 64; // space above a tall card, so the end of the previous card stays visible
 	let autoScrolling = false;
+	let autoScrollTimer: ReturnType<typeof setTimeout> | undefined;
 
 	// Sizes that decide which cards can snap (bound below).
 	let viewHeight = $state(0);
@@ -188,16 +189,27 @@
 		const { top, height } = layoutBox(el, r.box);
 		const available = r.bottom - r.top;
 		const target = height <= available ? r.top + (available - height) / 2 : r.top + PEEK;
-		autoScrolling = behavior === 'smooth';
+		autoScrolling = true;
 		scroller.scrollTo({ top: scroller.scrollTop + top - target, behavior });
 		// scrollend may not fire if nothing moved; don't leave the guard stuck.
-		if (autoScrolling) setTimeout(() => (autoScrolling = false), 800);
+		clearTimeout(autoScrollTimer);
+		autoScrollTimer = setTimeout(() => (autoScrolling = false), 800);
+	}
+
+	/**
+	 * Card heights and the dock height are bound through resize observers, which report a frame after the DOM
+	 * changes. The edge padding depends on them, so scrolling earlier can stop short of a new last card.
+	 */
+	async function settle() {
+		await tick();
+		await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+		await tick();
 	}
 
 	async function focus(id: string | undefined, behavior: ScrollBehavior = 'smooth') {
 		project.focusedId = id;
 		if (!id) return;
-		await tick();
+		await settle();
 		position(id, behavior);
 	}
 
@@ -227,7 +239,8 @@
 	}
 
 	function onscrollend() {
-		autoScrolling = false;
+		// The app's own scroll keeps the card it chose, even if it landed short (e.g. clamped at the end).
+		if (autoScrolling) return void (autoScrolling = false);
 		// The last scroll frame (or the browser's snap) may not have been processed yet.
 		const id = mostVisible();
 		if (id) project.focusedId = id;
