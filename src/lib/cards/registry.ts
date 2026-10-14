@@ -1,5 +1,6 @@
 import type { Component } from 'svelte';
 import type { Card } from './types';
+import ComparisonCard from './ComparisonCard.svelte';
 import InsightsCard from './InsightsCard.svelte';
 import ListCard from './ListCard.svelte';
 import QuotesCard from './QuotesCard.svelte';
@@ -12,6 +13,7 @@ import VideoCard from './VideoCard.svelte';
 const registry: Record<string, Component<{ card: Card }>> = {
 	video: VideoCard,
 	insights: InsightsCard,
+	comparison: ComparisonCard,
 	list: ListCard,
 	quotes: QuotesCard,
 	table: TableCard,

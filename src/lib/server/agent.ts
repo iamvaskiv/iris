@@ -4,6 +4,7 @@ import { lumiere } from './lumiere.js';
 import { settings } from './settings.js';
 import { videoCardData } from './video-card.js';
 import { insights } from './insights.js';
+import { comparisonData } from './comparison.js';
 import { assets, describeAssets } from './assets.js';
 import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
@@ -96,7 +97,7 @@ function describeCards(cards: Card[], focusedId?: string) {
 }
 
 /** Card types the assistant can create (upload cards are the app's own). */
-const CARD_TYPES = ['video', 'insights', 'list', 'quotes', 'table', 'text'];
+const CARD_TYPES = ['video', 'insights', 'comparison', 'list', 'quotes', 'table', 'text'];
 
 const tableSchema = {
 	columns: { type: 'array', items: { type: 'string' } },
@@ -204,6 +205,7 @@ const allTools: Anthropic.Tool[] = [
 		description: `Add a NEW card for a subject no existing card covers. It becomes the focused card. Types:
 - "video": a video with its summary, scenes and characters. Pass videoId; the player, scenes and characters are added for you. Title: what the video is (e.g. "Women Talking trailer"), not the file name. Body: a two or three sentence summary.
 - "insights": viewer insights for a video (views, rating, sentiment, answers to questions, liked and disliked comments). Pass videoId; the numbers are filled in for you. Only when get_insights has data. Body: one sentence with the key takeaway.
+- "comparison": two to four videos side by side. Pass videoIds; posters, length, scenes, characters, themes, brands and (when there is audience data) views, rating and positive comments are filled in for you. Add your own rows for what the numbers don't show (e.g. tone, opening, pacing, call to action): rows of [label, one short value per video in videoIds order]. Never repeat the automatic rows. Body: one sentence with the key difference. Prefer this over a table when comparing videos.
 - "list": a list of things (characters, scenes, themes, brands...). Fill items with title/subtitle/description and time (seconds) when known.
 - "quotes": lines spoken by someone. items: title = the quote, subtitle = speaker, time = seconds.
 - "table": numbers or short facts across a few dimensions (metrics per video, counts per character, side-by-side comparisons). Pass columns (headings; the first labels the rows) and rows (arrays of cells, same length as columns). Keep cells short; use numbers for numeric cells.
@@ -216,6 +218,7 @@ const allTools: Anthropic.Tool[] = [
 				subtitle: { type: 'string' },
 				body: { type: 'string' },
 				videoId: { type: 'string' },
+				videoIds: { type: 'array', items: { type: 'string' }, description: 'Comparison cards: the videos, in column order.' },
 				items: itemsSchema,
 				...tableSchema
 			},
@@ -261,16 +264,20 @@ const allTools: Anthropic.Tool[] = [
 export const LIBRARY_ONLY = ['list_folder'];
 const toolsFor = (library: boolean) => (library ? allTools : allTools.filter((t) => !LIBRARY_ONLY.includes(t.name)));
 
-type CardInput = Omit<Card, 'id' | 'data'> & { videoId?: string };
+type CardInput = Omit<Card, 'id' | 'data'> & { videoId?: string; videoIds?: string[] };
 
 async function makeCard(input: CardInput): Promise<Card> {
-	const { videoId, ...rest } = input;
+	const { videoId, videoIds, ...rest } = input;
 	const card: Card = { id: crypto.randomUUID().slice(0, 8), ...rest, data: videoId ? { videoId } : undefined };
 	if (card.type === 'video' && videoId) card.data = await videoCardData(videoId);
 	if (card.type === 'insights') {
 		const data = videoId && (await insights.get(videoId));
 		if (!data) throw new Error('No viewer insights for that video: nobody has watched or responded yet.');
 		card.data = data;
+	}
+	if (card.type === 'comparison') {
+		if (!videoIds || videoIds.length < 2 || videoIds.length > 4) throw new Error('A comparison needs two to four videoIds.');
+		card.data = await comparisonData(videoIds);
 	}
 	return card;
 }
@@ -297,6 +304,8 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 			turn.choices = parseChoices(input);
 			return { shown: true };
 		case 'show_card': {
+			const others = ((input.videoIds as string[] | undefined) ?? []).filter((v) => !assetIds.has(v) && !project.videoIds.includes(v));
+			if (!library && others.length) throw new Error(`Not the user's videos: ${others.join(', ')}.`);
 			const card = await makeCard(input as unknown as CardInput);
 			project.cards.push(card);
 			ops.push({ op: 'add', card });
@@ -329,7 +338,7 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 			if (!project.videoIds.includes(id)) project.videoIds.push(id);
 			return analysed
 				? { added: true, analysed, videoIds: project.videoIds }
-				: { added: true, analysed, note: 'Not analysed: tell the user there is no summary, entities, scenes or transcript for it.' };
+				: { added: true, analysed, note: 'Not analysed: there is no summary, entities, scenes or transcript for it. Viewer insights (get_insights) may still exist, and it can still go in a comparison card.' };
 		}
 		default:
 			throw new Error(`Unknown tool ${name}`);
@@ -371,6 +380,7 @@ export async function runLoop(opts: {
 	});
 	const messages: Anthropic.MessageParam[] = [...opts.history, { role: 'user', content: opts.message }];
 
+	let nudged = false;
 	for (let step = 0; step < MAX_STEPS; step++) {
 		const res = await client.messages.create({
 			model: MODEL,
@@ -388,6 +398,16 @@ export async function runLoop(opts: {
 				.map((b) => b.text)
 				.join('\n')
 				.trim();
+			// Sometimes the model ends right after a tool (e.g. offer_choices) without a word. Ask once for the reply,
+			// so the user isn't left with the greeting and a set of answers to nothing.
+			const last = messages.at(-2);
+			if (!text && !nudged && last) {
+				nudged = true;
+				messages.pop();
+				const nudge = { type: 'text' as const, text: 'Now write your reply to the user.' };
+				last.content = typeof last.content === 'string' ? [{ type: 'text', text: last.content }, nudge] : [...last.content, nudge];
+				continue;
+			}
 			return { text, history: messages };
 		}
 

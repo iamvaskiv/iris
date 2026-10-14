@@ -13,7 +13,7 @@ export type CardItem = {
 
 export type Card = {
 	id: string;
-	type: 'video' | 'insights' | 'list' | 'quotes' | 'table' | 'text' | 'upload' | (string & {});
+	type: 'video' | 'insights' | 'comparison' | 'list' | 'quotes' | 'table' | 'text' | 'upload' | (string & {});
 	title: string;
 	subtitle?: string;
 	body?: string;
@@ -63,6 +63,28 @@ export type Insights = {
 };
 
 export type InsightComment = { text: string; time: number; sentiment: number; emotions?: string[] };
+
+/** Comparison card data: one column per video. The assistant's own rows live in the card's `rows`. */
+export type ComparisonData = { videoIds: string[]; videos: ComparedVideo[] };
+
+export type ComparedVideo = {
+	videoId: string;
+	name: string;
+	poster?: string;
+	duration?: number;
+	/** Without an analysis there are no scenes, characters, themes or brands. */
+	analysed: boolean;
+	scenes?: number;
+	/** Names, most relevant first. */
+	characters?: string[];
+	themes?: string[];
+	brands?: string[];
+	/** From viewer insights, when the video was shown to an audience. */
+	views?: number;
+	rating?: { average: number; max: number; count: number };
+	/** Share of positive comments, 0–1. */
+	positive?: number;
+};
 
 /** What the assistant did to the cards this turn, in order. */
 export type CardOp =

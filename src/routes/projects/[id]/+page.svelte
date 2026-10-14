@@ -215,6 +215,7 @@
 
 	/** Picks the card covering the most of the visible region. */
 	function mostVisible() {
+		if (!scroller) return; // a scroll frame can land after the page is gone
 		const r = region();
 		let best: { id: string; visible: number } | undefined;
 		for (const card of project.cards) {
