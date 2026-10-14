@@ -28,10 +28,11 @@ button sizes it. One `default` button per view.
 
 ```svelte
 <Badge>1.</Badge>
+<Badge variant="success">Analysed</Badge>
 <Badge variant="destructive">Failed</Badge>
 ```
 
-`variant`: `default` · `secondary` · `outline` · `destructive` · `ghost` · `link`. `href` makes it a link. Keep the
+`variant`: `default` · `secondary` · `outline` · `success` · `destructive` · `ghost` · `link`. `href` makes it a link. Keep the
 content to a word or number; it is not a button.
 
 ## Input, Textarea, Label
@@ -55,18 +56,60 @@ Filled style, 48px tall, 16px radius. `bind:value`, `disabled`, and all native i
 
 ```svelte
 <PromptInput placeholder="My name is..." onsubmit={(value) => answer(value)} />
-<PromptInput bind:value={draft} label="Message" onsubmit={send} />
+<PromptInput bind:value={draft} bind:ref={field} label="Message" disabled={thinking} onsubmit={send} />
+
+<!-- "Something else" under a ChoiceList -->
+<PromptInput placeholder="Something else…" submitOnFocus onsubmit={send}>
+	{#snippet leading()}<Kbd>{options.length + 1}</Kbd>{/snippet}
+</PromptInput>
 ```
 
 | Prop | Notes |
 | --- | --- |
 | `value` | bindable |
-| `onsubmit(value)` | Enter or the send button; not called when empty |
-| `placeholder`, `disabled` |  |
+| `ref` | bindable `<textarea>` (focus it after sending to keep the conversation going) |
+| `onsubmit(value)` | Enter or the send button; not called when empty. Shift+Enter adds a line |
+| `placeholder`, `focusedPlaceholder` | the second one replaces the first while the field has focus |
+| `disabled` | read-only, not disabled: the field keeps focus while the answer is on its way |
+| `maxLines` | grows with the text up to this many lines, then scrolls (default 4; 1 = single line) |
+| `leading` | snippet before the text, e.g. a `Kbd`; pass `undefined` (not an empty snippet) to drop it |
+| `submitOnFocus` | the send button shows only while the field has focus |
 | `label` | accessible name if there's no placeholder (defaults to placeholder, then "Message") |
 | `submitLabel` | accessible name of the send button (default "Send") |
 
 For conversational, one-answer flows. Use `Input` + `Label` for regular forms.
+
+## ChoiceList
+
+```svelte
+<div class="flex flex-col gap-1">
+	<ChoiceList options={['Women Talking trailer', 'Inside Out 2 clip', 'Compare both']} onselect={(o) => send(o)} />
+	<PromptInput placeholder="Something else…" submitOnFocus onsubmit={send}>
+		{#snippet leading()}<Kbd>4</Kbd>{/snippet}
+	</PromptInput>
+</div>
+```
+
+| Prop | Notes |
+| --- | --- |
+| `options` | 2–4 short answers (1–5 words), phrased as the user would say them |
+| `onselect(option, index)` | called on click |
+| `numbered` | `Kbd` numbers before each option (default true). Number-key shortcuts are the app's to wire up |
+| `label` | accessible name of the group (default "Suggested answers") |
+| `disabled` |  |
+
+Sized like `PromptInput`. Placed flush with a `ChatMessage`, the numbers centre under its avatar and the labels line
+up with the message text. Each option is `data-slot="choice"` with a `--index` CSS variable for staggered entrances.
+Keep the question in the message; don't repeat the options there.
+
+## Kbd
+
+```svelte
+<Kbd>1</Kbd>
+<Kbd>Esc</Kbd>
+```
+
+A small outlined key hint. Add `aria-hidden="true"` when it only repeats something visible.
 
 ## Switch
 
@@ -118,6 +161,62 @@ choice in the form instead. Always pair with a `Label`; the label describes the 
 For an **approximate value on a bounded scale** (volume, temperature, opacity, price range). Show the number next to
 the label when it matters. Use `Input type="number"` for precise or unbounded values; a Slider is always interactive,
 so don't use it to show read-only progress.
+
+## SegmentedControl
+
+```svelte
+<div class="flex items-center justify-between gap-4">
+	<Label id="theme-label">Theme</Label>
+	<SegmentedControl
+		aria-labelledby="theme-label"
+		bind:value={theme}
+		options={[{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }, { value: 'system', label: 'System' }]}
+	/>
+</div>
+```
+
+| Prop | Notes |
+| --- | --- |
+| `value` | bindable, the selected option's `value` |
+| `options` | `{ value, label, disabled? }[]`, 2–4 short labels |
+| `onValueChange(value)` | called on change |
+| `size` | `sm` (default, 32px) · `default` (36px) |
+
+A radio group (arrow keys move between options) for choices that apply immediately. The selected option is a
+`secondary` fill, the others `ghost`. Use a `Switch` for plain on/off.
+
+## Progress
+
+```svelte
+<Progress value={percent} aria-label="Upload progress" />
+```
+
+`value` (0–`max`), `max` (default 100). Name it with `aria-label`/`aria-labelledby`; show the percentage as text
+beside it when the number matters.
+
+## Table
+
+```svelte
+<Table.Root>
+	<Table.Header>
+		<Table.Row>
+			<Table.Head>Video</Table.Head>
+			<Table.Head numeric>Length (s)</Table.Head>
+		</Table.Row>
+	</Table.Header>
+	<Table.Body>
+		{#each videos as v (v.id)}
+			<Table.Row>
+				<Table.Cell rowHeader>{v.name}</Table.Cell>
+				<Table.Cell numeric>{v.length}</Table.Cell>
+			</Table.Row>
+		{/each}
+	</Table.Body>
+</Table.Root>
+```
+
+`numeric` right-aligns with tabular figures (set it on the heading too); `rowHeader` makes the cell that names the
+row a `<th scope="row">`. Rows are divided by hairline borders; the table scrolls sideways when it doesn't fit.
 
 ## Dialog
 
@@ -190,9 +289,33 @@ column by default; add `flex-row` for side-by-side layouts. Don't nest cards; us
 ```svelte
 <ChatMessage>Viewer experience is ready. Want me to recruit viewers?</ChatMessage>
 <ChatMessage from="user">Yeah, let’s try that</ChatMessage>
+<ChatMessage>
+	{#snippet avatar()}<Orb size={40} state={thinking ? 'thinking' : 'idle'} pulse={reply} label="Lumi" />{/snippet}
+	{reply}
+</ChatMessage>
 ```
 
-`from`: `assistant` (default, shows the AI avatar with the brand gradient) · `user`.
+`from`: `assistant` (default, shows the AI avatar with the brand gradient) · `user`. `avatar` replaces the default
+avatar (keep it 40px wide so the text stays aligned) and also shows one on `user` messages.
+
+## Orb
+
+```svelte
+<Orb size={40} state={thinking ? 'thinking' : 'idle'} pulse={latestReply} label="Lumi" />
+<Orb size={80} variant="eye-spiral" />
+```
+
+| Prop | Notes |
+| --- | --- |
+| `size` | diameter in px (default 40) |
+| `state` | `idle` · `thinking` (faster, stronger) · `speaking` (a little livelier) |
+| `pulse` | change it (e.g. to the latest reply) to play a one-off pop |
+| `variant` | `breathe-swirl` (CSS, default) · `eye-spiral` (WebGL, looks towards the pointer after an interaction; falls back to CSS) |
+| `label` | accessible name (default "AI assistant") |
+| `transitionName` | view-transition name, to morph between layouts |
+| `eyeTune` | `EyeTune` overrides for the spiral eye (defaults in `EYE_DEFAULTS`) |
+
+The animated AI avatar; motion stops with reduced motion. `ORB_VARIANTS` lists the variants for a picker.
 
 ## Avatar
 

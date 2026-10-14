@@ -6,9 +6,7 @@
 </script>
 
 <script lang="ts">
-	import { Button, ChatMessage } from '@latitudelabs/design-system';
-	import PromptField from './PromptField.svelte';
-	import Orb from './Orb.svelte';
+	import { ChatMessage, ChoiceList, Kbd, Orb, PromptInput } from '@latitudelabs/design-system';
 	import { onMount } from 'svelte';
 	import { loadOrbVariant, orbVariant } from '#lib/orb-variant.svelte.js';
 
@@ -158,40 +156,15 @@
 	{/if}
 {/snippet}
 
-{#snippet key(n: number)}
-	<kbd
-		class="flex size-6 shrink-0 items-center justify-center rounded-sm border border-border font-sans text-caption text-muted-foreground"
-		aria-hidden="true">{n}</kbd
-	>
-{/snippet}
-
-{#snippet fieldKey()}{@render key(choices.length + 1)}{/snippet}
+{#snippet fieldKey()}<Kbd aria-hidden="true">{choices.length + 1}</Kbd>{/snippet}
 
 {#snippet prompt()}
 	<div class="flex flex-col gap-1">
 		{#if showChoices}
-			<div
-				bind:this={choiceList}
-				role="group"
-				aria-label="Suggested answers"
-				class="choices flex flex-col gap-1"
-			>
-				{#each choices as choice, i (choice)}
-					<Button
-						variant="secondary"
-						size="lg"
-						class="choice h-12 w-full justify-start gap-6 rounded-lg border-0 pl-2 text-body-lg font-normal"
-						style="animation-delay: {i * 40}ms"
-						onclick={() => send(choice)}
-					>
-						{@render key(i + 1)}
-						<span class="truncate">{choice}</span>
-					</Button>
-				{/each}
-			</div>
+			<ChoiceList bind:ref={choiceList} options={choices} onselect={send} />
 		{/if}
 		<!-- Same field in both cases, so focus and the draft survive choices appearing and going. -->
-		<PromptField
+		<PromptInput
 			bind:ref={input}
 			bind:value={draft}
 			placeholder={showChoices ? 'Something else…' : placeholder}
@@ -222,6 +195,7 @@
 			pulse={shown}
 			variant={orbVariant.current}
 			transitionName="iris-avatar"
+			label="Lumi"
 		/>
 		<p class="text-center text-heading" aria-live="polite">{@render message()}</p>
 		<div class="w-full max-w-md">{@render prompt()}</div>
@@ -241,20 +215,22 @@
 			style:height={messageHeight ? `${messageHeight + 16}px` : 'auto'}
 		>
 			<div bind:offsetHeight={messageHeight}>
-				<!-- Our animated orb + ChatMessage's text-only mode (its built-in avatar can't be animated). -->
-				<div class="flex items-start gap-4">
-					<Orb
-						size={40}
-						state={orbState}
-						pulse={shown}
-						variant={orbVariant.current}
-						transitionName="iris-avatar"
-					/>
-					<ChatMessage from="user" class="min-w-0 flex-1" aria-live="polite">
-						<!-- At least orb height, centred: one line sits level with the orb; longer replies start at its top. -->
-						<div class="flex min-h-10 items-center"><p>{@render message()}</p></div>
-					</ChatMessage>
-				</div>
+				<ChatMessage>
+					{#snippet avatar()}
+						<Orb
+							size={40}
+							state={orbState}
+							pulse={shown}
+							variant={orbVariant.current}
+							transitionName="iris-avatar"
+							label="Lumi"
+						/>
+					{/snippet}
+					<!-- At least orb height, centred: one line sits level with the orb; longer replies start at its top. -->
+					<div class="flex min-h-10 items-center">
+						<p aria-live="polite">{@render message()}</p>
+					</div>
+				</ChatMessage>
 			</div>
 		</div>
 		{@render prompt()}
@@ -279,8 +255,9 @@
 		}
 	}
 	/* Choices rise in one after another, once the reply has started revealing. */
-	.choices :global(.choice) {
+	[data-dock] :global([data-slot='choice']) {
 		animation: reveal 420ms cubic-bezier(0.2, 0, 0, 1) both;
+		animation-delay: calc(var(--index) * 40ms);
 	}
 	.thinking {
 		animation: thinking 1.6s ease-in-out infinite;
@@ -302,7 +279,7 @@
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.reveal-word,
-		.choices :global(.choice),
+		[data-dock] :global([data-slot='choice']),
 		.thinking,
 		:global([data-dock].dock-pop) {
 			animation: none;

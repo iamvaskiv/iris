@@ -1,6 +1,12 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "dev", "runtimeExecutable": "pnpm", "runtimeArgs": ["dev", "--port", "5173"], "port": 5173 }
+    { "name": "dev", "runtimeExecutable": "pnpm", "runtimeArgs": ["dev", "--port", "5173"], "port": 5173 },
+    {
+      "name": "ds-docs",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "/Users/vitalii/Development/design-system-test", "--filter", "docs", "storybook"],
+      "port": 6006
+    }
   ]
 }

@@ -80,6 +80,33 @@ disable the input while it works; the list is a polite live region so new messag
 
 Keep assistant messages short and end with a next step or question.
 
+When the question has a few clear answers, offer them with a `ChoiceList` above the input, and turn the input into
+the numbered "something else" option. Use an `Orb` as the avatar when the assistant should feel alive:
+
+```svelte
+{#snippet nextKey()}<Kbd>{choices.length + 1}</Kbd>{/snippet}
+
+<ChatMessage>
+	{#snippet avatar()}<Orb size={40} state={thinking ? 'thinking' : 'idle'} pulse={reply} label="Lumi" />{/snippet}
+	{reply}
+</ChatMessage>
+<div class="flex flex-col gap-1">
+	{#if offering}
+		<ChoiceList options={choices} onselect={send} />
+	{/if}
+	<PromptInput
+		bind:value={draft}
+		placeholder={offering ? 'Something else…' : 'Reply to the assistant…'}
+		leading={offering ? nextKey : undefined}
+		submitOnFocus={offering}
+		disabled={thinking}
+		onsubmit={send}
+	/>
+</div>
+```
+
+Here `offering` is `choices.length > 0 && !thinking`. Clear the choices when the user sends anything.
+
 ## Connected cards
 
 A short vertical `Separator` joins cards that form a flow (e.g. experience → insights).

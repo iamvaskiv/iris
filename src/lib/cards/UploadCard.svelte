@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Icon, LoaderCircle, CircleAlert } from '@latitudelabs/design-system/icons';
+	import { Progress } from '@latitudelabs/design-system';
 	import CardShell from './CardShell.svelte';
 	import type { Card } from './types';
 
@@ -15,16 +16,11 @@
 		{:else}
 			<Icon icon={LoaderCircle} class="animate-spin text-muted-foreground" />
 		{/if}
-		<div
-			class="h-2 flex-1 overflow-hidden rounded-full bg-muted"
-			role="progressbar"
+		<Progress
+			class="flex-1"
+			value={progress}
 			aria-label="{phase === 'processing' ? 'Analysis' : 'Upload'} progress"
-			aria-valuenow={progress}
-			aria-valuemin={0}
-			aria-valuemax={100}
-		>
-			<div class="h-full rounded-full bg-primary transition-[width]" style:width="{progress}%"></div>
-		</div>
+		/>
 		<span class="w-10 text-right text-caption text-muted-foreground">{progress}%</span>
 	</div>
 	<p class="text-caption text-muted-foreground">

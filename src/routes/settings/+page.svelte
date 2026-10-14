@@ -1,10 +1,17 @@
 <script lang="ts">
 	import { setMode, userPrefersMode } from 'mode-watcher';
-	import { Button, Card, Label, Switch } from '@latitudelabs/design-system';
+	import {
+		Button,
+		Card,
+		Label,
+		Orb,
+		SegmentedControl,
+		Switch,
+		type OrbVariant
+	} from '@latitudelabs/design-system';
 	import { onMount } from 'svelte';
 	import { dev } from '$app/env';
 	import AppHeader from '#lib/components/AppHeader.svelte';
-	import Orb, { type OrbVariant } from '#lib/components/Orb.svelte';
 	import { loadOrbVariant, orbVariant, useOrbVariant } from '#lib/orb-variant.svelte.js';
 	import type { PageProps } from './$types';
 
@@ -17,7 +24,7 @@
 		{ value: 'light', label: 'Light' },
 		{ value: 'dark', label: 'Dark' },
 		{ value: 'system', label: 'System' }
-	] as const;
+	];
 
 	const orbs: { value: OrbVariant; label: string }[] = [
 		{ value: 'eye-spiral', label: 'Eye · Spiral' },
@@ -54,20 +61,12 @@
 			<Card.Content>
 				<div class="flex items-center justify-between gap-4">
 					<Label id="theme-label">Theme</Label>
-					<div class="flex gap-1" role="radiogroup" aria-labelledby="theme-label">
-						{#each themes as t (t.value)}
-							{@const selected = userPrefersMode.current === t.value}
-							<Button
-								variant={selected ? 'secondary' : 'ghost'}
-								size="sm"
-								role="radio"
-								aria-checked={selected}
-								onclick={() => setMode(t.value)}
-							>
-								{t.label}
-							</Button>
-						{/each}
-					</div>
+					<SegmentedControl
+						aria-labelledby="theme-label"
+						options={themes}
+						value={userPrefersMode.current}
+						onValueChange={(v) => setMode(v as 'light' | 'dark' | 'system')}
+					/>
 				</div>
 				<div class="flex items-center justify-between gap-4">
 					<div class="flex flex-col gap-1">
@@ -82,21 +81,13 @@
 					</div>
 					<div class="flex items-center gap-3">
 						<!-- Live preview of the chosen orb. -->
-						<Orb size={28} variant={orbVariant.current} />
-						<div class="flex gap-1" role="radiogroup" aria-labelledby="orb-label">
-							{#each orbs as o (o.value)}
-								{@const selected = orbVariant.current === o.value}
-								<Button
-									variant={selected ? 'secondary' : 'ghost'}
-									size="sm"
-									role="radio"
-									aria-checked={selected}
-									onclick={() => useOrbVariant(o.value)}
-								>
-									{o.label}
-								</Button>
-							{/each}
-						</div>
+						<Orb size={28} variant={orbVariant.current} label="Lumi" />
+						<SegmentedControl
+							aria-labelledby="orb-label"
+							options={orbs}
+							value={orbVariant.current}
+							onValueChange={(v) => useOrbVariant(v as OrbVariant)}
+						/>
 					</div>
 				</div>
 			</Card.Content>

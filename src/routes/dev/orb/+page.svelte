@@ -1,11 +1,20 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Badge, Button, Card } from '@latitudelabs/design-system';
+	import {
+		Badge,
+		Button,
+		Card,
+		EYE_DEFAULTS as D,
+		Orb,
+		ORB_VARIANTS,
+		SegmentedControl,
+		type EyeTune,
+		type OrbState,
+		type OrbVariant
+	} from '@latitudelabs/design-system';
 	import AppHeader from '#lib/components/AppHeader.svelte';
-	import Orb, { ORB_VARIANTS, type OrbState, type OrbVariant } from '#lib/components/Orb.svelte';
 	import { loadOrbVariant, orbVariant, useOrbVariant } from '#lib/orb-variant.svelte.js';
 	import { createDialKitController } from 'dialkit/svelte';
-	import { EYE_DEFAULTS as D, type EyeTune } from '#lib/components/ShaderOrb.svelte';
 
 	onMount(loadOrbVariant);
 
@@ -104,19 +113,12 @@
 					eye live in the panel at the bottom right.
 				</p>
 			</div>
-			<div class="flex gap-1" role="radiogroup" aria-label="State">
-				{#each states as s (s.value)}
-					<Button
-						variant={mood === s.value ? 'secondary' : 'ghost'}
-						size="sm"
-						role="radio"
-						aria-checked={mood === s.value}
-						onclick={() => (mood = s.value)}
-					>
-						{s.label}
-					</Button>
-				{/each}
-			</div>
+			<SegmentedControl
+				aria-label="State"
+				options={states}
+				value={mood}
+				onValueChange={(v) => (mood = v as OrbState)}
+			/>
 		</div>
 
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">

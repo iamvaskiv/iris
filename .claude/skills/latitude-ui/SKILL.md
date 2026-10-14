@@ -38,13 +38,19 @@ other CSS frameworks or global styles.
 | --- | --- |
 | Action | `Button` — variants `default` (one per view), `secondary`, `outline`, `ghost`, `destructive`, `link` |
 | Text field + label | `Label` + `Input` (or `Textarea`) |
-| One-answer / AI prompt field with send | `PromptInput` |
+| One-answer / AI prompt field with send (grows to 4 lines) | `PromptInput` |
+| Answers the assistant offers, one click each | `ChoiceList` (+ a `PromptInput` with a `Kbd` for "something else") |
 | On/off setting that applies immediately | `Switch` + `Label` |
 | Pick an approximate value or range on a bounded scale | `Slider` + `Label` |
+| Pick one of a few short options that apply immediately (theme, view) | `SegmentedControl` + `Label` |
+| Upload / processing progress | `Progress` |
+| Numbers or short facts across a few columns | `Table.Root` › `Table.Header`/`Body` › `Table.Row` › `Table.Head`/`Cell` |
 | Confirm a destructive action, small focused form | `Dialog.Root` › `Dialog.Trigger` + `Dialog.Content` (`Header`, `Title`, `Description`, `Footer`, `Close`) |
 | Grouped content on the page | `Card.Root` › `Card.Header` (`Title`, `Description`, `Action`) › `Card.Content` › `Card.Footer` |
 | Ordered steps / question list | `Steps` |
-| Conversation message, AI avatar | `ChatMessage` (`from="assistant"` shows the AI avatar) |
+| Conversation message, AI avatar | `ChatMessage` (`from="assistant"` shows the AI avatar; `avatar` snippet to replace it) |
+| Animated AI avatar (thinking, speaking) | `Orb` |
+| Key or number hint | `Kbd` |
 | Person or AI avatar | `Avatar.Root` › `Avatar.Image` + `Avatar.Fallback` |
 | Where am I (top-left) | `Breadcrumb.*` |
 | Short status / count | `Badge` |
@@ -64,6 +70,7 @@ other CSS frameworks or global styles.
 | `bg-primary text-primary-foreground` | the accent (black in light, white in dark) |
 | `bg-secondary` / `bg-muted` / `bg-accent` | chips / subtle fills / hover |
 | `text-destructive`, `bg-destructive/10` | errors, destructive |
+| `text-success`, `bg-success/10` | done, healthy (or `Badge variant="success"`) |
 | `border-border`, `bg-input`, `ring-ring` | dividers, input fill, focus |
 | `bg-control` | unselected control track (switch off) |
 | `text-placeholder` | placeholders and disabled only — never readable text |
@@ -123,5 +130,6 @@ overrides. If something looks wrong in dark, you probably used a raw color inste
 ## Before you finish
 
 Scan what you wrote for raw hex/rgb colors, `text-sm`/`text-lg`-style sizes, `font-bold`, arbitrary `[...]`
-values, `dark:` color overrides, and direct `@lucide/svelte` imports. Replace them with the tokens above. If the
+values, `dark:` color overrides, direct `@lucide/svelte` imports, and hand-built tables, progress bars or radio
+groups. Replace them with the tokens above. If the
 `latitude-ui-review` skill is available, run its audit script for a full check.

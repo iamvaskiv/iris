@@ -85,7 +85,7 @@
 								{/if}
 							</p>
 						</div>
-						<Badge variant={asset.status === 'analysed' ? 'secondary' : 'outline'}
+						<Badge variant={asset.status === 'analysed' ? 'success' : 'outline'}
 							>{statusLabel[asset.status]}</Badge
 						>
 					</li>

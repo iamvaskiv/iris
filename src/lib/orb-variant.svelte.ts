@@ -1,4 +1,4 @@
-import { ORB_VARIANTS, type OrbVariant } from '#lib/components/Orb.svelte';
+import { ORB_VARIANTS, type OrbVariant } from '@latitudelabs/design-system';
 
 const KEY = 'iris-orb-variant';
 const LEGACY_KEY = 'jinn-orb-variant'; // the project's earlier codename

@@ -109,6 +109,27 @@ const RULES = [
 		'Use shadow-hairline (cards) or shadow-raised (floating panels)'
 	],
 	[
+		'local-progress',
+		'warn',
+		/role=["']progressbar["']/g,
+		'Hand-built progress bar',
+		'Use Progress (value, max, aria-label)'
+	],
+	[
+		'local-table',
+		'warn',
+		/<table\b/g,
+		'Raw <table>',
+		'Use Table.Root › Table.Header/Body › Table.Row › Table.Head/Cell'
+	],
+	[
+		'local-radio-group',
+		'warn',
+		/role=["']radiogroup["']/g,
+		'Hand-built radio group',
+		'Use SegmentedControl for a few short options that apply immediately'
+	],
+	[
 		'img-no-alt',
 		'error',
 		/<img\b(?![^>]*\balt=)[^>]*>/g,
