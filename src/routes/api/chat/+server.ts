@@ -23,6 +23,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			latest.videoIds = [...new Set([...latest.videoIds, ...project.videoIds])];
 			latest.history = res.history;
 			latest.reply = res.text;
+			latest.choices = res.choices;
 		});
 		return json({ ...res, project: { name: saved!.name, summary: saved!.summary } });
 	} catch (e) {

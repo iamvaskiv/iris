@@ -100,7 +100,7 @@
 			<div class="flex flex-col gap-1">
 				<h1 class="text-heading">Orb</h1>
 				<p class="text-body text-muted-foreground">
-					Iris’s avatar. “Use in app” applies a variant to the dock in this browser. Tune the spiral
+					Lumi’s avatar. “Use in app” applies a variant to the dock in this browser. Tune the spiral
 					eye live in the panel at the bottom right.
 				</p>
 			</div>

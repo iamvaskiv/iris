@@ -6,7 +6,7 @@
 </script>
 
 <script lang="ts">
-	import { ChatMessage } from '@latitudelabs/design-system';
+	import { Button, ChatMessage } from '@latitudelabs/design-system';
 	import PromptField from './PromptField.svelte';
 	import Orb from './Orb.svelte';
 	import { onMount } from 'svelte';
@@ -14,7 +14,7 @@
 
 	type Props = {
 		reply?: string;
-		/** Shown when there's no reply yet, so Iris always has something to say. Defaults to a time-of-day hello. */
+		/** Shown when there's no reply yet, so Lumi always has something to say. Defaults to a time-of-day hello. */
 		greeting?: string;
 		thinking?: boolean;
 		error?: string;
@@ -22,6 +22,8 @@
 		placeholder?: string;
 		/** Rendered height, bindable (the project page keeps cards clear of the dock). */
 		height?: number;
+		/** Answers offered with the reply: shown as buttons in place of the input, picking one sends it. */
+		choices?: string[];
 		/** Empty-state layout: in the middle of the screen, large avatar above a larger, centered message. */
 		centered?: boolean;
 		/** With `centered`: sit in the page flow (e.g. above the projects grid) instead of fixed in the middle of the screen. */
@@ -34,21 +36,29 @@
 		thinking = false,
 		error,
 		draft = $bindable(''),
-		placeholder = 'Press Enter to ask Iris...',
+		placeholder = 'Press Enter to ask Lumi...',
 		height = $bindable(0),
+		choices = [],
 		centered = false,
 		inline = false,
 		onsubmit
 	}: Props = $props();
 
 	let input = $state<HTMLTextAreaElement | null>(null);
+	let choiceList = $state<HTMLElement | null>(null);
+
+	// Choices sit above the input, which stays for typing something else.
+	const showChoices = $derived(choices.length > 0 && !thinking && !error);
+	/** Inside the input or the choices: where the conversation's focus lives. */
+	const inPrompt = (el: EventTarget | null) =>
+		el instanceof Node && (el === input || !!choiceList?.contains(el));
 
 	// Keep the conversation going without re-clicking: if the field had focus when a message was sent, and the user
 	// hasn't moved focus elsewhere since, refocus it when the dock swaps layouts (empty project → bottom panel creates
 	// a new field). Within one layout the field stays focused anyway (it's read-only, not disabled, while thinking).
 	let keepFocus = false;
 	function send(message: string) {
-		keepFocus = document.activeElement === input;
+		keepFocus = inPrompt(document.activeElement);
 		onsubmit(message);
 	}
 	$effect(() => {
@@ -57,7 +67,7 @@
 	});
 	$effect(() => {
 		const onfocusmove = (e: FocusEvent) => {
-			if (e.target !== input) keepFocus = false;
+			if (!inPrompt(e.target)) keepFocus = false;
 		};
 		window.addEventListener('focusin', onfocusmove);
 		return () => window.removeEventListener('focusin', onfocusmove);
@@ -94,10 +104,14 @@
 	/** Delay step per word: quick for short replies, compressed so long ones finish within ~0.8s. */
 	const step = (text: string) => Math.min(35, 800 / Math.max(1, words(text).length));
 
-	/** Enter anywhere on the page focuses the prompt, unless the user is in another field or on a control. */
+	/** Enter anywhere on the page focuses the prompt, unless the user is in another field or on a control. With
+	 *  choices showing, number keys pick one (not while typing in a field). */
 	function onkeydown(e: KeyboardEvent) {
+		// The number after the last choice belongs to the "Something else…" field: it focuses it.
+		const n = showChoices && /^[1-9]$/.test(e.key) ? Number(e.key) : 0;
+		const pick = n && n <= choices.length + 1 ? (choices[n - 1] ?? 'field') : undefined;
 		if (
-			e.key !== 'Enter' ||
+			(e.key !== 'Enter' && !pick) ||
 			e.defaultPrevented ||
 			e.isComposing ||
 			e.metaKey ||
@@ -110,12 +124,14 @@
 		if (
 			el &&
 			el !== document.body &&
+			!(pick && choiceList?.contains(el)) &&
 			el.closest('input, textarea, select, button, a, [contenteditable], [role=button]')
 		)
 			return;
-		if (!input || thinking) return;
+		if (thinking) return;
 		e.preventDefault();
-		input.focus();
+		if (pick && pick !== 'field') return send(pick);
+		input?.focus();
 	}
 </script>
 
@@ -142,6 +158,52 @@
 	{/if}
 {/snippet}
 
+{#snippet key(n: number)}
+	<kbd
+		class="flex size-6 shrink-0 items-center justify-center rounded-sm border border-border font-sans text-caption text-muted-foreground"
+		aria-hidden="true">{n}</kbd
+	>
+{/snippet}
+
+{#snippet fieldKey()}{@render key(choices.length + 1)}{/snippet}
+
+{#snippet prompt()}
+	<div class="flex flex-col gap-1">
+		{#if showChoices}
+			<div
+				bind:this={choiceList}
+				role="group"
+				aria-label="Suggested answers"
+				class="choices flex flex-col gap-1"
+			>
+				{#each choices as choice, i (choice)}
+					<Button
+						variant="secondary"
+						size="lg"
+						class="choice h-12 w-full justify-start gap-6 rounded-lg border-0 pl-2 text-body-lg font-normal"
+						style="animation-delay: {i * 40}ms"
+						onclick={() => send(choice)}
+					>
+						{@render key(i + 1)}
+						<span class="truncate">{choice}</span>
+					</Button>
+				{/each}
+			</div>
+		{/if}
+		<!-- Same field in both cases, so focus and the draft survive choices appearing and going. -->
+		<PromptField
+			bind:ref={input}
+			bind:value={draft}
+			placeholder={showChoices ? 'Something else…' : placeholder}
+			focusedPlaceholder={showChoices ? 'Something else…' : 'What interests you?'}
+			disabled={thinking}
+			leading={showChoices ? fieldKey : undefined}
+			submitOnFocus={showChoices}
+			onsubmit={send}
+		/>
+	</div>
+{/snippet}
+
 <!-- The assistant's latest message only; answers worth looking at live in cards above. -->
 {#if centered}
 	<div
@@ -162,16 +224,7 @@
 			transitionName="iris-avatar"
 		/>
 		<p class="text-center text-heading" aria-live="polite">{@render message()}</p>
-		<div class="w-full max-w-md">
-			<PromptField
-				bind:ref={input}
-				bind:value={draft}
-				{placeholder}
-				focusedPlaceholder="What interests you?"
-				disabled={thinking}
-				onsubmit={send}
-			/>
-		</div>
+		<div class="w-full max-w-md">{@render prompt()}</div>
 	</div>
 {:else}
 	<div
@@ -204,14 +257,7 @@
 				</div>
 			</div>
 		</div>
-		<PromptField
-			bind:ref={input}
-			bind:value={draft}
-			{placeholder}
-			focusedPlaceholder="What interests you?"
-			disabled={thinking}
-			onsubmit={send}
-		/>
+		{@render prompt()}
 	</div>
 {/if}
 
@@ -231,6 +277,10 @@
 			filter: blur(6px);
 			transform: translateY(3px);
 		}
+	}
+	/* Choices rise in one after another, once the reply has started revealing. */
+	.choices :global(.choice) {
+		animation: reveal 420ms cubic-bezier(0.2, 0, 0, 1) both;
 	}
 	.thinking {
 		animation: thinking 1.6s ease-in-out infinite;
@@ -252,6 +302,7 @@
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.reveal-word,
+		.choices :global(.choice),
 		.thinking,
 		:global([data-dock].dock-pop) {
 			animation: none;

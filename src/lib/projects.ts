@@ -12,6 +12,8 @@ export type Project = {
 	focusedId?: string;
 	/** Latest assistant reply, shown in the dock when the project is reopened. */
 	reply?: string;
+	/** Answers offered with the latest reply, still waiting for the user to pick one. */
+	choices?: string[];
 	/** Opaque LLM conversation history. */
 	history: unknown[];
 	createdAt: string;

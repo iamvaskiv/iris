@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { ArrowUp } from '@latitudelabs/design-system/icons';
 
 	/**
@@ -15,6 +16,8 @@
 		label,
 		submitLabel = 'Send',
 		maxLines = 4,
+		leading,
+		submitOnFocus = false,
 		onsubmit
 	}: {
 		value?: string;
@@ -29,6 +32,10 @@
 		label?: string;
 		submitLabel?: string;
 		maxLines?: number;
+		/** Shown before the text (e.g. a key hint); the field's padding tightens to make room. */
+		leading?: Snippet;
+		/** Show the send button only while the field has focus (it keeps its space, so nothing shifts). */
+		submitOnFocus?: boolean;
 		/** Called with the current value on Enter or the send button. Not called when empty. */
 		onsubmit?: (value: string) => void;
 	} = $props();
@@ -65,7 +72,8 @@
 <form
 	data-slot="prompt-input"
 	class={[
-		'flex min-h-12 w-full items-stretch gap-2 rounded-lg bg-input py-1 pr-1 pl-5 transition-[box-shadow,opacity] focus-within:ring-3 focus-within:ring-ring/50',
+		'group flex min-h-12 w-full items-stretch gap-2 rounded-lg bg-input py-1 pr-1 transition-[box-shadow,opacity] focus-within:ring-3 focus-within:ring-ring/50',
+		leading ? 'pl-2' : 'pl-5',
 		disabled && 'opacity-50'
 	]}
 	onsubmit={(e) => {
@@ -73,6 +81,7 @@
 		submit();
 	}}
 >
+	{#if leading}<div class="mr-4 flex items-center">{@render leading()}</div>{/if}
 	<textarea
 		bind:this={ref}
 		bind:value
@@ -92,7 +101,11 @@
 		type="submit"
 		aria-label={submitLabel}
 		disabled={!canSubmit}
-		class="flex min-h-10 w-16 shrink-0 items-center justify-center rounded-md bg-card text-placeholder transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 enabled:cursor-pointer enabled:hover:text-foreground"
+		class={[
+			'flex min-h-10 w-16 shrink-0 items-center justify-center rounded-md bg-card text-placeholder transition-[color,opacity] outline-none focus-visible:ring-3 focus-visible:ring-ring/50 enabled:cursor-pointer enabled:hover:text-foreground',
+			// Opacity only (still clickable), so a click that blurs the field before it lands still sends.
+			submitOnFocus && 'opacity-0 group-focus-within:opacity-100'
+		]}
 	>
 		<ArrowUp class="size-4" />
 	</button>

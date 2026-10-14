@@ -26,6 +26,7 @@
 			}).then((r) => r.json());
 			workspaceChat.history = res.history;
 			workspaceChat.reply = res.text;
+			workspaceChat.choices = res.choices ?? [];
 			error = res.error ?? '';
 			if (res.refresh) await invalidateAll();
 			if (res.navigate) {
@@ -55,6 +56,7 @@
 			centered
 			inline
 			reply={workspaceChat.reply}
+			choices={workspaceChat.choices}
 			{thinking}
 			{error}
 			bind:draft

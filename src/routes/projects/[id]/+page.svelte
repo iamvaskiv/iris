@@ -246,6 +246,7 @@
 			});
 			const data: ChatResponse = await res.json();
 			project.reply = data.text;
+			project.choices = data.choices;
 			error = data.error ?? '';
 			if (data.project) Object.assign(project, data.project);
 			data.ops.forEach(apply);
@@ -327,6 +328,7 @@
 			? `${timeOfDayGreeting()} What would you like to know about ${project.name}?`
 			: `${timeOfDayGreeting()} Drop a video here, or ask me about one you already have.`}
 		reply={project.reply}
+		choices={project.choices}
 		{thinking}
 		{error}
 		bind:draft

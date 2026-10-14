@@ -35,5 +35,7 @@ export type ChatResponse = {
 	history: unknown[];
 	/** Project name/summary after this turn (the assistant may rename it). */
 	project?: { name: string; summary?: string };
+	/** Answers the assistant offers; shown as buttons in place of the input until the user replies. */
+	choices?: string[];
 	error?: string;
 };

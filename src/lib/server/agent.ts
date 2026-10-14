@@ -12,6 +12,30 @@ const MAX_STEPS = 8;
 export const BRAND = `You are Lumi, the assistant in Iris, an app for understanding videos.
 Iris's video analysis runs on a service the user never sees. Never mention Lumiere, the underlying service, APIs, ingestion, folders or processing pipelines: analysing videos is simply something you do. Talk about "your videos" and their analysis.`;
 
+/** Shared by both assistants: answers the user can pick with one click instead of typing. */
+export const CHOICES = `Offering choices:
+- When your reply asks the user to pick between a few clear answers (which video, which character, yes/no, what to look at next), also call offer_choices with those answers. They appear as buttons in place of the input; the user can still type something else.
+- Ask the question in your text reply; don't list the options there too. Options are short (1-5 words), written as the user's answer ("Compare both", "Just the trailer"), 2-4 of them.
+- Only for a real question that waits for the user. Not for open questions ("What would you like to know?").`;
+
+export const choicesTool: Anthropic.Tool = {
+	name: 'offer_choices',
+	description:
+		'Show 2-4 short answers as buttons in place of the input, for the question in your reply. Call it at most once, in the same turn as the question.',
+	input_schema: {
+		type: 'object',
+		properties: { options: { type: 'array', items: { type: 'string' }, minItems: 2, maxItems: 4 } },
+		required: ['options']
+	}
+};
+
+/** Validates offer_choices input: trimmed, de-duplicated, at most four. */
+export function parseChoices(input: Record<string, unknown>) {
+	const options = [...new Set(((input.options as unknown[]) ?? []).map((o) => String(o).trim()).filter(Boolean))];
+	if (options.length < 2) throw new Error('Offer at least two options.');
+	return options.slice(0, 4);
+}
+
 /** Extra rules when the Lumiere library is exposed (Settings → Video library). */
 export const LIBRARY = `Video library access is ON: besides the user's own videos you can browse the team's video library with list_folder and read any video in it. Call it "the video library". Library videos only have an analysis (summary, characters, scenes, transcript) if \`analysed\` is true; check before relying on one, and if it isn't analysed, say so and suggest uploading the file instead.`;
 
@@ -44,7 +68,9 @@ Projects:
 Data:
 - Work with the project's videos and the user's other videos${library ? ', or a video from the video library' : ''}.
 - Always fetch data with tools before answering; never invent characters, quotes or timestamps.
-- If data is missing (e.g. an empty transcript), say so briefly and offer what is available instead.${library ? `\n\n${LIBRARY}` : ''}`;
+- If data is missing (e.g. an empty transcript), say so briefly and offer what is available instead.
+
+${CHOICES}${library ? `\n\n${LIBRARY}` : ''}`;
 }
 
 function describeProject(p: Project) {
@@ -161,6 +187,7 @@ export async function runLibraryTool(name: string, input: Record<string, unknown
 
 const allTools: Anthropic.Tool[] = [
 	...libraryTools,
+	choicesTool,
 	{
 		name: 'show_card',
 		description: `Add a NEW card for a subject no existing card covers. It becomes the focused card. Types:
@@ -234,7 +261,7 @@ async function makeCard(input: CardInput): Promise<Card> {
 	return card;
 }
 
-type Turn = { project: Project; ops: CardOp[]; library: boolean; assetIds: Set<string> };
+type Turn = { project: Project; ops: CardOp[]; library: boolean; assetIds: Set<string>; choices?: string[] };
 
 async function runTool(name: string, input: Record<string, unknown>, turn: Turn): Promise<unknown> {
 	const { project, ops, library, assetIds } = turn;
@@ -252,6 +279,9 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 	};
 	if (libraryTools.some((t) => t.name === name)) return runLibraryTool(name, input, id);
 	switch (name) {
+		case 'offer_choices':
+			turn.choices = parseChoices(input);
+			return { shown: true };
 		case 'show_card': {
 			const card = await makeCard(input as unknown as CardInput);
 			project.cards.push(card);
@@ -372,7 +402,7 @@ async function agent({ message, project }: ChatRequest): Promise<ChatResponse> {
 		message,
 		exec: (name, input) => runTool(name, input, turn)
 	});
-	return { text, ops: turn.ops, history };
+	return { text, ops: turn.ops, history, choices: turn.choices };
 }
 
 /** Keyword-based stand-in for the LLM so the UI can be tried without an Anthropic key. Uses real Lumiere data. */

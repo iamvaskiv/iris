@@ -2,10 +2,13 @@ import type Anthropic from '@anthropic-ai/sdk';
 import * as env from '$app/env/private';
 import {
 	BRAND,
+	CHOICES,
+	choicesTool,
 	LIBRARY,
 	LIBRARY_ONLY,
 	libraryTools,
 	llmUnavailable,
+	parseChoices,
 	runLibraryTool,
 	runLoop
 } from './agent.js';
@@ -29,8 +32,10 @@ Projects:
 - Pass firstMessage when there is a question to continue inside the new project, and videoIds for the videos it's about: any of the user's videos${library ? ' or video library videos' : ''}. Never ask them to upload a video they already have.
 - open_project works the same way for existing projects: say where you're taking them.
 
+${CHOICES}
+
 Deleting projects:
-- Delete a project only when the user asks. Always confirm first: call delete_project without confirmed to see what would be deleted, then ask the user, naming the project ("Delete 'Movie Trailers' and its 3 cards?"). Never confirm on their behalf.
+- Delete a project only when the user asks. Always confirm first: call delete_project without confirmed to see what would be deleted, then ask the user, naming the project ("Delete 'Movie Trailers' and its 3 cards?"), and offer the choices "Yes, delete it" and "No, keep it". Never confirm on their behalf.
 - Call it with confirmed: true only after the user clearly says yes in their latest message. If the request is ambiguous (several matching projects), ask which one.${
 		library
 			? `\n\n${LIBRARY}\nIf the user still wants a project for an unanalysed library video, create it with allowUnanalysed: true.`
@@ -40,6 +45,7 @@ Deleting projects:
 
 const allTools: Anthropic.Tool[] = [
 	...libraryTools,
+	choicesTool,
 	{
 		name: 'create_project',
 		description:
@@ -102,6 +108,8 @@ export type WorkspaceResponse = {
 	navigate?: Navigate;
 	/** The project list changed (e.g. a project was deleted). */
 	refresh?: boolean;
+	/** Answers offered with the reply, shown as buttons in place of the input. */
+	choices?: string[];
 	error?: string;
 };
 
@@ -143,6 +151,7 @@ export async function workspaceChat(
 	if (!env.ANTHROPIC_API_KEY) return scripted(message, history);
 	let navigate: Navigate | undefined;
 	let refresh = false;
+	let choices: string[] | undefined;
 	const awaitingConfirmation = pendingDeletions(history);
 	const { libraryAccess: library } = settings.get();
 	const userAssets = await assets.list();
@@ -154,6 +163,10 @@ export async function workspaceChat(
 				throw new Error("That video isn't one of the user's videos.");
 			}
 			return runLibraryTool(name, input);
+		}
+		if (name === 'offer_choices') {
+			choices = parseChoices(input);
+			return { shown: true };
 		}
 		const firstMessage = input.firstMessage as string | undefined;
 		if (name === 'create_project') {
@@ -219,7 +232,7 @@ export async function workspaceChat(
 			message,
 			exec
 		});
-		return { ...res, navigate, refresh };
+		return { ...res, navigate, refresh, choices };
 	} catch (e) {
 		if (llmUnavailable(e)) return scripted(message, history);
 		throw e;
