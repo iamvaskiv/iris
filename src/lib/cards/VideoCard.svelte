@@ -33,8 +33,8 @@
 </script>
 
 <Card.Root>
-	<Card.Content class="flex flex-col gap-5 sm:flex-row">
-		<div class="flex w-full shrink-0 flex-col items-center gap-3 sm:w-64">
+	<Card.Content class="flex flex-col gap-5">
+		<div class="flex flex-col items-center gap-3">
 			{#if playing && data.streamUrl}
 				<!-- svelte-ignore a11y_media_has_caption -->
 				<video
@@ -56,7 +56,7 @@
 			{/if}
 		</div>
 
-		<div class="flex min-w-0 flex-1 flex-col gap-5">
+		<div class="flex min-w-0 flex-col gap-5">
 			<div class="flex flex-col gap-1">
 				<Card.Title>{card.title}</Card.Title>
 				{#if card.subtitle || data.duration}
