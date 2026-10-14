@@ -5,7 +5,7 @@
 
 	type Crumb = { label: string; href?: string };
 	/**
-	 * Workspace pages (no `crumbs`): "Jinn" on the left and the app nav, with the current page selected.
+	 * Workspace pages (no `crumbs`): "Iris" on the left and the app nav, with the current page selected.
 	 * Inside a project: pass `crumbs` for "Projects / name" and no nav.
 	 */
 	let { crumbs, class: className }: { crumbs?: Crumb[]; class?: string } = $props();
@@ -61,7 +61,7 @@
 		<a
 			href="/"
 			class="rounded-sm text-title outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-			>Jinn</a
+			>Iris</a
 		>
 	{/if}
 	<!-- Fixed height (one button tall) so the left side sits at the same spot with or without nav items. -->

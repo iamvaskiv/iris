@@ -90,7 +90,7 @@
 
 <svelte:window {ondblclick} />
 
-<svelte:head><title>Orb · Jinn</title></svelte:head>
+<svelte:head><title>Orb · Iris</title></svelte:head>
 
 <div class="min-h-dvh bg-background">
 	<AppHeader />
@@ -100,7 +100,7 @@
 			<div class="flex flex-col gap-1">
 				<h1 class="text-heading">Orb</h1>
 				<p class="text-body text-muted-foreground">
-					Jinn’s avatar. “Use in app” applies a variant to the dock in this browser. Tune the spiral
+					Iris’s avatar. “Use in app” applies a variant to the dock in this browser. Tune the spiral
 					eye live in the panel at the bottom right.
 				</p>
 			</div>

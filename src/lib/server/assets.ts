@@ -4,9 +4,9 @@ import { lumiere } from './lumiere.js';
 import { projects } from './projects.js';
 
 /**
- * The user's files, kept by Jinn itself (data/assets.json) rather than read from Lumiere on every request.
+ * The user's files, kept by Iris itself (data/assets.json) rather than read from Lumiere on every request.
  * Videos are analysed by Lumiere and use the Lumiere video id as their id; future kinds (text documents) will live
- * entirely in Jinn and get their own ids.
+ * entirely in Iris and get their own ids.
  */
 export type AssetStatus = 'uploading' | 'analysing' | 'analysed' | 'not-analysed' | 'failed';
 
@@ -17,7 +17,7 @@ export type StoredAsset = {
 	createdAt?: string;
 	duration?: number;
 	status: AssetStatus;
-	/** How it got into Jinn: uploaded by the user, or attached from the video library. */
+	/** How it got into Iris: uploaded by the user, or attached from the video library. */
 	source: 'upload' | 'library';
 };
 

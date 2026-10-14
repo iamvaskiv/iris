@@ -14,7 +14,7 @@
 
 	type Props = {
 		reply?: string;
-		/** Shown when there's no reply yet, so Jinn always has something to say. Defaults to a time-of-day hello. */
+		/** Shown when there's no reply yet, so Iris always has something to say. Defaults to a time-of-day hello. */
 		greeting?: string;
 		thinking?: boolean;
 		error?: string;
@@ -34,7 +34,7 @@
 		thinking = false,
 		error,
 		draft = $bindable(''),
-		placeholder = 'Press Enter to ask Jinn...',
+		placeholder = 'Press Enter to ask Iris...',
 		height = $bindable(0),
 		centered = false,
 		inline = false,
@@ -152,14 +152,14 @@
 			'flex w-full max-w-2xl flex-col items-center gap-8 px-4', // wide enough for long replies; the input stays narrower
 			inline ? 'mx-auto' : 'fixed top-1/2 left-1/2 -translate-1/2'
 		]}
-		style:view-transition-name="jinn-dock"
+		style:view-transition-name="iris-dock"
 	>
 		<Orb
 			size={80}
 			state={orbState}
 			pulse={shown}
 			variant={orbVariant.current}
-			transitionName="jinn-avatar"
+			transitionName="iris-avatar"
 		/>
 		<p class="text-center text-heading" aria-live="polite">{@render message()}</p>
 		<div class="w-full max-w-md">
@@ -179,7 +179,7 @@
 		bind:offsetHeight={height}
 		{onfocusin}
 		class="fixed bottom-8 left-1/2 flex w-full max-w-md -translate-x-1/2 flex-col gap-5 rounded-xl bg-card p-2 shadow-raised"
-		style:view-transition-name="jinn-dock"
+		style:view-transition-name="iris-dock"
 	>
 		<!-- Height animates to the message's natural height (auto until first measured). The clip box extends 8px
 		     past the content (-m-2 p-2) so the orb's blur isn't cut off; height includes that padding. -->
@@ -195,7 +195,7 @@
 						state={orbState}
 						pulse={shown}
 						variant={orbVariant.current}
-						transitionName="jinn-avatar"
+						transitionName="iris-avatar"
 					/>
 					<ChatMessage from="user" class="min-w-0 flex-1" aria-live="polite">
 						<!-- At least orb height, centred: one line sits level with the orb; longer replies start at its top. -->
@@ -218,7 +218,7 @@
 <style>
 	/* Shared name so the input morphs between the centred and docked layouts (the orb sets its own). */
 	[data-dock] :global([data-slot='prompt-input']) {
-		view-transition-name: jinn-prompt;
+		view-transition-name: iris-prompt;
 	}
 	/* Words fade in out of a slight blur, one after another. */
 	.reveal-word {
@@ -257,9 +257,9 @@
 			animation: none;
 		}
 	}
-	:global(::view-transition-group(jinn-dock)),
-	:global(::view-transition-group(jinn-avatar)),
-	:global(::view-transition-group(jinn-prompt)) {
+	:global(::view-transition-group(iris-dock)),
+	:global(::view-transition-group(iris-avatar)),
+	:global(::view-transition-group(iris-prompt)) {
 		animation-duration: 450ms;
 		animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
 	}

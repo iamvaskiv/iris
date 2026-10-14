@@ -40,7 +40,7 @@
 	}
 </script>
 
-<svelte:head><title>Settings · Jinn</title></svelte:head>
+<svelte:head><title>Settings · Iris</title></svelte:head>
 
 <div class="min-h-dvh bg-background">
 	<AppHeader />
@@ -72,7 +72,7 @@
 				<div class="flex items-center justify-between gap-4">
 					<div class="flex flex-col gap-1">
 						<Label id="orb-label">Orb</Label>
-						<p class="text-caption text-muted-foreground">How Jinn looks next to its messages.</p>
+						<p class="text-caption text-muted-foreground">How Iris looks next to its messages.</p>
 						{#if dev}
 							<!-- Dev only: the orb page with the live tuning panel. -->
 							<Button variant="link" size="sm" href="/dev/orb" class="h-auto self-start p-0"

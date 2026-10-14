@@ -258,7 +258,7 @@
 	}
 </script>
 
-<svelte:head><title>{project.name} · Jinn</title></svelte:head>
+<svelte:head><title>{project.name} · Iris</title></svelte:head>
 
 <div
 	class="relative flex h-dvh flex-col bg-background"

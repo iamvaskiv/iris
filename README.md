@@ -1,4 +1,4 @@
-# Jinn
+# Iris
 
 Created with `npm create @latitudelabs`, using the [Latitude design system](https://github.com/latitudelabs/test-design-system).
 

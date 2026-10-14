@@ -24,7 +24,7 @@
 			: '';
 </script>
 
-<svelte:head><title>Assets · Jinn</title></svelte:head>
+<svelte:head><title>Assets · Iris</title></svelte:head>
 
 <div class="min-h-dvh bg-background">
 	<AppHeader />

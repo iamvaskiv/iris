@@ -44,7 +44,7 @@
 	}
 </script>
 
-<svelte:head><title>Projects · Jinn</title></svelte:head>
+<svelte:head><title>Projects · Iris</title></svelte:head>
 
 <div class="min-h-dvh bg-background">
 	<AppHeader />

@@ -9,7 +9,7 @@
 	import ShaderOrb, { type EyeTune } from './ShaderOrb.svelte';
 
 	/**
-	 * Jinn's avatar: the brand-gradient orb, alive.
+	 * Iris's avatar: the brand-gradient orb, alive.
 	 * CSS layers, each with its own animation so transforms don't fight:
 	 *   .orb > pop wrapper (pop when `pulse` changes) > .breath (breathing scale/glow) > .core (gradient swirl).
 	 * `state` changes the tempo: thinking speeds everything up; speaking swirls a little faster.
@@ -66,7 +66,7 @@
 	style:view-transition-name={transitionName}
 	data-state={mood}
 	role="img"
-	aria-label="Jinn"
+	aria-label="Iris"
 >
 	{#if useShader}
 		<ShaderOrb
