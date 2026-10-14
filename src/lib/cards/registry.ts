@@ -22,3 +22,8 @@ const registry: Record<string, Component<{ card: Card }>> = {
 };
 
 export const cardComponent = (type: string) => registry[type] ?? TextCard;
+
+/** Cards that need more room than the reading width: comparisons of three or more videos, tables with many columns. */
+export const isWide = (card: Card) =>
+	(card.type === 'comparison' && ((card.data?.videoIds as string[] | undefined)?.length ?? 0) >= 3) ||
+	(card.type === 'table' && (card.columns?.length ?? 0) >= 5);

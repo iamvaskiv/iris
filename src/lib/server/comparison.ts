@@ -1,4 +1,5 @@
 import { insights } from './insights.js';
+import { assets } from './assets.js';
 import { lumiere } from './lumiere.js';
 import type { ComparedVideo, ComparisonData } from '#lib/cards/types.js';
 
@@ -13,7 +14,9 @@ const names = (entities: Entity[], type: string) =>
 /** One column of a comparison: what the analysis and the audience say about a video. Missing parts stay empty. */
 async function compared(videoId: string): Promise<ComparedVideo> {
 	const soft = <T>(p: Promise<T>) => p.catch(() => null);
-	const video = await soft(lumiere.video(videoId));
+	// If the lookup fails, the user's saved copy still has the name and length.
+	const saved = assets.get(videoId);
+	const video = (await soft(lumiere.video(videoId))) ?? (saved && { name: saved.name, duration: saved.duration });
 	const analysed = video?.processingStatus === 'completed';
 	const [poster, chapters, entities, audience] = await Promise.all([
 		// A third of the way in: trailers open on studio logos and black frames.

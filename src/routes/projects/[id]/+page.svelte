@@ -4,7 +4,7 @@
 	import { replaceState } from '$app/navigation';
 	import AiDock, { timeOfDayGreeting } from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
-	import { cardComponent } from '#lib/cards/registry.js';
+	import { cardComponent, isWide } from '#lib/cards/registry.js';
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 	import type { PageProps } from './$types';
 
@@ -312,7 +312,7 @@
 		/>
 		{#if project.cards.length > 0}
 			<div
-				class="mx-auto flex max-w-3xl flex-col gap-5 px-4"
+				class="mx-auto flex max-w-5xl flex-col gap-5 px-4"
 				style:padding-top="{padTop}px"
 				style:padding-bottom="{padBottom}px"
 			>
@@ -323,7 +323,8 @@
 						id="card-{card.id}"
 						bind:offsetHeight={cardHeights[card.id]}
 						class={[
-							'transition-[opacity,scale] duration-300',
+							'mx-auto w-full transition-[opacity,scale] duration-300',
+							isWide(card) ? 'max-w-5xl' : 'max-w-3xl',
 							(cardHeights[card.id] ?? 0) <= snapArea && 'snap-center',
 							card.id !== project.focusedId && 'scale-90 opacity-60 hover:opacity-100'
 						]}
