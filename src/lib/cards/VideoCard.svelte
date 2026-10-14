@@ -110,7 +110,7 @@
 			{#if characters.length}
 				<CardSection title="Characters" count={characters.length}>
 					{#each characters as person, i (i)}
-						<li class="flex w-20 shrink-0 snap-start flex-col items-center gap-1 text-center">
+						<li class="flex w-28 shrink-0 snap-start flex-col items-center gap-1 text-center">
 							<Avatar.Root class="size-14">
 								{#if person.image}<Avatar.Image
 										src={person.image}
