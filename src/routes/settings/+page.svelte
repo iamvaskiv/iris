@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setMode, userPrefersMode } from 'mode-watcher';
+	import { setMode, setTheme, theme, userPrefersMode } from 'mode-watcher';
 	import {
 		Button,
 		Card,
@@ -23,8 +23,20 @@
 	const themes = [
 		{ value: 'light', label: 'Light' },
 		{ value: 'dark', label: 'Dark' },
+		{ value: 'classic', label: 'Classic' },
 		{ value: 'system', label: 'System' }
 	];
+	// Classic is a dark theme from the design system: the `classic` theme on top of dark mode.
+	const currentTheme = $derived(theme.current === 'classic' ? 'classic' : userPrefersMode.current);
+	function chooseTheme(value: string) {
+		if (value === 'classic') {
+			setTheme('classic');
+			setMode('dark');
+		} else {
+			setTheme('');
+			setMode(value as 'light' | 'dark' | 'system');
+		}
+	}
 
 	const orbs: { value: OrbVariant; label: string }[] = [
 		{ value: 'eye-spiral', label: 'Eye · Spiral' },
@@ -64,8 +76,8 @@
 					<SegmentedControl
 						aria-labelledby="theme-label"
 						options={themes}
-						value={userPrefersMode.current}
-						onValueChange={(v) => setMode(v as 'light' | 'dark' | 'system')}
+						value={currentTheme}
+						onValueChange={chooseTheme}
 					/>
 				</div>
 				<div class="flex items-center justify-between gap-4">

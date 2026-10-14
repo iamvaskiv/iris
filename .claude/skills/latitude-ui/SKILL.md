@@ -97,10 +97,15 @@ Don't add borders around cards.
 
 **Spacing:** Tailwind's 4px scale; stick to 1, 2, 3, 4, 5, 8 (4–32px). Arbitrary values like `p-[15px]` are a smell.
 
-## Dark mode
+## Dark mode and themes
 
 Already handled: `mode-watcher` toggles `class="dark"` and every role remaps. Don't write `dark:bg-…` color
 overrides. If something looks wrong in dark, you probably used a raw color instead of a role.
+
+**Classic** is a second dark theme (violet primary, pure-white text, fainter hairlines, tighter radii). Turn it on
+with `setTheme('classic')` and `setMode('dark')` from mode-watcher (it sets `data-theme="classic"` on `<html>`);
+turn it off with `setTheme('')`. Roles and the `rounded-*` scale follow the theme, so styling with tokens is all it
+takes to support it.
 
 ## Accessibility
 

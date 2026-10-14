@@ -200,7 +200,7 @@ packages:
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
   '@latitudelabs/design-system@file:.latitude/latitudelabs-design-system-0.0.1.tgz':
-    resolution: {integrity: sha512-PGL3xb0mDmcqf6gvl1oVGI996/grrxBbK0Ab3uLGitYNRjskX0UegLGzHWJgm91cp8chR7oNuGxrhVrU+of5hg==, tarball: file:.latitude/latitudelabs-design-system-0.0.1.tgz}
+    resolution: {integrity: sha512-enA5ucGfoxFNb69uZ8SwY0NxnJkCMjbXw6YFmgdVVgDIqyTfVyjRhuXqtQY6k+5s4E242JVTDOQnUcLnRIeJVQ==, tarball: file:.latitude/latitudelabs-design-system-0.0.1.tgz}
     version: 0.0.1
     hasBin: true
     peerDependencies:
