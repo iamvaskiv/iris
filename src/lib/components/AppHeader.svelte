@@ -2,10 +2,11 @@
 	import { page } from '$app/state';
 	import { Breadcrumb, Button, cn } from '@latitudelabs/design-system';
 	import { newProject } from '#lib/new-project.js';
+	import Logo from './Logo.svelte';
 
 	type Crumb = { label: string; href?: string };
 	/**
-	 * Workspace pages (no `crumbs`): "Iris" on the left and the app nav, with the current page selected.
+	 * Workspace pages (no `crumbs`): the logo on the left and the app nav, with the current page selected.
 	 * Inside a project: pass `crumbs` for "Projects / name" and no nav.
 	 */
 	let { crumbs, class: className }: { crumbs?: Crumb[]; class?: string } = $props();
@@ -57,12 +58,9 @@
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
 	{:else}
-		<!-- Placeholder for the logo. -->
-		<a
-			href="/"
-			class="rounded-sm text-title outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-			>Iris</a
-		>
+		<a href="/" class="rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+			<Logo class="h-14 w-auto" />
+		</a>
 	{/if}
 	<!-- Fixed height (one button tall) so the left side sits at the same spot with or without nav items. -->
 	<nav class="flex h-9 items-center gap-1" aria-label="App">

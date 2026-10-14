@@ -75,6 +75,7 @@ other CSS frameworks or global styles.
 | `bg-control` | unselected control track (switch off) |
 | `text-placeholder` | placeholders and disabled only — never readable text |
 | `bg-brand` | the brand gradient: AI avatar and brand moments only |
+| `var(--orange-400)` | small product labels next to the logo ("alpha"); same in both themes, never body text |
 
 **Type.** Inter, weights 400 and 500 only (`font-medium` for emphasis — never `font-bold`/`font-semibold`).
 
