@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Breadcrumb, Button, cn } from '@latitudelabs/design-system';
-	import { newProject } from '#lib/new-project.js';
+	import { Breadcrumb, cn, NavItem } from '@latitudelabs/design-system';
 	import Logo from './Logo.svelte';
 
 	type Crumb = { label: string; href?: string };
@@ -12,7 +11,6 @@
 	let { crumbs, class: className }: { crumbs?: Crumb[]; class?: string } = $props();
 
 	const nav = [
-		{ label: 'New', onclick: () => newProject() },
 		{ label: 'Projects', href: '/' },
 		{ label: 'Assets', href: '/assets' },
 		{ label: 'Settings', href: '/settings' }
@@ -66,16 +64,7 @@
 	<nav class="flex h-9 items-center gap-1" aria-label="App">
 		{#if !crumbs}
 			{#each nav as item (item.label)}
-				{@const current = isCurrent(item.href)}
-				<Button
-					variant="ghost"
-					href={item.href}
-					onclick={item.onclick}
-					aria-current={current ? 'page' : undefined}
-					class={['text-title', current ? 'text-foreground' : 'text-muted-foreground']}
-				>
-					{item.label}
-				</Button>
+				<NavItem href={item.href} current={isCurrent(item.href)}>{item.label}</NavItem>
 			{/each}
 		{/if}
 	</nav>

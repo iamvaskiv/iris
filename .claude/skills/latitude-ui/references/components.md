@@ -343,6 +343,20 @@ assistant, prefer `ChatMessage`, which renders the AI avatar for you.
 
 Earlier levels are links; the current page is `Breadcrumb.Page` (not a link). Also `Breadcrumb.Ellipsis`.
 
+## NavItem
+
+```svelte
+<nav class="flex items-center gap-1" aria-label="App">
+	{#each nav as item (item.href)}
+		<NavItem href={item.href} current={page.url.pathname === item.href}>{item.label}</NavItem>
+	{/each}
+</nav>
+```
+
+A top-level app navigation link (`text-title`, ghost-button sized, square, no hover fill). `current` sets
+`aria-current="page"`, a full-colour label and a soft brand glow rising from the bottom edge; the others are
+`text-muted-foreground` and turn `foreground` on hover. Other anchor attributes pass through.
+
 ## Separator
 
 ```svelte

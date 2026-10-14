@@ -53,6 +53,7 @@ other CSS frameworks or global styles.
 | Key or number hint | `Kbd` |
 | Person or AI avatar | `Avatar.Root` › `Avatar.Image` + `Avatar.Fallback` |
 | Where am I (top-left) | `Breadcrumb.*` |
+| App navigation in the header | `NavItem` links in a `<nav aria-label>`; `current` marks the page you're on |
 | Short status / count | `Badge` |
 | Divider, connector | `Separator` |
 | Icon | `Icon` with an icon from `@latitudelabs/design-system/icons` (62 curated Lucide icons) |
