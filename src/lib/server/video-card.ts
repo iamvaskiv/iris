@@ -2,10 +2,21 @@ import { lumiere } from './lumiere.js';
 import type { VideoCardData } from '#lib/cards/types.js';
 
 type Chapter = { title: string; start: number; end: number };
-type Entity = { id: string; type: string; name: string; relevance: number; categories?: { description: string }[]; actor?: { name: string } };
-type Moment = { midpoint: number; entities?: { id: string }[] };
+type Entity = {
+	id: string;
+	type: string;
+	name: string;
+	description?: string;
+	relevance: number;
+	categories?: { description: string }[];
+	subcategories?: { description: string }[];
+	actor?: { name: string };
+};
+type Moment = { timestampStart: number; midpoint: number; entities?: { id: string }[] };
 
 const MAX_CHARACTERS = 6;
+const MAX_THEMES = 8;
+const MAX_BRANDS = 8;
 
 /** Signed URLs expire after a couple of hours, so this runs when the card is made and on every page visit. */
 export async function videoCardData(videoId: string): Promise<VideoCardData> {
@@ -14,7 +25,7 @@ export async function videoCardData(videoId: string): Promise<VideoCardData> {
 		soft(lumiere.assetUrl(videoId, { assetType: 'download', fileName: 'low.mp4' })),
 		soft(lumiere.video(videoId)),
 		soft(lumiere.chapters(videoId) as Promise<{ chapters: Chapter[] }>),
-		soft(lumiere.entities(videoId, 'identity') as Promise<{ entities: Entity[] }>),
+		soft(lumiere.entities(videoId) as Promise<{ entities: Entity[] }>),
 		soft(lumiere.moments(videoId) as Promise<{ moments: Moment[] }>)
 	]);
 	const frame = (time: number, width = 320) =>
@@ -31,16 +42,21 @@ export async function videoCardData(videoId: string): Promise<VideoCardData> {
 		}))
 	);
 
-	const people = (entities?.entities ?? [])
-		.filter((e) => e.type === 'identity')
-		.sort((a, b) => b.relevance - a.relevance)
-		.slice(0, MAX_CHARACTERS);
+	const top = (type: string, max: number) =>
+		(entities?.entities ?? [])
+			.filter((e) => e.type === type)
+			.sort((a, b) => b.relevance - a.relevance)
+			.slice(0, max);
+	const appearances = (e: Entity) =>
+		(moments?.moments ?? []).filter((m) => m.entities?.some((x) => x.id === e.id));
+
+	const people = top('identity', MAX_CHARACTERS);
 	const characters = await Promise.all(
 		people.map(async (e) => {
 			// The moment they share with the fewest others is the likeliest close-up.
-			const shot = (moments?.moments ?? [])
-				.filter((m) => m.entities?.some((x) => x.id === e.id))
-				.sort((a, b) => (a.entities?.length ?? 0) - (b.entities?.length ?? 0))[0];
+			const shot = appearances(e).sort(
+				(a, b) => (a.entities?.length ?? 0) - (b.entities?.length ?? 0)
+			)[0];
 			return {
 				name: e.name,
 				role: e.categories?.[0]?.description.split(' / ')[0],
@@ -50,5 +66,26 @@ export async function videoCardData(videoId: string): Promise<VideoCardData> {
 		})
 	);
 
-	return { videoId, streamUrl: stream?.url, poster: (await poster) ?? undefined, duration: video?.duration, scenes, characters };
+	const themes = top('theme', MAX_THEMES).map((e) => ({
+		name: e.name,
+		description: e.description
+	}));
+
+	const brands = top('brand', MAX_BRANDS).map((e) => ({
+		name: e.name,
+		category: (e.subcategories?.[0] ?? e.categories?.[0])?.description,
+		// Where the brand first shows up. No frame: logos fade in and out, so moment frames are often black.
+		time: appearances(e)[0]?.timestampStart
+	}));
+
+	return {
+		videoId,
+		streamUrl: stream?.url,
+		poster: (await poster) ?? undefined,
+		duration: video?.duration,
+		scenes,
+		characters,
+		themes,
+		brands
+	};
 }

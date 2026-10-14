@@ -33,10 +33,14 @@ export type VideoCardData = {
 	duration?: number;
 	scenes?: { title: string; start: number; thumb?: string }[];
 	characters?: { name: string; role?: string; actor?: string; image?: string }[];
+	themes?: { name: string; description?: string }[];
+	/** `time`: seconds where the brand first shows up. */
+	brands?: { name: string; category?: string; time?: number }[];
 };
 
 /** What the assistant did to the cards this turn, in order. */
-export type CardOp = { op: 'add'; card: Card } | { op: 'update'; card: Card } | { op: 'focus'; id: string };
+export type CardOp =
+	{ op: 'add'; card: Card } | { op: 'update'; card: Card } | { op: 'focus'; id: string };
 
 export type ChatResponse = {
 	text: string;

@@ -9,6 +9,8 @@
 	const data = $derived((card.data ?? {}) as Partial<VideoCardData>);
 	const scenes = $derived(data.scenes ?? []);
 	const characters = $derived(data.characters ?? []);
+	const themes = $derived(data.themes ?? []);
+	const brands = $derived(data.brands ?? []);
 
 	let playing = $state(false);
 	let player = $state<HTMLVideoElement>();
@@ -125,6 +127,43 @@
 								<span class="text-caption text-muted-foreground">{person.actor ?? person.role}</span
 								>
 							{/if}
+						</li>
+					{/each}
+				</CardSection>
+			{/if}
+
+			{#if themes.length}
+				<CardSection title="Themes" count={themes.length} collapsed>
+					{#each themes as theme, i (i)}
+						<li class="flex w-56 shrink-0 snap-start flex-col gap-1 rounded-sm bg-muted p-3">
+							<span class="text-caption">{theme.name}</span>
+							{#if theme.description}
+								<span class="line-clamp-3 text-caption text-muted-foreground"
+									>{theme.description}</span
+								>
+							{/if}
+						</li>
+					{/each}
+				</CardSection>
+			{/if}
+
+			{#if brands.length}
+				<CardSection title="Brands" count={brands.length} collapsed>
+					{#each brands as brand, i (i)}
+						<li class="w-44 shrink-0 snap-start">
+							<button
+								type="button"
+								disabled={!data.streamUrl || brand.time === undefined}
+								onclick={() => play(brand.time)}
+								class="flex h-full w-full flex-col gap-1 rounded-sm bg-muted p-3 text-left hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+							>
+								<span class="text-caption">{brand.name}</span>
+								<span class="text-caption text-muted-foreground">
+									{[brand.category, brand.time !== undefined && timecode(brand.time)]
+										.filter(Boolean)
+										.join(' · ')}
+								</span>
+							</button>
 						</li>
 					{/each}
 				</CardSection>

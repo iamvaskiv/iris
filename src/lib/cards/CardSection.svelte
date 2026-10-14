@@ -4,9 +4,15 @@
 	import { ChevronDown, ChevronLeft, ChevronRight } from '@latitudelabs/design-system/icons';
 
 	/** A collapsible card section whose items sit in one row that scrolls sideways when it overflows. */
-	let { title, count, children }: { title: string; count?: number; children: Snippet } = $props();
+	let {
+		title,
+		count,
+		collapsed = false,
+		children
+	}: { title: string; count?: number; collapsed?: boolean; children: Snippet } = $props();
 
-	let open = $state(true);
+	// svelte-ignore state_referenced_locally
+	let open = $state(!collapsed);
 	let row = $state<HTMLUListElement>();
 	let atStart = $state(true);
 	let atEnd = $state(true);
