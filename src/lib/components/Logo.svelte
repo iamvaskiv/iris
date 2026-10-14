@@ -3,8 +3,8 @@
 
 	/**
 	 * Product logo: the Lumiere ring and wordmark, the "iris_project" tag and an "(alpha)" label. The ring is brand
-	 * artwork (an asset, kept as drawn); everything else uses design-system colours, so the wordmark follows the theme
-	 * and the tag and label stay the same in both.
+	 * artwork (an asset, kept as drawn); everything else uses design-system colours: the wordmark follows the theme, the
+	 * tag's text is cut out in the page background colour, and the tag box and label stay the same in every theme.
 	 */
 	let { class: className }: { class?: string } = $props();
 </script>
@@ -23,7 +23,7 @@
 		/>
 	</g>
 	<rect x="139" y="16" width="99" height="23" style:fill="var(--neutral-300)" />
-	<g style:fill="var(--neutral-50)">
+	<g style:fill="var(--background)">
 		<path
 			d="M229.982 24.2725L229.714 25.8635H224.703L224.964 24.2725H229.982ZM226.544 22.1816H228.601L227.237 30.3748C227.196 30.6513 227.203 30.8635 227.26 31.0112C227.321 31.1551 227.417 31.2536 227.55 31.3066C227.686 31.3597 227.839 31.3862 228.01 31.3862C228.135 31.3862 228.252 31.3767 228.362 31.3578C228.472 31.335 228.559 31.318 228.624 31.3066L228.714 32.9146C228.589 32.9525 228.421 32.9941 228.209 33.0396C228 33.0851 227.75 33.1116 227.459 33.1191C226.936 33.1305 226.482 33.051 226.095 32.8805C225.713 32.7063 225.432 32.4392 225.254 32.0794C225.08 31.7157 225.04 31.2612 225.135 30.7157L226.544 22.1816Z"
 		/>
