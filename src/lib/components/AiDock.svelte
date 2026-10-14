@@ -198,14 +198,14 @@
 			label="Lumi"
 		/>
 		<p class="text-center text-heading" aria-live="polite">{@render message()}</p>
-		<div class="w-full max-w-md">{@render prompt()}</div>
+		<div class="w-full max-w-140">{@render prompt()}</div>
 	</div>
 {:else}
 	<div
 		data-dock
 		bind:offsetHeight={height}
 		{onfocusin}
-		class="fixed bottom-8 left-1/2 flex w-full max-w-md -translate-x-1/2 flex-col gap-5 rounded-xl bg-card p-2 shadow-raised"
+		class="fixed bottom-8 left-1/2 flex w-full max-w-140 -translate-x-1/2 flex-col gap-5 rounded-xl bg-card p-2 shadow-raised"
 		style:view-transition-name="iris-dock"
 	>
 		<!-- Height animates to the message's natural height (auto until first measured). The clip box extends 8px
