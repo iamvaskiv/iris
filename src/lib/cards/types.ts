@@ -13,7 +13,7 @@ export type CardItem = {
 
 export type Card = {
 	id: string;
-	type: 'video' | 'list' | 'quotes' | 'table' | 'text' | 'upload' | (string & {});
+	type: 'video' | 'insights' | 'list' | 'quotes' | 'table' | 'text' | 'upload' | (string & {});
 	title: string;
 	subtitle?: string;
 	body?: string;
@@ -37,6 +37,32 @@ export type VideoCardData = {
 	/** `time`: seconds where the brand first shows up. */
 	brands?: { name: string; category?: string; time?: number }[];
 };
+
+/** Viewer insights card data: what an audience made of a video. */
+export type Insights = {
+	videoId: string;
+	/** Estimated viewing sessions over the last year, not unique viewers. */
+	views?: number;
+	responses: number;
+	rating?: { average: number; max: number; count: number };
+	/** Comment sentiment counts. */
+	sentiment?: { positive: number; neutral: number; negative: number };
+	/** Answers to questions shown during the video: an average for sliders and ratings, counts per option otherwise. */
+	questions: {
+		question: string;
+		type: string;
+		responses: number;
+		average?: number;
+		max?: number;
+		options?: { label: string; count: number }[];
+	}[];
+	/** Most positive and most negative comments, with the second of the video they were left at. */
+	liked: InsightComment[];
+	disliked: InsightComment[];
+	fetchedAt: string;
+};
+
+export type InsightComment = { text: string; time: number; sentiment: number; emotions?: string[] };
 
 /** What the assistant did to the cards this turn, in order. */
 export type CardOp =

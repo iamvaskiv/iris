@@ -47,6 +47,19 @@ export const lumiere = {
 	moments: (id: string, granularity?: string) =>
 		call(`/videos/${id}/moments${q({ granularity, includeEntities: true })}`),
 	transcript: (id: string) => call(`/videos/${id}/transcript${q({ includeEntities: true })}`),
+	/** Raw viewer responses; test data and hidden responses are left out. */
+	feedback: (id: string, offset = 0) =>
+		call<{ feedback: unknown[]; pagination: { hasMore: boolean } }>(
+			`/videos/${id}/feedback${q({ applyWhitelist: false, limit: 500, offset })}`
+		),
+	feedbackAggregations: (id: string) => call(`/videos/${id}/feedback/aggregations${q({ applyWhitelist: false })}`),
+	/** Estimated viewing sessions over the last year (the API's longest window); not unique viewers. */
+	sessionCount: async (id: string) => {
+		const res = await call<{ entries: { sessionCountEstimate: number }[] }>(
+			`/activity${q({ teamId: env.LUMIERE_TEAM_ID, view: 'engaged-videos', itemId: id, last: '365d', limit: 1 })}`
+		);
+		return res.entries[0]?.sessionCountEstimate ?? 0;
+	},
 	createIngestion: (fileName: string, fileSize: number) =>
 		call<{ ingestionId: string; uploadUrl: string; videoId: string; studioUrl: string }>('/ingestions', {
 			method: 'POST',

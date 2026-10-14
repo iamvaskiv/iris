@@ -3,6 +3,7 @@ import * as env from '$app/env/private';
 import { lumiere } from './lumiere.js';
 import { settings } from './settings.js';
 import { videoCardData } from './video-card.js';
+import { insights } from './insights.js';
 import { assets, describeAssets } from './assets.js';
 import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
@@ -64,6 +65,7 @@ Projects:
 - After the first real exchange, give the project a short name (2-4 words) with update_project. Keep its summary as one plain sentence with the current key takeaway, and refresh it when a new finding replaces the old one. Don't mention these updates in your reply.
 - The user's own videos (assets, listed below) can be used in any project. When they mention a video they already have, attach it with add_video instead of asking them to upload it again. To compare videos, attach each one.
 - If the project has no video yet and none of their videos fits, suggest dropping one onto the page to upload it${library ? ', or picking one from the video library (list_folder)' : ''}.
+- Viewer insights (views, ratings, sentiment, answers and comments) exist only for videos shown to an audience. When the user asks how a video landed, how viewers reacted, or about performance, call get_insights and show an insights card if there is data; if not, say nobody has watched or responded yet.
 - When the user says a video finished uploading, fetch its summary, entities, chapters and transcript, then show a video card for it plus at most one more card with the analysis.
 
 Data:
@@ -94,7 +96,7 @@ function describeCards(cards: Card[], focusedId?: string) {
 }
 
 /** Card types the assistant can create (upload cards are the app's own). */
-const CARD_TYPES = ['video', 'list', 'quotes', 'table', 'text'];
+const CARD_TYPES = ['video', 'insights', 'list', 'quotes', 'table', 'text'];
 
 const tableSchema = {
 	columns: { type: 'array', items: { type: 'string' } },
@@ -161,6 +163,12 @@ export const libraryTools: Anthropic.Tool[] = [
 		name: 'get_transcript',
 		description: 'Diarized transcript: utterances with time, speaker and speakerEntityId.',
 		input_schema: { type: 'object', properties: { videoId: { type: 'string' } }, required: ['videoId'] }
+	},
+	{
+		name: 'get_insights',
+		description:
+			'What an audience made of the video, if it was shown to viewers: views (estimated viewing sessions over the last year), number of responses, trailer rating, comment sentiment, answers to questions asked during the video (averages or counts per option) and the most positive and most negative comments with timestamps. Returns available: false when nobody has watched or responded yet.',
+		input_schema: { type: 'object', properties: { videoId: { type: 'string' } }, required: ['videoId'] }
 	}
 ];
 
@@ -182,6 +190,8 @@ export async function runLibraryTool(name: string, input: Record<string, unknown
 			return lumiere.moments(id!, input.granularity as string);
 		case 'get_transcript':
 			return lumiere.transcript(id!);
+		case 'get_insights':
+			return (await insights.get(id!)) ?? { available: false };
 	}
 	return undefined;
 }
@@ -193,6 +203,7 @@ const allTools: Anthropic.Tool[] = [
 		name: 'show_card',
 		description: `Add a NEW card for a subject no existing card covers. It becomes the focused card. Types:
 - "video": a video with its summary, scenes and characters. Pass videoId; the player, scenes and characters are added for you. Title: what the video is (e.g. "Women Talking trailer"), not the file name. Body: a two or three sentence summary.
+- "insights": viewer insights for a video (views, rating, sentiment, answers to questions, liked and disliked comments). Pass videoId; the numbers are filled in for you. Only when get_insights has data. Body: one sentence with the key takeaway.
 - "list": a list of things (characters, scenes, themes, brands...). Fill items with title/subtitle/description and time (seconds) when known.
 - "quotes": lines spoken by someone. items: title = the quote, subtitle = speaker, time = seconds.
 - "table": numbers or short facts across a few dimensions (metrics per video, counts per character, side-by-side comparisons). Pass columns (headings; the first labels the rows) and rows (arrays of cells, same length as columns). Keep cells short; use numbers for numeric cells.
@@ -256,6 +267,11 @@ async function makeCard(input: CardInput): Promise<Card> {
 	const { videoId, ...rest } = input;
 	const card: Card = { id: crypto.randomUUID().slice(0, 8), ...rest, data: videoId ? { videoId } : undefined };
 	if (card.type === 'video' && videoId) card.data = await videoCardData(videoId);
+	if (card.type === 'insights') {
+		const data = videoId && (await insights.get(videoId));
+		if (!data) throw new Error('No viewer insights for that video: nobody has watched or responded yet.');
+		card.data = data;
+	}
 	return card;
 }
 

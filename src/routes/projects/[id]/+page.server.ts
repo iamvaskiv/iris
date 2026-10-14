@@ -1,4 +1,5 @@
 import { error } from '@sveltejs/kit';
+import { insights } from '#lib/server/insights.js';
 import { videoCardData } from '#lib/server/video-card.js';
 import { projects } from '#lib/server/projects.js';
 import type { Project } from '#lib/projects.js';
@@ -22,11 +23,16 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	if (!project) error(404, 'Project not found');
 	const { history: _, ...rest } = project;
 
-	// Signed media URLs expire after a couple of hours, so refresh video cards on every visit.
+	// Signed media URLs expire after a couple of hours, so refresh video cards on every visit; insights come from
+	// their cache and are refreshed when it expires.
 	await Promise.all(
 		rest.cards
-			.filter((c) => c.type === 'video' && c.data?.videoId)
-			.map(async (c) => (c.data = await videoCardData(c.data!.videoId as string)))
+			.filter((c) => c.data?.videoId)
+			.map(async (c) => {
+				const id = c.data!.videoId as string;
+				if (c.type === 'video') c.data = await videoCardData(id);
+				if (c.type === 'insights') c.data = (await insights.get(id).catch(() => null)) ?? c.data;
+			})
 	);
 	return { project: rest };
 };
