@@ -37,6 +37,7 @@ type Aggregations = {
 		sentiment: { sentiment: 'positive' | 'neutral' | 'negative'; count: number }[];
 		feedbackTypes: { key: string; count: number }[];
 		ratingAverage: number | null;
+		ratingDistribution: { key: string; count: number }[];
 	};
 };
 
@@ -122,9 +123,9 @@ async function build(videoId: string): Promise<Insights | null> {
 		neutral: bucket('neutral'),
 		negative: bucket('negative')
 	};
-	// Across all rating questions, as reported by the service (some responses lack question text).
+	// As the service reports it: across rating questions and star ratings attached to comments.
 	const { ratingAverage } = aggregations.global;
-	const ratingCount = aggregations.global.feedbackTypes.find((t) => t.key === 'rating')?.count ?? 0;
+	const ratingCount = aggregations.global.ratingDistribution.reduce((sum, r) => sum + r.count, 0);
 	const ratingMax = questions.find((q) => q.type === 'rating')?.max ?? 5;
 
 	return {

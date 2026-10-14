@@ -3,6 +3,7 @@ import { comparisonData } from '#lib/server/comparison.js';
 import { insights } from '#lib/server/insights.js';
 import { videoCardData } from '#lib/server/video-card.js';
 import { projects } from '#lib/server/projects.js';
+import type { ComparisonData } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
 import type { PageServerLoad } from './$types';
 
@@ -31,7 +32,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			const id = c.data?.videoId as string | undefined;
 			if (c.type === 'video' && id) c.data = await videoCardData(id);
 			if (c.type === 'insights' && id) c.data = (await insights.get(id).catch(() => null)) ?? c.data;
-			if (c.type === 'comparison' && c.data?.videoIds) c.data = await comparisonData(c.data.videoIds as string[]);
+			if (c.type === 'comparison' && c.data?.videoIds) c.data = await comparisonData(c.data.videoIds as string[], c.data.focus as ComparisonData['focus']);
 		})
 	);
 	return { project: rest };

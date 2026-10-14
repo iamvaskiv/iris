@@ -6,7 +6,7 @@ import { videoCardData } from './video-card.js';
 import { insights } from './insights.js';
 import { comparisonData } from './comparison.js';
 import { assets, describeAssets } from './assets.js';
-import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
+import type { Card, CardOp, ChatResponse, ComparisonData } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
 const MODEL = 'claude-sonnet-5-5';
 const MAX_STEPS = 8;
@@ -205,7 +205,7 @@ const allTools: Anthropic.Tool[] = [
 		description: `Add a NEW card for a subject no existing card covers. It becomes the focused card. Types:
 - "video": a video with its summary, scenes and characters. Pass videoId; the player, scenes and characters are added for you. Title: what the video is (e.g. "Women Talking trailer"), not the file name. Body: a two or three sentence summary.
 - "insights": viewer insights for a video (views, rating, sentiment, answers to questions, liked and disliked comments). Pass videoId; the numbers are filled in for you. Only when get_insights has data. Body: one sentence with the key takeaway.
-- "comparison": two to four videos side by side. Pass videoIds; posters, length, scenes, characters, themes, brands and (when there is audience data) views, rating and positive comments are filled in for you. Add your own rows for what the numbers don't show (e.g. tone, opening, pacing, call to action): rows of [label, one short value per video in videoIds order]. Never repeat the automatic rows. Body: one sentence with the key difference. Prefer this over a table when comparing videos.
+- "comparison": two to four videos side by side. Pass videoIds; posters, length, scenes, characters, themes and brands, and from audience data views, responses, response rate, rating, comment sentiment, the top liked and criticised comments and answers to questions asked in several of the videos are filled in for you. Pass focus "audience" to compare only how viewers responded (views, sentiment, ratings...), "content" for only what's in the videos; leave it out for both. Add your own rows for what the numbers don't show (e.g. tone, opening, pacing, call to action): rows of [label, one short value per video in videoIds order]. Never repeat the automatic rows. Body: one sentence with the key difference. Prefer this over a table when comparing videos.
 - "list": a list of things (characters, scenes, themes, brands...). Fill items with title/subtitle/description and time (seconds) when known.
 - "quotes": lines spoken by someone. items: title = the quote, subtitle = speaker, time = seconds.
 - "table": numbers or short facts across a few dimensions (metrics per video, counts per character, side-by-side comparisons). Pass columns (headings; the first labels the rows) and rows (arrays of cells, same length as columns). Keep cells short; use numbers for numeric cells.
@@ -219,6 +219,7 @@ const allTools: Anthropic.Tool[] = [
 				body: { type: 'string' },
 				videoId: { type: 'string' },
 				videoIds: { type: 'array', items: { type: 'string' }, description: 'Comparison cards: the videos, in column order.' },
+				focus: { type: 'string', enum: ['all', 'content', 'audience'], description: 'Comparison cards: which rows to show.' },
 				items: itemsSchema,
 				...tableSchema
 			},
@@ -264,10 +265,10 @@ const allTools: Anthropic.Tool[] = [
 export const LIBRARY_ONLY = ['list_folder'];
 const toolsFor = (library: boolean) => (library ? allTools : allTools.filter((t) => !LIBRARY_ONLY.includes(t.name)));
 
-type CardInput = Omit<Card, 'id' | 'data'> & { videoId?: string; videoIds?: string[] };
+type CardInput = Omit<Card, 'id' | 'data'> & { videoId?: string; videoIds?: string[]; focus?: ComparisonData['focus'] };
 
 async function makeCard(input: CardInput): Promise<Card> {
-	const { videoId, videoIds, ...rest } = input;
+	const { videoId, videoIds, focus, ...rest } = input;
 	const card: Card = { id: crypto.randomUUID().slice(0, 8), ...rest, data: videoId ? { videoId } : undefined };
 	if (card.type === 'video' && videoId) card.data = await videoCardData(videoId);
 	if (card.type === 'insights') {
@@ -277,7 +278,7 @@ async function makeCard(input: CardInput): Promise<Card> {
 	}
 	if (card.type === 'comparison') {
 		if (!videoIds || videoIds.length < 2 || videoIds.length > 4) throw new Error('A comparison needs two to four videoIds.');
-		card.data = await comparisonData(videoIds);
+		card.data = await comparisonData(videoIds, focus);
 	}
 	return card;
 }

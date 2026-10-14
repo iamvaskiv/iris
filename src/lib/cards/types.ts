@@ -65,7 +65,12 @@ export type Insights = {
 export type InsightComment = { text: string; time: number; sentiment: number; emotions?: string[] };
 
 /** Comparison card data: one column per video. The assistant's own rows live in the card's `rows`. */
-export type ComparisonData = { videoIds: string[]; videos: ComparedVideo[] };
+export type ComparisonData = {
+	videoIds: string[];
+	/** Which rows to show: what's in the videos, how audiences responded, or both (default). */
+	focus?: 'all' | 'content' | 'audience';
+	videos: ComparedVideo[];
+};
 
 export type ComparedVideo = {
 	videoId: string;
@@ -79,11 +84,8 @@ export type ComparedVideo = {
 	characters?: string[];
 	themes?: string[];
 	brands?: string[];
-	/** From viewer insights, when the video was shown to an audience. */
-	views?: number;
-	rating?: { average: number; max: number; count: number };
-	/** Share of positive comments, 0–1. */
-	positive?: number;
+	/** Viewer insights, when the video was shown to an audience. */
+	audience?: Insights;
 };
 
 /** What the assistant did to the cards this turn, in order. */

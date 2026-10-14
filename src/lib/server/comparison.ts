@@ -41,16 +41,14 @@ async function compared(videoId: string): Promise<ComparedVideo> {
 		characters: entities ? names(all, 'identity') : undefined,
 		themes: entities ? names(all, 'theme') : undefined,
 		brands: entities ? names(all, 'brand') : undefined,
-		views: audience?.views,
-		rating: audience?.rating,
-		positive: audience?.sentiment
-			? audience.sentiment.positive /
-				(audience.sentiment.positive + audience.sentiment.neutral + audience.sentiment.negative)
-			: undefined
+		audience: audience ?? undefined
 	};
 }
 
 /** Signed poster URLs expire, so this runs when the card is made and on every page visit. */
-export async function comparisonData(videoIds: string[]): Promise<ComparisonData> {
-	return { videoIds, videos: await Promise.all(videoIds.map(compared)) };
+export async function comparisonData(
+	videoIds: string[],
+	focus?: ComparisonData['focus']
+): Promise<ComparisonData> {
+	return { videoIds, focus, videos: await Promise.all(videoIds.map(compared)) };
 }
