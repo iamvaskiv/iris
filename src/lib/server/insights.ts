@@ -1,12 +1,11 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { lumiere } from './lumiere.js';
+import { store } from './store.js';
 import type { Insights } from '#lib/cards/types.js';
 
 /**
  * Viewer insights (views, ratings, sentiment, answers to on-video questions, comments) for videos that were shown
- * to an audience. Built from the raw responses and cached in data/insights.json, since a video can have hundreds.
+ * to an audience. Built from the raw responses and cached (the insights collection), since a video can have hundreds.
  */
-const FILE = 'data/insights.json';
 const TTL = 6 * 60 * 60 * 1000;
 const TOP_COMMENTS = 4;
 
@@ -40,15 +39,6 @@ type Aggregations = {
 		ratingDistribution: { key: string; count: number }[];
 	};
 };
-
-function read(): Record<string, Cached> {
-	return existsSync(FILE) ? JSON.parse(readFileSync(FILE, 'utf8')) : {};
-}
-
-function write(all: Record<string, Cached>) {
-	mkdirSync('data', { recursive: true });
-	writeFileSync(FILE, JSON.stringify(all, null, '\t'));
-}
 
 async function allResponses(videoId: string) {
 	const out: Response[] = [];
@@ -147,11 +137,11 @@ async function build(videoId: string): Promise<Insights | null> {
 export const insights = {
 	/** Cached for a few hours; `null` when nobody has watched or responded yet. */
 	async get(videoId: string): Promise<Insights | null> {
-		const cached = read()[videoId];
+		const cached = await store.get<Cached>('insights', videoId);
 		if (cached && Date.now() - Date.parse(cached.fetchedAt) < TTL) return cached.insights;
 		try {
 			const fresh = await build(videoId);
-			write({ ...read(), [videoId]: { fetchedAt: new Date().toISOString(), insights: fresh } });
+			await store.set<Cached>('insights', videoId, { fetchedAt: new Date().toISOString(), insights: fresh });
 			return fresh;
 		} catch (e) {
 			// Serve stale data rather than nothing if the refresh fails.

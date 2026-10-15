@@ -427,7 +427,7 @@ export async function runLoop(opts: {
 }
 
 async function agent({ message, project }: ChatRequest): Promise<ChatResponse> {
-	const { libraryAccess: library } = settings.get();
+	const { libraryAccess: library } = await settings.get();
 	const userAssets = await assets.list();
 	const turn: Turn = { project, ops: [], library, assetIds: new Set(userAssets.map((a) => a.id)) };
 	const { text, history } = await runLoop({

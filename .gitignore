@@ -24,3 +24,8 @@ vite.config.ts.timestamp-*
 
 # Prototype storage
 /data
+
+# Cloudflare
+.wrangler
+.dev.vars*
+/data.backup-*

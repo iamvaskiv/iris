@@ -4,7 +4,7 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => ({
 	projects: await Promise.all(
-		projects.list().map(async (p) => ({
+		(await projects.list()).map(async (p) => ({
 			id: p.id,
 			name: p.name,
 			summary: p.summary,

@@ -1,38 +1,11 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { store } from './store.js';
 import type { Project } from '#lib/projects.js';
 
-// Prototype storage: one JSON file, read and written whole.
-const FILE = 'data/projects.json';
-const SEED_VIDEO_ID = 'vcnghIEcxyqz';
-
-function read(): Project[] {
-	if (!existsSync(FILE)) {
-		const now = new Date().toISOString();
-		write([
-			{
-				id: crypto.randomUUID().slice(0, 8),
-				name: 'Inside Out 2 clip',
-				summary: 'Envy arrives and the core emotions react with shock.',
-				videoIds: [SEED_VIDEO_ID],
-				cards: [],
-				history: [],
-				createdAt: now,
-				updatedAt: now
-			}
-		]);
-	}
-	return JSON.parse(readFileSync(FILE, 'utf8'));
-}
-
-function write(projects: Project[]) {
-	mkdirSync('data', { recursive: true });
-	writeFileSync(FILE, JSON.stringify(projects, null, '\t'));
-}
-
 export const projects = {
-	list: () => read().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
-	get: (id: string) => read().find((p) => p.id === id),
-	create(name = 'New project'): Project {
+	list: async () =>
+		(await store.all<Project>('projects')).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
+	get: (id: string) => store.get<Project>('projects', id),
+	async create(name = 'New project'): Promise<Project> {
 		const now = new Date().toISOString();
 		const project: Project = {
 			id: crypto.randomUUID().slice(0, 8),
@@ -43,29 +16,18 @@ export const projects = {
 			createdAt: now,
 			updatedAt: now
 		};
-		write([...read(), project]);
+		await store.set('projects', project.id, project);
 		return project;
 	},
 	/**
-	 * Applies `change` to the latest saved copy and writes it back. Read, change and write happen synchronously,
-	 * so concurrent requests (a chat turn and an upload poll) can't overwrite each other's edits.
-	 * Do any awaiting before calling this, never inside `change`.
+	 * Applies `change` to the latest saved copy and saves it. If another request saved the project in between,
+	 * `change` runs again on that newer copy, so concurrent requests (a chat turn and an upload poll) keep each other's
+	 * edits. Do any awaiting before calling this, never inside `change`.
 	 */
-	update(id: string, change: (project: Project) => void): Project | undefined {
-		const all = read();
-		const project = all.find((p) => p.id === id);
-		if (!project) return undefined;
-		change(project);
-		project.updatedAt = new Date().toISOString();
-		write(all);
-		return project;
-	},
-	remove(id: string) {
-		write(read().filter((p) => p.id !== id));
-	},
-	/** Replaces the whole project. Only for freshly created projects; otherwise use `update`. */
-	save(project: Project) {
-		project.updatedAt = new Date().toISOString();
-		write(read().map((p) => (p.id === project.id ? project : p)));
-	}
+	update: (id: string, change: (project: Project) => void) =>
+		store.update<Project>('projects', id, (project) => {
+			change(project);
+			project.updatedAt = new Date().toISOString();
+		}),
+	remove: (id: string) => store.delete('projects', id)
 };

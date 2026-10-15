@@ -8,8 +8,10 @@ import { SESSION_COOKIE, sessionToken } from '#lib/server/auth.js';
 export const handle: Handle = async ({ event, resolve }) => {
 	if (dev || event.url.pathname === '/login') return resolve(event);
 	// Fail closed: a deploy without a password must not be open to anyone with the link.
-	if (!env.SITE_PASSWORD) return new Response('Sign-in is not set up yet (SITE_PASSWORD is missing).', { status: 503 });
-	if (event.cookies.get(SESSION_COOKIE) === (await sessionToken(env.SITE_PASSWORD))) return resolve(event);
+	if (!env.SITE_PASSWORD)
+		return new Response('Sign-in is not set up yet (SITE_PASSWORD is missing).', { status: 503 });
+	if (event.cookies.get(SESSION_COOKIE) === (await sessionToken(env.SITE_PASSWORD)))
+		return resolve(event);
 	if (event.url.pathname.startsWith('/api/')) return new Response('Not signed in', { status: 401 });
 	redirect(303, `/login?to=${encodeURIComponent(event.url.pathname + event.url.search)}`);
 };

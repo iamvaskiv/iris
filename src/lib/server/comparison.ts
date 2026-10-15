@@ -15,8 +15,8 @@ const names = (entities: Entity[], type: string) =>
 async function compared(videoId: string): Promise<ComparedVideo> {
 	const soft = <T>(p: Promise<T>) => p.catch(() => null);
 	// If the lookup fails, the user's saved copy still has the name and length.
-	const saved = assets.get(videoId);
-	const video = (await soft(lumiere.video(videoId))) ?? (saved && { name: saved.name, duration: saved.duration });
+	const [fetched, saved] = await Promise.all([soft(lumiere.video(videoId)), assets.get(videoId)]);
+	const video = fetched ?? (saved && { name: saved.name, duration: saved.duration, processingStatus: undefined });
 	const analysed = video?.processingStatus === 'completed';
 	const [poster, chapters, entities, audience] = await Promise.all([
 		// A third of the way in: trailers open on studio logos and black frames.

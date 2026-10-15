@@ -113,8 +113,8 @@ export type WorkspaceResponse = {
 	error?: string;
 };
 
-function describeProjects() {
-	const list = projects.list();
+async function describeProjects() {
+	const list = await projects.list();
 	if (!list.length) return 'Projects: none yet.';
 	const lines = list.map(
 		(p) =>
@@ -153,7 +153,7 @@ export async function workspaceChat(
 	let refresh = false;
 	let choices: string[] | undefined;
 	const awaitingConfirmation = pendingDeletions(history);
-	const { libraryAccess: library } = settings.get();
+	const { libraryAccess: library } = await settings.get();
 	const userAssets = await assets.list();
 	const assetIds = new Set(userAssets.map((a) => a.id));
 
@@ -187,13 +187,13 @@ export async function workspaceChat(
 				navigate = { name: input.name as string, message: firstMessage };
 				return { created: true };
 			}
-			const project = projects.create(input.name as string);
-			projects.update(project.id, (p) => p.videoIds.push(...videoIds));
+			const project = await projects.create(input.name as string);
+			await projects.update(project.id, (p) => p.videoIds.push(...videoIds));
 			navigate = { projectId: project.id, message: firstMessage };
 			return { created: true, id: project.id };
 		}
 		if (name === 'delete_project') {
-			const project = projects.get(input.id as string);
+			const project = await projects.get(input.id as string);
 			if (!project) throw new Error(`No project with id ${input.id}`);
 			// Enforced here, not just in the prompt: deleting needs a confirmation question in the previous reply.
 			if (input.confirmed && !awaitingConfirmation.has(project.id)) {
@@ -212,12 +212,12 @@ export async function workspaceChat(
 					next: 'Ask the user to confirm.'
 				};
 			}
-			projects.remove(project.id);
+			await projects.remove(project.id);
 			refresh = true;
 			return { deleted: true, name: project.name };
 		}
 		if (name === 'open_project') {
-			if (!projects.get(input.id as string)) throw new Error(`No project with id ${input.id}`);
+			if (!(await projects.get(input.id as string))) throw new Error(`No project with id ${input.id}`);
 			navigate = { projectId: input.id as string, message: firstMessage };
 			return { opened: true };
 		}
@@ -226,7 +226,7 @@ export async function workspaceChat(
 
 	try {
 		const res = await runLoop({
-			system: `${systemPrompt(library)}\n\n${describeProjects()}\n${describeAssets(userAssets)}`,
+			system: `${systemPrompt(library)}\n\n${await describeProjects()}\n${describeAssets(userAssets)}`,
 			tools: toolsFor(library),
 			history,
 			message,

@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		};
 		return { project: draft };
 	}
-	const project = projects.get(params.id);
+	const project = await projects.get(params.id);
 	if (!project) error(404, 'Project not found');
 	const { history: _, ...rest } = project;
 

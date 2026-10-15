@@ -1,19 +1,24 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { store } from './store.js';
 
 export type Settings = {
 	/** Lets the assistants browse and use any video in the connected Lumiere workspace. Off: only project videos. */
 	libraryAccess: boolean;
 };
 
-const FILE = 'data/settings.json';
 const DEFAULTS: Settings = { libraryAccess: false };
+/** App-wide settings are one document. */
+const ID = 'app';
 
 export const settings = {
-	get: (): Settings => ({ ...DEFAULTS, ...(existsSync(FILE) ? JSON.parse(readFileSync(FILE, 'utf8')) : {}) }),
-	update(patch: Partial<Settings>): Settings {
-		const next = { ...settings.get(), ...patch };
-		mkdirSync('data', { recursive: true });
-		writeFileSync(FILE, JSON.stringify(next, null, '\t'));
-		return next;
-	}
+	get: async (): Promise<Settings> => ({
+		...DEFAULTS,
+		...(await store.get<Partial<Settings>>('settings', ID))
+	}),
+	update: async (patch: Partial<Settings>): Promise<Settings> =>
+		(await store.update<Settings>(
+			'settings',
+			ID,
+			(s) => Object.assign(s, patch),
+			() => ({ ...DEFAULTS })
+		))!
 };

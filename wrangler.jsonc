@@ -1,0 +1,25 @@
+{
+	// Cloudflare Workers config for the deployed app. Secrets (ANTHROPIC_API_KEY, LUMIERE_API_KEY, SITE_PASSWORD)
+	// are not here: set them with `npx wrangler secret put <NAME>`.
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "iris",
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"compatibility_date": "2026-10-01",
+	"compatibility_flags": ["nodejs_compat"],
+	"assets": { "binding": "ASSETS", "directory": ".svelte-kit/cloudflare" },
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "iris",
+			// Filled in after `npx wrangler d1 create iris`.
+			"database_id": "00000000-0000-0000-0000-000000000000",
+			"migrations_dir": "migrations"
+		}
+	],
+	"vars": {
+		// Not secret: which Lumiere workspace to use, and the folder uploads go into.
+		"LUMIERE_TEAM_ID": "EcGfL2n9Ikq4",
+		"LUMIERE_FOLDER_ID": "feMOc3xZ18Fa"
+	},
+	"observability": { "enabled": true }
+}

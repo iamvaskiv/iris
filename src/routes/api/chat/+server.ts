@@ -5,14 +5,14 @@ import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const { projectId, message } = await request.json();
-	const project = projects.get(projectId);
+	const project = await projects.get(projectId);
 	if (!project) error(404, 'Project not found');
 
 	try {
 		// The agent works on the copy loaded above; the turn can take a while, so its results are merged into
 		// the latest saved copy rather than overwriting it (an upload may have changed cards in the meantime).
 		const res = await chat({ message, project });
-		const saved = projects.update(project.id, (latest) => {
+		const saved = await projects.update(project.id, (latest) => {
 			for (const op of res.ops) {
 				if (op.op === 'add') latest.cards.push(op.card);
 				if (op.op === 'update') latest.cards = latest.cards.map((c) => (c.id === op.card.id ? op.card : c));

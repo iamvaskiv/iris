@@ -4,5 +4,5 @@ import type { RequestHandler } from './$types';
 
 export const PATCH: RequestHandler = async ({ request }) => {
 	const { libraryAccess } = await request.json();
-	return json(settings.update({ libraryAccess: Boolean(libraryAccess) }));
+	return json(await settings.update({ libraryAccess: Boolean(libraryAccess) }));
 };

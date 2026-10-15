@@ -78,22 +78,28 @@
 		project.cards.push(card);
 		await focus(card.id);
 
-		// XHR rather than fetch, for upload progress.
-		const ok = await new Promise<boolean>((resolve) => {
-			const xhr = new XMLHttpRequest();
-			xhr.open('PUT', `/api/projects/${project.id}/upload?ingestionId=${card.data!.ingestionId}`);
-			xhr.setRequestHeader('content-type', file.type || 'video/mp4');
-			xhr.upload.onprogress = (e) => {
-				if (e.lengthComputable)
-					replaceCard({
-						...card,
-						data: { ...card.data, progress: Math.round((e.loaded / e.total) * 100) }
-					});
-			};
-			xhr.onload = () => resolve(xhr.status < 300);
-			xhr.onerror = () => resolve(false);
-			xhr.send(file);
-		});
+		// Straight to the signed storage URL first: faster, and no size limit from the app's host. If the browser
+		// isn't allowed to (the storage bucket's CORS rules), send it through the app instead.
+		const put = (url: string) =>
+			// XHR rather than fetch, for upload progress.
+			new Promise<boolean>((resolve) => {
+				const xhr = new XMLHttpRequest();
+				xhr.open('PUT', url);
+				xhr.setRequestHeader('content-type', file.type || 'video/mp4');
+				xhr.upload.onprogress = (e) => {
+					if (e.lengthComputable)
+						replaceCard({
+							...card,
+							data: { ...card.data, progress: Math.round((e.loaded / e.total) * 100) }
+						});
+				};
+				xhr.onload = () => resolve(xhr.status < 300);
+				xhr.onerror = () => resolve(false);
+				xhr.send(file);
+			});
+		const ok =
+			(await put(card.data!.uploadUrl as string)) ||
+			(await put(`/api/projects/${project.id}/upload?ingestionId=${card.data!.ingestionId}`));
 		if (!ok) {
 			replaceCard({ ...card, subtitle: 'Upload failed', data: { ...card.data, phase: 'failed' } });
 			return;

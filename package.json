@@ -13,7 +13,10 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"postinstall": "latitude-skills",
-		"ds:update": "npm pack \"/Users/vitalii/Development/design-system-test/packages/design-system\" --pack-destination .latitude && pnpm add @latitudelabs/design-system@file:.latitude/latitudelabs-design-system-0.0.1.tgz"
+		"ds:update": "npm pack \"/Users/vitalii/Development/design-system-test/packages/design-system\" --pack-destination .latitude && pnpm add @latitudelabs/design-system@file:.latitude/latitudelabs-design-system-0.0.1.tgz",
+		"deploy": "pnpm build && wrangler deploy",
+		"db:migrate": "wrangler d1 migrations apply iris --remote",
+		"db:seed": "node scripts/d1-seed.mjs > .wrangler/seed.sql && wrangler d1 execute iris --remote --file .wrangler/seed.sql"
 	},
 	"dependencies": {
 		"@anthropic-ai/sdk": "^0.133.0",
@@ -23,7 +26,7 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
-		"@sveltejs/adapter-auto": "^8.0.0",
+		"@sveltejs/adapter-cloudflare": "8.0.1",
 		"@sveltejs/kit": "^3.0.0",
 		"@sveltejs/vite-plugin-svelte": "^7.2.0",
 		"@tailwindcss/vite": "^4.3.0",
@@ -40,7 +43,8 @@
 		"tailwindcss": "^4.3.0",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.60.1",
-		"vite": "^8.3.0"
+		"vite": "^8.3.0",
+		"wrangler": "4.151.0"
 	},
 	"imports": {
 		"#lib": "./src/lib/index.js",

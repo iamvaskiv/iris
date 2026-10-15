@@ -5,5 +5,5 @@ import type { RequestHandler } from './$types';
 /** Saves a project. Called when a draft gets its first content (message or upload). */
 export const POST: RequestHandler = async ({ request }) => {
 	const { name } = await request.json().catch(() => ({}));
-	return json({ id: projects.create(name || undefined).id });
+	return json({ id: (await projects.create(name || undefined)).id });
 };
