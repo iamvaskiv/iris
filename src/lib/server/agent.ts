@@ -40,7 +40,7 @@ export function parseChoices(input: Record<string, unknown>) {
 }
 
 /** Extra rules when the Lumiere library is exposed (Settings → Video library). */
-export const LIBRARY = `Video library access is ON: besides the user's own videos you can browse the team's video library with list_folder and read any video in it. Call it "the video library". Library videos only have an analysis (summary, characters, scenes, transcript) if \`analysed\` is true; check before relying on one, and if it isn't analysed, say so and suggest uploading the file instead.`;
+export const LIBRARY = `Video library access is ON: besides the user's own videos you can browse the video library with list_folder and read any video in it. Call it "the video library". It spans several teams: list_folder without a teamId lists them, then pass a teamId (and a folderId within that team) to browse. When the user names a team, browse only that one. Library videos only have an analysis (summary, characters, scenes, transcript) if \`analysed\` is true; check before relying on one, and if it isn't analysed, say so and suggest uploading the file instead.`;
 
 function systemPrompt(library: boolean) {
 	return `${BRAND}
@@ -123,8 +123,11 @@ export const libraryTools: Anthropic.Tool[] = [
 	{
 		name: 'list_folder',
 		description:
-			"List folders and videos in the team's Lumiere library. Use folderId 'ROOT' for the top level. Videos have `analysed`: false means Lumiere has no AI analysis for it (no summary, entities, scenes or transcript).",
-		input_schema: { type: 'object', properties: { folderId: { type: 'string' } } }
+			"Browse the video library. Without a teamId: the teams whose libraries you can browse. With a teamId: that team's folders and videos, starting at folderId 'ROOT' (the default). Videos with `analysed`: false have no AI analysis (no summary, entities, scenes or transcript).",
+		input_schema: {
+			type: 'object',
+			properties: { teamId: { type: 'string' }, folderId: { type: 'string', description: "A folder in that team; 'ROOT' for its top level" } }
+		}
 	},
 	{
 		name: 'get_video',
@@ -177,8 +180,12 @@ export async function runLibraryTool(name: string, input: Record<string, unknown
 	const id = (input.videoId as string) ?? defaultVideoId;
 	if (name !== 'list_folder' && !id) throw new Error('No video given.');
 	switch (name) {
-		case 'list_folder':
-			return lumiere.listFolder(input.folderId as string);
+		case 'list_folder': {
+			const teams = await lumiere.teams();
+			if (!input.teamId) return { teams };
+			if (!teams.some((t) => t.id === input.teamId)) throw new Error(`Unknown team. Teams: ${JSON.stringify(teams)}`);
+			return lumiere.listFolder((input.folderId as string) || 'ROOT', input.teamId as string);
+		}
 		case 'get_video': {
 			const video = await lumiere.video(id!);
 			return { ...video, analysed: video.processingStatus === 'completed' };
