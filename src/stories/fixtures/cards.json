@@ -1,0 +1,1010 @@
+{
+	"Women Talking Trailer · Women Talking – Official Trailer": {
+		"id": "070bd633",
+		"type": "video",
+		"title": "Women Talking – Official Trailer",
+		"body": "Trailer for Sarah Polley's 'Women Talking'. Mennonite women secretly gather in a hayloft to decide whether to forgive, stay and fight, or leave after systemic sexual violence by the colony's men. 1:42 long.",
+		"data": {
+			"videoId": "vk4G86s6uVuW",
+			"poster": "/fixtures/e3590b1f5195.jpg",
+			"duration": 101.601489,
+			"scenes": [
+				{
+					"title": "Introduction to the Colony",
+					"start": 0,
+					"thumb": "/fixtures/548abeb96635.jpg"
+				},
+				{
+					"title": "A Choice to Make",
+					"start": 25,
+					"thumb": "/fixtures/df6bf339ff5c.jpg"
+				},
+				{
+					"title": "Rage, Hope, and Liberation",
+					"start": 57,
+					"thumb": "/fixtures/e79432a48c70.jpg"
+				},
+				{
+					"title": "Title & Ensemble Credits",
+					"start": 90,
+					"thumb": "/fixtures/1f82b99c371e.jpg"
+				}
+			],
+			"characters": [
+				{
+					"name": "Ona Friesen",
+					"role": "Hero",
+					"actor": "Rooney Mara",
+					"image": "/fixtures/347dd2d023ec.jpg"
+				},
+				{
+					"name": "Salome Friesen",
+					"role": "Hero",
+					"actor": "Claire Foy",
+					"image": "/fixtures/05d30a35a9d5.jpg"
+				},
+				{
+					"name": "Autje",
+					"role": "Narrator",
+					"actor": "Kate Hallett",
+					"image": "/fixtures/347dd2d023ec.jpg"
+				},
+				{
+					"name": "Mariche Loewen",
+					"role": "Hero",
+					"actor": "Jessie Buckley",
+					"image": "/fixtures/819be7c674bc.jpg"
+				},
+				{
+					"name": "Agata",
+					"role": "Mentor",
+					"actor": "Judith Ivey",
+					"image": "/fixtures/bd1e9313b0df.jpg"
+				},
+				{
+					"name": "Scarface Janz",
+					"role": "Antagonist",
+					"actor": "Frances McDormand",
+					"image": "/fixtures/819be7c674bc.jpg"
+				}
+			],
+			"themes": [
+				{
+					"name": "Faith and Forgiveness",
+					"description": "The conflict between adherence to strict religious dogma requiring total forgiveness and the moral imperative to protect women and children from ongoing assault."
+				},
+				{
+					"name": "Female Solidarity",
+					"description": "The collective bonding, shared grief, and consensus-building among oppressed women deciding their collective fate inside an isolated community."
+				},
+				{
+					"name": "Resistance to Abuse and Oppression",
+					"description": "The psychological and physical revolt against systemic sexual abuse and patriarchal violence within an isolated religious settlement."
+				}
+			],
+			"brands": [
+				{
+					"name": "Orion Pictures",
+					"category": "Theatrical Movies",
+					"time": 10
+				},
+				{
+					"name": "Plan B Entertainment",
+					"category": "Theatrical Movies",
+					"time": 10
+				},
+				{
+					"name": "hear/say",
+					"category": "Theatrical Movies",
+					"time": 90
+				},
+				{
+					"name": "United Artists Releasing",
+					"category": "Theatrical Movies",
+					"time": 90
+				}
+			]
+		}
+	},
+	"Women Talking Trailer · Trailer Analysis": {
+		"id": "0e25c599",
+		"type": "list",
+		"title": "Trailer Analysis",
+		"subtitle": "Cast, themes, chapters and brands",
+		"items": [
+			{
+				"title": "Ona Friesen",
+				"subtitle": "Rooney Mara",
+				"description": "Gentle, pregnant voice of hope and liberation.",
+				"time": 39
+			},
+			{
+				"title": "Salome Friesen",
+				"subtitle": "Claire Foy",
+				"description": "Fiercely protective mother; says they can't endure more violence.",
+				"time": 43
+			},
+			{
+				"title": "Mariche Loewen",
+				"subtitle": "Jessie Buckley",
+				"description": "Sharp-tongued participant in the barn debate.",
+				"time": 37
+			},
+			{
+				"title": "Scarface Janz (Greta)",
+				"subtitle": "Frances McDormand",
+				"description": "Elder warning that faith demands forgiveness.",
+				"time": 30
+			},
+			{
+				"title": "Agata Loewen",
+				"subtitle": "Judith Ivey",
+				"description": "Elderly matriarch at the council."
+			},
+			{
+				"title": "Autje",
+				"subtitle": "Kate Hallett",
+				"description": "Young girl; reflective voiceover on love and violence.",
+				"time": 1
+			},
+			{
+				"title": "Theme: Faith and Forgiveness",
+				"description": "Religious dogma of total forgiveness vs. the duty to protect women and children."
+			},
+			{
+				"title": "Theme: Female Solidarity",
+				"description": "Collective consensus-building and shared grief."
+			},
+			{
+				"title": "Theme: Resistance to Abuse and Oppression",
+				"description": "Revolt against systemic abuse and patriarchal violence."
+			},
+			{
+				"title": "Ch. 1: Introduction to the Colony",
+				"description": "Autje's voiceover, studio logos, festival laurels.",
+				"time": 0
+			},
+			{
+				"title": "Ch. 2: A Choice to Make",
+				"description": "Women gather in the hayloft to debate forgive, fight or leave.",
+				"time": 25
+			},
+			{
+				"title": "Ch. 3: Rage, Hope, and Liberation",
+				"description": "Salome and Ona on retaliation, endurance and self-liberation.",
+				"time": 57
+			},
+			{
+				"title": "Ch. 4: Title & Ensemble Credits",
+				"description": "Title card, cast, Polley's direction, release details.",
+				"time": 90
+			},
+			{
+				"title": "Brands & credits",
+				"description": "Orion Pictures, Plan B Entertainment, hear/say, United Artists Releasing. Mentions: Miriam Toews (novel), Sarah Polley, Moonlight, Nomadland."
+			}
+		]
+	},
+	"Women Talking Trailer · Salome's Lines": {
+		"id": "082c7366",
+		"type": "quotes",
+		"title": "Salome's Lines",
+		"subtitle": "Salome Friesen (Claire Foy)",
+		"items": [
+			{
+				"title": "We know that we are bruised, and terrified!",
+				"subtitle": "Salome Friesen",
+				"time": 43
+			},
+			{
+				"title": "And we could not endure anymore violence.",
+				"subtitle": "Salome Friesen",
+				"time": 58
+			},
+			{
+				"title": "We have been preyed upon like animals.",
+				"subtitle": "Salome Friesen",
+				"time": 68
+			},
+			{
+				"title": "Maybe we should respond like animals.",
+				"subtitle": "Salome Friesen",
+				"time": 71
+			}
+		]
+	},
+	"Inside Out 2 Clip · Inside Out 2 clip": {
+		"id": "b6ecafa2",
+		"type": "video",
+		"title": "Inside Out 2 clip",
+		"body": "A 14-second trailer clip: Envy gazes in awe at the control console, then Joy, Fear, Disgust and Anger react with shared shock.",
+		"data": {
+			"videoId": "vcnghIEcxyqz",
+			"poster": "/fixtures/e72c26e6d7b4.jpg",
+			"duration": 13.827,
+			"scenes": [
+				{
+					"title": "Introduction of Envy",
+					"start": 0,
+					"thumb": "/fixtures/690303f341c2.jpg"
+				},
+				{
+					"title": "Reactions of the Original Emotions",
+					"start": 8,
+					"thumb": "/fixtures/865b1f459a8a.jpg"
+				}
+			],
+			"characters": [
+				{
+					"name": "Joy",
+					"role": "Hero",
+					"actor": "Amy Poehler",
+					"image": "/fixtures/865b1f459a8a.jpg"
+				},
+				{
+					"name": "Anger",
+					"role": "Sidekick",
+					"actor": "Lewis Black",
+					"image": "/fixtures/865b1f459a8a.jpg"
+				},
+				{
+					"name": "Disgust",
+					"role": "Sidekick",
+					"actor": "Liza Lapira",
+					"image": "/fixtures/865b1f459a8a.jpg"
+				},
+				{
+					"name": "Envy",
+					"role": "Sidekick",
+					"actor": "Ayo Edebiri",
+					"image": "/fixtures/ca7211ecf9b2.jpg"
+				},
+				{
+					"name": "Fear",
+					"role": "Sidekick",
+					"actor": "Tony Hale",
+					"image": "/fixtures/ca7211ecf9b2.jpg"
+				}
+			],
+			"themes": [
+				{
+					"name": "Coping with Change",
+					"description": "The theme of coping with change is central to the clip, illustrated by the reactions of the original emotions to a new arrival. The appearance of Envy at the console is an unexpected disruption to their established world. The subsequent shot of Joy, Fear, Anger, and Disgust standing together in shared shock visualizes the struggle and apprehension that comes with adapting to new circumstances, particularly the transition into adolescence."
+				},
+				{
+					"name": "Emotional Complexity",
+					"description": "This theme is introduced with the arrival of Envy, a new emotion. Unlike the primary emotions of the first film, Envy represents a more nuanced, socially-driven feeling. Her appearance signifies that Riley's inner world is evolving as she gets older, moving beyond basic feelings to more complex ones tied to social comparison and desire. The trailer sets up a narrative about how these new, complicated emotions integrate with—or clash with—the original set."
+				}
+			],
+			"brands": [
+				{
+					"name": "Inside Out",
+					"category": "Theatrical Movies",
+					"time": 0
+				},
+				{
+					"name": "Pixar",
+					"category": "Theatrical Movies",
+					"time": 0
+				},
+				{
+					"name": "Disney",
+					"category": "Theatrical Movies",
+					"time": 0
+				}
+			]
+		}
+	},
+	"Inside Out 2 Clip · Characters": {
+		"id": "398b1ff8",
+		"type": "list",
+		"title": "Characters",
+		"items": [
+			{
+				"title": "Envy",
+				"subtitle": "Ayo Edebiri",
+				"description": "New emotion: tiny, teal-skinned, in purple pajamas, with huge sparkling eyes. She gazes in awe at the console.",
+				"time": 0
+			},
+			{
+				"title": "Joy",
+				"subtitle": "Amy Poehler",
+				"description": "Leader of the original emotions, with blue hair and a yellow dress. Her cheer gives way to deep concern.",
+				"time": 8
+			},
+			{
+				"title": "Fear",
+				"subtitle": "Tony Hale",
+				"description": "Tall, lanky and purple, in a houndstooth vest and bow tie. He looks shocked on top of his usual nerves.",
+				"time": 8
+			},
+			{
+				"title": "Disgust",
+				"subtitle": "Liza Lapira",
+				"description": "Green-skinned, in a green dress and pink scarf. Her usual disdain turns to wide-eyed shock.",
+				"time": 8
+			},
+			{
+				"title": "Anger",
+				"subtitle": "Lewis Black",
+				"description": "Short, stout and red, in a white shirt and tie. His fiery manner is replaced by shared confusion.",
+				"time": 8
+			}
+		]
+	},
+	"Inside Out 2 Clip · Themes": {
+		"id": "e4b31bc0",
+		"type": "list",
+		"title": "Themes",
+		"items": [
+			{
+				"title": "Coping with Change",
+				"description": "Envy's arrival disrupts the emotions' established world. Joy, Fear, Disgust and Anger stand together in shared shock, showing the apprehension of adapting to the move into adolescence.",
+				"time": 8
+			},
+			{
+				"title": "Emotional Complexity",
+				"description": "Envy is a more nuanced, social emotion tied to comparison and desire. Her arrival suggests Riley's inner world is growing beyond basic feelings.",
+				"time": 0
+			}
+		]
+	},
+	"Inside Out 2 Clip · Silent reactions": {
+		"id": "5d8ce6be",
+		"type": "list",
+		"title": "Silent reactions",
+		"items": [
+			{
+				"title": "Envy reaches for a button",
+				"subtitle": "Envy",
+				"description": "Her star-filled eyes and gentle touch on a blue button show wonder and longing. She wants what the others already hold, which is control of the console.",
+				"time": 0
+			},
+			{
+				"title": "Hands clasped, eyes wide",
+				"subtitle": "Fear",
+				"description": "He is nervous as ever, but the terror is amplified. He sees a newcomer as a real threat to Riley's safety.",
+				"time": 8
+			},
+			{
+				"title": "Mouth agape, deep concern",
+				"subtitle": "Joy",
+				"description": "Her usual cheer is gone. Joy leads the group and now sees her role being challenged, which shows how much she is shaken.",
+				"time": 8
+			},
+			{
+				"title": "Arms crossed, appalled disbelief",
+				"subtitle": "Disgust",
+				"description": "Her crossed arms show judgment and distrust. She reacts to Envy as something she needs to guard against.",
+				"time": 8
+			},
+			{
+				"title": "Fists unclenched, stunned silence",
+				"subtitle": "Anger",
+				"description": "Anger doesn't explode, and that is the surprise. Silence from the most volatile emotion shows how big the moment is.",
+				"time": 8
+			}
+		]
+	},
+	"Inside Out 2 Clip · Trailer 1 viewer insights": {
+		"id": "4b3c76a7",
+		"type": "insights",
+		"title": "Trailer 1 viewer insights",
+		"body": "Viewers responded warmly: a 4.8 out of 5 rating, mostly positive comments, and high interest in seeing the film.",
+		"data": {
+			"videoId": "vuvIanfCkI8R",
+			"views": 1470,
+			"responses": 174,
+			"rating": {
+				"average": 4.7,
+				"max": 5,
+				"count": 21
+			},
+			"sentiment": {
+				"positive": 23,
+				"neutral": 10,
+				"negative": 7
+			},
+			"questions": [
+				{
+					"question": "Choose a character whose emotions you would like to see the most",
+					"type": "hotspot",
+					"responses": 39,
+					"options": [
+						{
+							"label": "Little girl",
+							"count": 23
+						},
+						{
+							"label": "Dad",
+							"count": 9
+						},
+						{
+							"label": "Mom",
+							"count": 4
+						}
+					]
+				},
+				{
+					"question": "How do you feel about new emotions?",
+					"type": "slider",
+					"responses": 28,
+					"average": 8.1,
+					"max": 10
+				},
+				{
+					"question": "Which new emotion is the most interesting for you?",
+					"type": "choice",
+					"responses": 21,
+					"options": [
+						{
+							"label": "Embarrassment",
+							"count": 8
+						},
+						{
+							"label": "Anxiety",
+							"count": 7
+						},
+						{
+							"label": "Envy",
+							"count": 3
+						},
+						{
+							"label": "Ennui",
+							"count": 3
+						}
+					]
+				},
+				{
+					"question": "Rate this trailer!",
+					"type": "rating",
+					"responses": 20,
+					"average": 4.8,
+					"max": 5
+				},
+				{
+					"question": "How likely are you to see this movie when it comes out?",
+					"type": "slider",
+					"responses": 17,
+					"average": 8.4,
+					"max": 10
+				}
+			],
+			"liked": [
+				{
+					"text": "Love this guy :D :D :D",
+					"time": 121.5272819,
+					"sentiment": 0.9,
+					"emotions": ["joy", "admiration"]
+				},
+				{
+					"text": "love it so far! can't wait for a release 🫢",
+					"time": 105.798732,
+					"sentiment": 0.9,
+					"emotions": ["joy", "anticipation", "excitement"]
+				},
+				{
+					"text": "Wow, cool turn of events",
+					"time": 101.972927,
+					"sentiment": 0.9,
+					"emotions": ["surprise", "excitement"]
+				},
+				{
+					"text": "A funny character",
+					"time": 31.995971,
+					"sentiment": 0.9,
+					"emotions": ["joy", "surprise"]
+				}
+			],
+			"disliked": [
+				{
+					"text": "hair looks a bit noisy",
+					"time": 17.6437823,
+					"sentiment": -0.8,
+					"emotions": []
+				},
+				{
+					"text": "Don't like spits",
+					"time": 18.57062,
+					"sentiment": -0.8,
+					"emotions": ["disgust", "anger"]
+				},
+				{
+					"text": "why there is so many orange buttons?",
+					"time": 43.287929,
+					"sentiment": -0.7,
+					"emotions": ["confusion"]
+				},
+				{
+					"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
+					"time": 103.05962,
+					"sentiment": -0.5,
+					"emotions": []
+				}
+			],
+			"fetchedAt": "2026-10-15T08:40:22.559Z"
+		}
+	},
+	"Trailer Comparison · Trailer Comparison": {
+		"id": "e4cb9934",
+		"type": "list",
+		"title": "Trailer Comparison",
+		"subtitle": "Women Talking trailer vs Inside Out 2 clip",
+		"items": [
+			{
+				"title": "Tone",
+				"subtitle": "Somber and urgent vs. playful and curious",
+				"description": "Women Talking: desaturated farmland, voiceover about love and violence, heated debate. Inside Out 2: bright Pixar look, awe turning to comic shock."
+			},
+			{
+				"title": "Themes",
+				"subtitle": "Oppression and moral choice vs. growing up",
+				"description": "Women Talking: faith vs. forgiveness, female solidarity, resistance to abuse. Inside Out 2: coping with change, emotional complexity."
+			},
+			{
+				"title": "Characters",
+				"subtitle": "Human ensemble vs. emotion ensemble",
+				"description": "Women Talking: Ona, Salome, Mariche, Agata, Scarface Janz, with Autje narrating (Rooney Mara, Claire Foy, Jessie Buckley, Frances McDormand). Inside Out 2: Envy meets Joy, Fear, Anger and Disgust (Ayo Edebiri, Amy Poehler, Tony Hale, Lewis Black, Liza Lapira)."
+			},
+			{
+				"title": "Pacing",
+				"subtitle": "102s slow-building vs. 14s two-beat",
+				"description": "Women Talking: four chapters (0-25s, 25-57s, 57-90s, 90-102s), escalating from quiet to confrontation. Inside Out 2: two beats, Envy (0-7s) then the reactions (8-13s), with no dialogue."
+			},
+			{
+				"title": "Story-building",
+				"subtitle": "Argument-driven vs. reveal-driven",
+				"description": "Women Talking: philosophical hook, hayloft debate (forgive, fight or leave), trauma flashes, then title and cast. Inside Out 2: a single inciting incident, the arrival of Envy, followed by the reaction shot to set up the conflict."
+			}
+		]
+	},
+	"Trailer Comparison · Trailer Numbers": {
+		"id": "1d2d1c6b",
+		"type": "table",
+		"title": "Trailer Numbers",
+		"subtitle": "Women Talking trailer vs Inside Out 2 clip",
+		"columns": ["Metric", "Women Talking", "Inside Out 2"],
+		"rows": [
+			["Duration (s)", 102, 14],
+			["Chapters (scenes)", 4, 2],
+			["Main characters", "Ona, Salome, Mariche, Autje", "Envy, Joy, Fear, Anger, Disgust"],
+			["Tone", "Somber, tense, urgent", "Playful, curious, comic shock"],
+			["Pacing", "Slow build, ~25s chapters", "Fast, two ~7s beats"],
+			[
+				"Key themes",
+				"Faith vs. forgiveness, solidarity, resistance to oppression",
+				"Coping with change, emotional complexity"
+			],
+			["Spoken lines", 23, 0],
+			["Speaking characters", 6, 0],
+			["Named characters", 6, 5],
+			["Themes detected", 3, 2],
+			["Key events", 2, 2],
+			["Brands / studios", 4, 3],
+			["Total entities", 19, 12]
+		]
+	},
+	"Trailer Comparison · Women Talking vs Inside Out 2 trailer": {
+		"id": "7bd86800",
+		"type": "comparison",
+		"title": "Women Talking vs Inside Out 2 trailer",
+		"body": "Women Talking has full analysis but no audience data, while the full Inside Out 2 trailer has audience data (rating 4.7/5) but no analysis.",
+		"rows": [
+			[
+				"Analysis",
+				"Full: summary, 4 chapters, entities, transcript",
+				"Not analysed; only 6 scene markers (intro, Hokey, Emotions introduction, Anxiety takeover, Life moments)"
+			],
+			["Audience rating", "No audience data", "4.7/5, trailer rating 4.8"],
+			["Likelihood to see it", "No audience data", "8.4/10"],
+			[
+				"Standout reaction",
+				"No audience data",
+				"Anxiety and Embarrassment are the most interesting new emotions; most want to see the little girl"
+			]
+		],
+		"data": {
+			"videoIds": ["vk4G86s6uVuW", "vuvIanfCkI8R"],
+			"videos": [
+				{
+					"videoId": "vk4G86s6uVuW",
+					"name": "Women Talking - Official Trailer",
+					"poster": "/fixtures/1c71052970d6.jpg",
+					"duration": 101.601489,
+					"analysed": true,
+					"scenes": 4,
+					"characters": [
+						"Ona Friesen",
+						"Salome Friesen",
+						"Autje",
+						"Mariche Loewen",
+						"Agata",
+						"Scarface Janz"
+					],
+					"themes": [
+						"Faith and Forgiveness",
+						"Female Solidarity",
+						"Resistance to Abuse and Oppression"
+					],
+					"brands": [
+						"Orion Pictures",
+						"Plan B Entertainment",
+						"hear/say",
+						"United Artists Releasing"
+					]
+				},
+				{
+					"videoId": "vuvIanfCkI8R",
+					"name": "Inside Out 2 | Trailer 1",
+					"poster": "/fixtures/fb29aeb664b8.jpg",
+					"duration": 144.561089,
+					"analysed": false,
+					"audience": {
+						"videoId": "vuvIanfCkI8R",
+						"views": 1470,
+						"responses": 174,
+						"rating": {
+							"average": 4.7,
+							"max": 5,
+							"count": 21
+						},
+						"sentiment": {
+							"positive": 23,
+							"neutral": 10,
+							"negative": 7
+						},
+						"questions": [
+							{
+								"question": "Choose a character whose emotions you would like to see the most",
+								"type": "hotspot",
+								"responses": 39,
+								"options": [
+									{
+										"label": "Little girl",
+										"count": 23
+									},
+									{
+										"label": "Dad",
+										"count": 9
+									},
+									{
+										"label": "Mom",
+										"count": 4
+									}
+								]
+							},
+							{
+								"question": "How do you feel about new emotions?",
+								"type": "slider",
+								"responses": 28,
+								"average": 8.1,
+								"max": 10
+							},
+							{
+								"question": "Which new emotion is the most interesting for you?",
+								"type": "choice",
+								"responses": 21,
+								"options": [
+									{
+										"label": "Embarrassment",
+										"count": 8
+									},
+									{
+										"label": "Anxiety",
+										"count": 7
+									},
+									{
+										"label": "Envy",
+										"count": 3
+									},
+									{
+										"label": "Ennui",
+										"count": 3
+									}
+								]
+							},
+							{
+								"question": "Rate this trailer!",
+								"type": "rating",
+								"responses": 20,
+								"average": 4.8,
+								"max": 5
+							},
+							{
+								"question": "How likely are you to see this movie when it comes out?",
+								"type": "slider",
+								"responses": 17,
+								"average": 8.4,
+								"max": 10
+							}
+						],
+						"liked": [
+							{
+								"text": "Love this guy :D :D :D",
+								"time": 121.5272819,
+								"sentiment": 0.9,
+								"emotions": ["joy", "admiration"]
+							},
+							{
+								"text": "love it so far! can't wait for a release 🫢",
+								"time": 105.798732,
+								"sentiment": 0.9,
+								"emotions": ["joy", "anticipation", "excitement"]
+							},
+							{
+								"text": "Wow, cool turn of events",
+								"time": 101.972927,
+								"sentiment": 0.9,
+								"emotions": ["surprise", "excitement"]
+							},
+							{
+								"text": "A funny character",
+								"time": 31.995971,
+								"sentiment": 0.9,
+								"emotions": ["joy", "surprise"]
+							}
+						],
+						"disliked": [
+							{
+								"text": "hair looks a bit noisy",
+								"time": 17.6437823,
+								"sentiment": -0.8,
+								"emotions": []
+							},
+							{
+								"text": "Don't like spits",
+								"time": 18.57062,
+								"sentiment": -0.8,
+								"emotions": ["disgust", "anger"]
+							},
+							{
+								"text": "why there is so many orange buttons?",
+								"time": 43.287929,
+								"sentiment": -0.7,
+								"emotions": ["confusion"]
+							},
+							{
+								"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
+								"time": 103.05962,
+								"sentiment": -0.5,
+								"emotions": []
+							}
+						],
+						"fetchedAt": "2026-10-15T08:40:22.559Z"
+					}
+				}
+			]
+		}
+	},
+	"Trailer Comparison · Audience Response Comparison": {
+		"id": "ba39a909",
+		"type": "comparison",
+		"title": "Audience Response Comparison",
+		"body": "The first Inside Out 2 trailer drew by far the most audience response (1,470 views, 174 responses, 4.7/5), while the second Inside Out 2 upload and A Man Called Otto have almost none.",
+		"data": {
+			"videoIds": ["vuvIanfCkI8R", "v5hGg1VcDnhr", "vHgqYPjduiQ9"],
+			"focus": "audience",
+			"videos": [
+				{
+					"videoId": "vuvIanfCkI8R",
+					"name": "Inside Out 2 | Trailer 1",
+					"poster": "/fixtures/fb29aeb664b8.jpg",
+					"duration": 144.561089,
+					"analysed": false,
+					"audience": {
+						"videoId": "vuvIanfCkI8R",
+						"views": 1470,
+						"responses": 174,
+						"rating": {
+							"average": 4.7,
+							"max": 5,
+							"count": 21
+						},
+						"sentiment": {
+							"positive": 23,
+							"neutral": 10,
+							"negative": 7
+						},
+						"questions": [
+							{
+								"question": "Choose a character whose emotions you would like to see the most",
+								"type": "hotspot",
+								"responses": 39,
+								"options": [
+									{
+										"label": "Little girl",
+										"count": 23
+									},
+									{
+										"label": "Dad",
+										"count": 9
+									},
+									{
+										"label": "Mom",
+										"count": 4
+									}
+								]
+							},
+							{
+								"question": "How do you feel about new emotions?",
+								"type": "slider",
+								"responses": 28,
+								"average": 8.1,
+								"max": 10
+							},
+							{
+								"question": "Which new emotion is the most interesting for you?",
+								"type": "choice",
+								"responses": 21,
+								"options": [
+									{
+										"label": "Embarrassment",
+										"count": 8
+									},
+									{
+										"label": "Anxiety",
+										"count": 7
+									},
+									{
+										"label": "Envy",
+										"count": 3
+									},
+									{
+										"label": "Ennui",
+										"count": 3
+									}
+								]
+							},
+							{
+								"question": "Rate this trailer!",
+								"type": "rating",
+								"responses": 20,
+								"average": 4.8,
+								"max": 5
+							},
+							{
+								"question": "How likely are you to see this movie when it comes out?",
+								"type": "slider",
+								"responses": 17,
+								"average": 8.4,
+								"max": 10
+							}
+						],
+						"liked": [
+							{
+								"text": "Love this guy :D :D :D",
+								"time": 121.5272819,
+								"sentiment": 0.9,
+								"emotions": ["joy", "admiration"]
+							},
+							{
+								"text": "love it so far! can't wait for a release 🫢",
+								"time": 105.798732,
+								"sentiment": 0.9,
+								"emotions": ["joy", "anticipation", "excitement"]
+							},
+							{
+								"text": "Wow, cool turn of events",
+								"time": 101.972927,
+								"sentiment": 0.9,
+								"emotions": ["surprise", "excitement"]
+							},
+							{
+								"text": "A funny character",
+								"time": 31.995971,
+								"sentiment": 0.9,
+								"emotions": ["joy", "surprise"]
+							}
+						],
+						"disliked": [
+							{
+								"text": "hair looks a bit noisy",
+								"time": 17.6437823,
+								"sentiment": -0.8,
+								"emotions": []
+							},
+							{
+								"text": "Don't like spits",
+								"time": 18.57062,
+								"sentiment": -0.8,
+								"emotions": ["disgust", "anger"]
+							},
+							{
+								"text": "why there is so many orange buttons?",
+								"time": 43.287929,
+								"sentiment": -0.7,
+								"emotions": ["confusion"]
+							},
+							{
+								"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
+								"time": 103.05962,
+								"sentiment": -0.5,
+								"emotions": []
+							}
+						],
+						"fetchedAt": "2026-10-15T08:40:22.559Z"
+					}
+				},
+				{
+					"videoId": "v5hGg1VcDnhr",
+					"name": "Inside Out 2 | Trailer 1",
+					"poster": "/fixtures/fb29aeb664b8.jpg",
+					"duration": 144.561089,
+					"analysed": false,
+					"audience": {
+						"videoId": "v5hGg1VcDnhr",
+						"views": 0,
+						"responses": 3,
+						"rating": {
+							"average": 4,
+							"max": 5,
+							"count": 2
+						},
+						"sentiment": {
+							"positive": 2,
+							"neutral": 0,
+							"negative": 0
+						},
+						"questions": [
+							{
+								"question": "Choose a character whose emotions you would like to see the most",
+								"type": "hotspot",
+								"responses": 1,
+								"options": [
+									{
+										"label": "Little girl",
+										"count": 1
+									}
+								]
+							}
+						],
+						"liked": [
+							{
+								"text": "nice scene!",
+								"time": 27.134968,
+								"sentiment": 0.8,
+								"emotions": ["appreciation", "excitement", "optimism"]
+							},
+							{
+								"text": "wow what wonderful moment!",
+								"time": 17.767198,
+								"sentiment": 0.8,
+								"emotions": ["appreciation", "excitement", "optimism"]
+							}
+						],
+						"disliked": [],
+						"fetchedAt": "2026-10-15T08:40:22.232Z"
+					}
+				},
+				{
+					"videoId": "vHgqYPjduiQ9",
+					"name": "A MAN CALLED OTTO - Official Trailer (HD)",
+					"poster": "/fixtures/092814415f45.jpg",
+					"duration": 159.284133,
+					"analysed": false,
+					"audience": {
+						"videoId": "vHgqYPjduiQ9",
+						"views": 0,
+						"responses": 2,
+						"sentiment": {
+							"positive": 1,
+							"neutral": 1,
+							"negative": 0
+						},
+						"questions": [],
+						"liked": [
+							{
+								"text": "Woooow",
+								"time": 88.48518,
+								"sentiment": 0.3,
+								"emotions": ["excitement", "appreciation"]
+							}
+						],
+						"disliked": [],
+						"fetchedAt": "2026-10-15T08:40:22.231Z"
+					}
+				}
+			]
+		}
+	}
+}

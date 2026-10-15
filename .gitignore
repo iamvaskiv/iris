@@ -29,3 +29,6 @@ vite.config.ts.timestamp-*
 .wrangler
 .dev.vars*
 /data.backup-*
+
+# Storybook
+/storybook-static

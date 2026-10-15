@@ -2,104 +2,85 @@
 
 Iris is a SvelteKit app deployed on Cloudflare Workers (`iris.<account>.workers.dev`), behind a shared team password.
 
+## Overview
+
 ```mermaid
 flowchart TB
     user(["Teammate"])
 
-    subgraph browser["Browser · SvelteKit pages (Svelte 5 + Latitude design system)"]
-        login["/login · team password"]
-        home["/ · Projects page<br/>tiles, projects-page Lumi, drop a video → new project"]
-        project["/projects/[id] · Project page<br/>card stack, focus & scrolling, drop a video → upload"]
-        assetsPage["/assets · Your videos"]
-        settingsPage["/settings · Theme, video library access"]
-        dock["AiDock<br/>Lumi reply bubble, PromptInput, ChoiceList"]
-        cards["Card registry<br/>Video · Insights · Comparison · List · Quotes · Table · Text · Upload<br/>(design-system Card.Section, Stat, SentimentBar, Tile; isWide)"]
+    subgraph browser["Browser"]
+        pages["Pages<br/>projects · project · assets · settings · sign-in"]
+        cards["Cards + Lumi's dock<br/>(Latitude design system)"]
     end
 
-    subgraph worker["Cloudflare Worker · SvelteKit server"]
-        gate["hooks.server.ts<br/>production only: session cookie from SITE_PASSWORD, else /login"]
-
-        subgraph routes["Routes"]
-            loads["Page loads (+page.server.ts)<br/>refresh signed URLs & insights on every visit"]
-            chatApi["POST /api/chat"]
-            workspaceApi["POST /api/workspace"]
-            projectsApi["POST /api/projects"]
-            uploadApi["/api/projects/[id]/upload<br/>start · PUT file (fallback only) · poll status"]
-            settingsApi["/api/settings"]
-        end
-
-        subgraph agents["Assistants (Lumi)"]
-            agent["agent.ts · project Lumi<br/>tool loop: get_* · get_insights · list_folder<br/>show/update/focus_card · offer_choices · add_video · update_project"]
-            workspaceAgent["workspace-agent.ts · projects-page Lumi<br/>picks videos, creates/opens/deletes projects"]
-        end
-
-        subgraph services["Card data & services"]
-            videoCard["video-card.ts<br/>poster, stream, scenes, characters, themes, brands"]
-            insightsSvc["insights.ts<br/>views, rating, sentiment, questions, comments"]
-            comparison["comparison.ts<br/>one column per video: analysis + audience"]
-            lumiereClient["lumiere.ts · REST client<br/>teams from /me; each video's own team for activity"]
-        end
-
-        store["store.ts · JSON documents per item<br/>projects · assets · insights · settings<br/>versioned updates, retried on conflict"]
+    subgraph worker["Cloudflare Worker (SvelteKit)"]
+        gate["Password gate<br/>hooks.server.ts"]
+        routes["Page loads + /api routes"]
+        lumi["Lumi<br/>agent.ts · workspace-agent.ts"]
+        services["Card data<br/>video-card · insights · comparison"]
+        store["store.ts<br/>one JSON document per item"]
     end
 
-    subgraph storage["Storage"]
-        files[("data/*.json<br/>local dev")]
-        d1[("Cloudflare D1 · docs table<br/>deployed")]
+    subgraph data["Storage"]
+        d1[("D1 (deployed)")]
+        files[("data/*.json (pnpm dev)")]
     end
 
-    subgraph external["External services"]
-        claude["Anthropic API · Claude"]
-        subgraph lumiere["Lumiere API (invisible to users)"]
-            videoApi["Video intelligence<br/>summary, entities, chapters, moments, transcript"]
-            feedbackApi["Feedback API<br/>responses + aggregations"]
-            activityApi["Activity feed<br/>viewing sessions (per team)"]
-            ingestApi["Ingestion, folders, /me (teams)"]
-            media["Signed URLs<br/>stream & thumbnails (Mux), upload (Google Cloud Storage)"]
-        end
-    end
+    claude["Anthropic API<br/>Claude"]
+    lumiere["Lumiere API<br/>analysis · feedback · activity · ingestion · teams"]
+    media["Signed media<br/>Mux stream & thumbnails · GCS upload"]
 
-    user --> login & home & project & assetsPage & settingsPage
-    home --- dock
-    project --- dock
-    project --> cards
-
-    login & home & project & assetsPage & settingsPage --> gate
-    gate --> routes
-    home -- "message" --> workspaceApi
-    home -- "dropped video: draft named after the file" --> project
-    project -- "message" --> chatApi
-    project -- "first content saves the draft" --> projectsApi
-    project -- "start upload" --> uploadApi
-    project -- "PUT the file directly" --> media
-    settingsPage --> settingsApi
-
-    chatApi --> agent
-    workspaceApi --> workspaceAgent
-    agent & workspaceAgent <--> claude
-    agent -- "card ops: add · update · focus" --> chatApi
-    agent --> videoCard & insightsSvc & comparison & lumiereClient
-    workspaceAgent --> lumiereClient
-
-    loads --> videoCard & insightsSvc & comparison
-    comparison --> insightsSvc
-    videoCard & comparison & insightsSvc & uploadApi --> lumiereClient
-
-    chatApi & workspaceApi & projectsApi & uploadApi & loads & settingsApi & insightsSvc & agent & workspaceAgent --> store
-    store -- "pnpm dev" --> files
-    store -- "deployed" --> d1
-
-    lumiereClient --> videoApi & feedbackApi & activityApi & ingestApi & media
-    project -. "plays stream, shows thumbnails" .-> media
+    user --> pages --> cards
+    pages -- "requests" --> gate --> routes
+    routes --> lumi & services & store
+    lumi <--> claude
+    lumi --> services & store
+    services --> lumiere
+    lumi -- "library, insights" --> lumiere
+    store --> d1 & files
+    cards -. "play, show images" .-> media
+    pages -. "upload the file" .-> media
+    lumiere -. "signs URLs" .-> media
 ```
 
-**How a question flows:** the project page posts the message to `/api/chat`; `agent.ts` runs a Claude tool loop
-that reads Lumiere data (analysis, insights, the video library across the user's teams) and returns a short reply
-plus card operations; the server merges them into the latest saved project through `store.ts` (retrying if an upload
-poll saved in between), and the page applies the operations and focuses the new card. Signed media URLs expire, so
-page loads rebuild video and comparison card data; insights come from a six-hour cache.
+| Part          | Where                                                          | What it does                                                                                                                   |
+| ------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Pages         | `src/routes`                                                   | Projects page (tiles, Lumi, drop a video → new project), project page (card stack, focus, uploads), assets, settings, `/login` |
+| Cards         | `src/lib/cards`                                                | Video, Insights, Comparison, List, Quotes, Table, Text, Upload; built from design-system components                            |
+| Password gate | `src/hooks.server.ts`                                          | Production only: a session cookie from `SITE_PASSWORD`, otherwise `/login`                                                     |
+| Lumi          | `src/lib/server/agent.ts`, `workspace-agent.ts`                | Claude tool loops: read analysis and insights, browse the library across the user's teams, add/update/focus cards              |
+| Card data     | `src/lib/server/video-card.ts`, `insights.ts`, `comparison.ts` | Fill cards from Lumiere; insights cached for six hours                                                                         |
+| Store         | `src/lib/server/store.ts`                                      | Projects, assets, insights, settings as JSON documents; versioned updates retried on conflict                                  |
 
-**How an upload flows:**
+## How a question flows
+
+```mermaid
+sequenceDiagram
+    participant P as Project page
+    participant C as /api/chat
+    participant A as Lumi (agent.ts)
+    participant Cl as Claude
+    participant L as Lumiere
+    participant S as store.ts
+    P->>C: message
+    C->>S: load project
+    C->>A: message + project (cards, history)
+    loop until Claude stops calling tools
+        A->>Cl: system prompt, history, tools
+        Cl-->>A: tool calls
+        A->>L: get_video, get_entities, get_insights…
+        A->>A: show / update / focus card (card data filled from Lumiere)
+    end
+    Cl-->>A: short reply
+    A-->>C: reply + card operations + history
+    C->>S: merge into the latest saved project (retry if an upload poll saved meanwhile)
+    C-->>P: reply, card operations
+    P->>P: apply operations, focus the new card
+```
+
+Signed media URLs expire, so page loads rebuild video and comparison card data; insights come from the cache.
+
+## How an upload flows
 
 ```mermaid
 sequenceDiagram

@@ -32,6 +32,14 @@
       "port": 8787
     },
     {
+      "name": "storybook",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "storybook"
+      ],
+      "port": 6007
+    },
+    {
       "name": "ds-docs",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [

@@ -26,3 +26,7 @@ This app uses the Latitude design system (`@latitudelabs/design-system`, Svelte 
   change evolves, update the diagram too. In Iris that usually means the browser ↔ SvelteKit server ↔ Lumi (Claude) ↔
   Lumiere flow, the card operations a chat turn produces, upload and ingestion states, and storage (`store.ts`: JSON
   files in dev, D1 when deployed).
+- **Storybook.** The app has its own Storybook (`pnpm storybook`, port 6007; the design system's is separate) with
+  Iris's cards, Lumi's dock, the header and the sign-in page, plus `docs/architecture.md` rendered with its diagrams.
+  When you add a card type or a meaningful state, add a story for it. Stories use real cards captured in
+  `src/stories/fixtures` (refresh with `pnpm storybook:fixtures` while `pnpm dev` runs); nothing calls the server.

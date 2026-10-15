@@ -1,0 +1,7 @@
+/* The app's styles (design system theme), plus the stories' own Tailwind classes. */
+@import '../src/routes/layout.css';
+@source '../src';
+
+body {
+	background: var(--background);
+}
