@@ -79,6 +79,10 @@
 		list-style: disc;
 		padding-left: 1.5rem;
 	}
+	/* The design system's weights are 400 and 500 only. */
+	.doc :global(strong) {
+		font-weight: 500;
+	}
 	.doc :global(code) {
 		font-size: 0.9em;
 		color: var(--muted-foreground);

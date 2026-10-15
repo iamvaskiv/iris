@@ -8,7 +8,9 @@ const preview: Preview = {
 		controls: { matchers: { color: /(background|color)$/i } },
 		// The canvas uses the theme's own bg-background (see storybook.css), so it follows light/dark.
 		backgrounds: { disable: true },
-		options: { storySort: { order: ['Docs', ['Architecture'], 'Cards', 'Lumi', 'App'] } },
+		options: {
+			storySort: { order: ['Docs', ['Changelog', 'Architecture'], 'Cards', 'Lumi', 'App'] }
+		},
 		a11y: { test: 'todo' }
 	},
 	decorators: [
