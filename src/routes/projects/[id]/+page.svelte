@@ -339,7 +339,11 @@
 							(cardHeights[card.id] ?? 0) <= snapArea && 'snap-center',
 							card.id !== project.focusedId && 'scale-90 opacity-60 hover:opacity-100'
 						]}
-						onclick={() => focus(card.id)}
+						onclick={() => {
+							// Clicking a dimmed card brings it into focus; clicks inside the focused card (sections,
+							// players) leave the scroll position alone.
+							if (card.id !== project.focusedId) focus(card.id);
+						}}
 					>
 						<CardView {card} />
 					</div>
