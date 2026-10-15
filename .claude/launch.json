@@ -1,11 +1,35 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "dev", "runtimeExecutable": "pnpm", "runtimeArgs": ["dev", "--port", "5173"], "port": 5173 },
+    {
+      "name": "dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "dev",
+        "--port",
+        "5173"
+      ],
+      "port": 5173
+    },
+    {
+      "name": "preview",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "SITE_PASSWORD=local-preview pnpm vite preview --port 4173 --strictPort"
+      ],
+      "port": 4173
+    },
     {
       "name": "ds-docs",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--dir", "/Users/vitalii/Development/design-system-test", "--filter", "docs", "storybook"],
+      "runtimeArgs": [
+        "--dir",
+        "/Users/vitalii/Development/design-system-test",
+        "--filter",
+        "docs",
+        "storybook"
+      ],
       "port": 6006
     }
   ]
