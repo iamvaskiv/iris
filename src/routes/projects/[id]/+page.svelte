@@ -6,6 +6,7 @@
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import { cardComponent, isWide } from '#lib/cards/registry.js';
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
+	import { takePendingVideo } from '#lib/new-project.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -36,7 +37,11 @@
 	onMount(() => {
 		// A question typed on the projects page arrives as ?q=…
 		const q = page.url.searchParams.get('q');
-		if (q) {
+		// A video dropped on the projects page arrives here to be uploaded into this new project.
+		const video = takePendingVideo();
+		if (video) {
+			upload(video);
+		} else if (q) {
 			replaceState(page.url.pathname, {});
 			send(q);
 		} else {

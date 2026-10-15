@@ -5,13 +5,26 @@
 	import AiDock from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import { workspaceChat, type WorkspaceResponse } from '#lib/workspace-chat.svelte.js';
-	import { draftProjectUrl, newProject } from '#lib/new-project.js';
+	import { draftProjectUrl, newProject, newProjectWithVideo } from '#lib/new-project.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 	let thinking = $state(false);
 	let error = $state('');
 	let draft = $state('');
+
+	// Dropping a video anywhere on the page starts a new project with it. Enter/leave fire for every element the drag
+	// crosses, so a counter (rather than the event target) tells when it has really left the page.
+	let dragDepth = $state(0);
+	const carriesFiles = (e: DragEvent) => !!e.dataTransfer?.types.includes('Files');
+
+	function drop(e: DragEvent) {
+		e.preventDefault();
+		dragDepth = 0;
+		const file = [...(e.dataTransfer?.files ?? [])].find((f) => f.type.startsWith('video/'));
+		if (file) newProjectWithVideo(file);
+		else error = 'Drop a video file to start a project with it.';
+	}
 
 	/** Chat at the projects level: quick answers above the input; the assistant creates/opens projects only when asked. */
 	async function send(message: string) {
@@ -47,7 +60,22 @@
 
 <svelte:head><title>Projects · Iris</title></svelte:head>
 
-<div class="min-h-dvh bg-background">
+<div
+	class="min-h-dvh bg-background"
+	role="region"
+	aria-label="Projects"
+	ondragenter={(e) => carriesFiles(e) && dragDepth++}
+	ondragleave={(e) => carriesFiles(e) && (dragDepth = Math.max(0, dragDepth - 1))}
+	ondragover={(e) => carriesFiles(e) && e.preventDefault()}
+	ondrop={drop}
+>
+	{#if dragDepth > 0}
+		<div
+			class="pointer-events-none fixed inset-4 z-20 flex items-center justify-center rounded-xl bg-card/90 shadow-raised"
+		>
+			<p class="text-title">Drop a video to start a project</p>
+		</div>
+	{/if}
 	<AppHeader />
 
 	<main class="mx-auto flex w-full max-w-[970px] flex-col gap-16 px-4 pb-16">
