@@ -11,8 +11,7 @@
 		{
 			"binding": "DB",
 			"database_name": "iris",
-			// Filled in after `npx wrangler d1 create iris`.
-			"database_id": "00000000-0000-0000-0000-000000000000",
+			"database_id": "d9715a21-8399-4f3e-8526-89f7b317a625",
 			"migrations_dir": "migrations"
 		}
 	],
