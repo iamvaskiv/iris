@@ -9,6 +9,7 @@
 	import { ChatMessage, ChoiceList, Kbd, Orb, PromptInput } from '@latitudelabs/design-system';
 	import { onMount } from 'svelte';
 	import { loadOrbVariant, orbVariant } from '#lib/orb-variant.svelte.js';
+	import { blocks, type Run } from '#lib/reply-format.js';
 
 	type Props = {
 		reply?: string;
@@ -97,10 +98,29 @@
 	/** Natural height of the docked message, so its box can animate between heights. */
 	let messageHeight = $state(0);
 
-	/** Splits text into words and the whitespace between them; words reveal one after another. */
-	const words = (text: string) => text.split(/(\s+)/).filter(Boolean);
-	/** Delay step per word: quick for short replies, compressed so long ones finish within ~0.8s. */
-	const step = (text: string) => Math.min(35, 800 / Math.max(1, words(text).length));
+	/** A word (or the whitespace after it) of a reply; `i` numbers the words in reading order, -1 for whitespace. */
+	type Word = { text: string; bold: boolean; i: number };
+
+	/**
+	 * The reply's paragraphs and lists (see reply-format.ts), split into words that reveal one after another. The delay
+	 * step is quick for short replies and compressed so long ones finish within ~0.8s.
+	 */
+	function layout(text: string) {
+		let n = 0;
+		const toWords = (runs: Run[]): Word[] =>
+			runs.flatMap((r) =>
+				r.text
+					.split(/(\s+)/)
+					.filter(Boolean)
+					.map((w) => ({ text: w, bold: r.bold, i: w.trim() ? n++ : -1 }))
+			);
+		const parts = blocks(text).map((b) =>
+			b.kind === 'paragraph'
+				? { kind: 'paragraph' as const, words: toWords(b.runs) }
+				: { kind: 'list' as const, items: b.items.map(toWords) }
+		);
+		return { parts, delay: Math.min(35, 800 / Math.max(1, n)) };
+	}
 
 	/** Enter anywhere on the page focuses the prompt, unless the user is in another field or on a control. With
 	 *  choices showing, number keys pick one (not while typing in a field). */
@@ -135,14 +155,30 @@
 
 <svelte:window {onkeydown} />
 
+{#snippet line(words: Word[], delay: number)}
+	{#each words as w, k (k)}
+		{#if w.i >= 0}<span
+				class={['reveal-word', w.bold && 'font-medium']}
+				style:animation-delay="{w.i * delay}ms">{w.text}</span
+			>{:else}{w.text}{/if}
+	{/each}
+{/snippet}
+
 {#snippet reveal(text: string)}
 	<!-- Keyed on the text so every new message replays the reveal. -->
 	{#key text}
-		{@const delay = step(text)}
-		{#each words(text) as word, i (i)}
-			{#if word.trim()}<span class="reveal-word" style:animation-delay="{i * delay}ms">{word}</span
-				>{:else}{word}{/if}
-		{/each}
+		{@const { parts, delay } = layout(text)}
+		<div class="flex flex-col gap-2">
+			{#each parts as part, j (j)}
+				{#if part.kind === 'paragraph'}
+					<p>{@render line(part.words, delay)}</p>
+				{:else}
+					<ul class="flex list-disc flex-col gap-1 pl-5 text-left">
+						{#each part.items as item, k (k)}<li>{@render line(item, delay)}</li>{/each}
+					</ul>
+				{/if}
+			{/each}
+		</div>
 	{/key}
 {/snippet}
 
@@ -197,7 +233,7 @@
 			transitionName="iris-avatar"
 			label="Lumi"
 		/>
-		<p class="text-center text-heading" aria-live="polite">{@render message()}</p>
+		<div class="text-center text-heading" aria-live="polite">{@render message()}</div>
 		<div class="w-full max-w-140">{@render prompt()}</div>
 	</div>
 {:else}
@@ -228,7 +264,7 @@
 					{/snippet}
 					<!-- At least orb height, centred: one line sits level with the orb; longer replies start at its top. -->
 					<div class="flex min-h-10 items-center">
-						<p aria-live="polite">{@render message()}</p>
+						<div aria-live="polite">{@render message()}</div>
 					</div>
 				</ChatMessage>
 			</div>

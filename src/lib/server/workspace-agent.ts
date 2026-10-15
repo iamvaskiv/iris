@@ -5,6 +5,7 @@ import {
 	CHOICES,
 	choicesTool,
 	LIBRARY,
+	REPLY_FORMAT,
 	LIBRARY_ONLY,
 	libraryTools,
 	llmUnavailable,
@@ -22,7 +23,7 @@ function systemPrompt(library: boolean) {
 
 Where you are: the PROJECTS page (workspace level), not inside a project.
 - The user sees a grid of their projects and your latest reply in a small bubble above the input. There are no cards here.
-- Reply in one or two short, friendly sentences. Plain text only: no markdown, no bullet lists, no headings. For many items, give the count and name a few ("Four projects, including Women Talking and Inside Out 2."). Answer quick questions directly about their projects and their videos (assets, listed below; you can read each one's analysis).
+- ${REPLY_FORMAT} ("Four projects, including Women Talking and Inside Out 2."). Answer quick questions directly about their projects and their videos (assets, listed below; you can read each one's analysis).
 
 Projects:
 - Deep work on a video (cards, analysis, quotes, comparisons) happens inside a project.

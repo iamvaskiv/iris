@@ -52,6 +52,15 @@ typed. Messages sent here are only logged.`
 	template={page}
 />
 
+<Story
+	name="Docked, formatted reply"
+	args={{
+		reply:
+			'Only the first Inside Out 2 upload has real audience data: **1,470 views**.\n\n- The second upload: 3 responses, 0 views\n- A Man Called Otto: 2 responses, no rating\n- The 14-second clip: no audience data'
+	}}
+	template={page}
+/>
+
 <Story name="Docked, error" args={{ error: "Couldn't start the upload (500)." }} template={page} />
 
 <Story

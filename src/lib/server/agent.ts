@@ -40,13 +40,16 @@ export function parseChoices(input: Record<string, unknown>) {
 }
 
 /** Extra rules when the Lumiere library is exposed (Settings → Video library). */
+/** How replies are written: the bubble renders paragraphs, "- " lists and **bold** (see src/lib/reply-format.ts). */
+export const REPLY_FORMAT = `Lead with the answer in one short, friendly sentence. Most replies stop there. When a little more genuinely helps, add either one more short paragraph (after a blank line) or up to three short bullet points ("- " lines); when comparing or going through several things, use the bullets, one thing per line. Bold (**like this**) only the one or two figures or names that matter. Never both, and no closing summary or sign-off: if a card has the details, say so in the opening sentence. No headings, no other markdown, nothing longer: details belong on a card, not in the reply. For many items, give the count and name a few`;
+
 export const LIBRARY = `Video library access is ON: besides the user's own videos you can browse the video library with list_folder and read any video in it. Call it "the video library". It spans several teams: list_folder without a teamId lists them, then pass a teamId (and a folderId within that team) to browse. When the user names a team, browse only that one. Library videos only have an analysis (summary, characters, scenes, transcript) if \`analysed\` is true; check before relying on one, and if it isn't analysed, say so and suggest uploading the file instead.`;
 
 function systemPrompt(library: boolean) {
 	return `${BRAND}
 
 How the interface works (important):
-- The user only sees your LATEST text reply, in a small bubble above the input at the bottom of the screen. Keep it to one or two short, friendly sentences. Plain text only: no markdown, no bullet lists, no headings. For many items, give the count and name a few ("Seven characters, including Ona and Salome.").
+- The user only sees your LATEST text reply, in a small bubble above the input at the bottom of the screen. ${REPLY_FORMAT} ("Seven characters, including Ona and Salome.").
 - The center of the screen holds cards: visual answers that stay on screen. One card at a time is in focus; the others are dimmed.
 
 Choosing how to answer, in this order:
