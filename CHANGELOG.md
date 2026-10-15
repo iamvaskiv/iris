@@ -34,6 +34,7 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 **Look**
 
+- Classic theme: a violet-tinted page background, from the design system.
 - Favicon: the Lumiere ring.
 
 **For developers**
