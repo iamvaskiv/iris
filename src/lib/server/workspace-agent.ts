@@ -234,14 +234,17 @@ export async function workspaceChat(
 		});
 		return { ...res, navigate, refresh, choices };
 	} catch (e) {
-		if (llmUnavailable(e)) return scripted(message, history);
+		if (llmUnavailable(e)) {
+			console.warn('Anthropic unavailable, using scripted mode:', String(e));
+			return scripted(message, history);
+		}
 		throw e;
 	}
 }
 
 function scripted(message: string, history: Anthropic.MessageParam[]): WorkspaceResponse {
 	const text =
-		'I need an LLM to chat here. Use New to start a project. (scripted mode, no LLM connected)';
+		"I can't chat right now, but your projects below still open as usual. (scripted mode, no LLM connected)";
 	return {
 		text,
 		history: [...history, { role: 'user', content: message }, { role: 'assistant', content: text }]
