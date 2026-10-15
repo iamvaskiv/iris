@@ -47,6 +47,10 @@ other CSS frameworks or global styles.
 | Numbers or short facts across a few columns | `Table.Root` › `Table.Header`/`Body` › `Table.Row` › `Table.Head`/`Cell` |
 | Confirm a destructive action, small focused form | `Dialog.Root` › `Dialog.Trigger` + `Dialog.Content` (`Header`, `Title`, `Description`, `Footer`, `Close`) |
 | Grouped content on the page | `Card.Root` › `Card.Header` (`Title`, `Description`, `Action`) › `Card.Content` › `Card.Footer` |
+| A collapsible row of items inside a card (scenes, characters, themes) | `Card.Section` with `<li>` items |
+| Key numbers at the top of a card | `Stat` tiles in a grid |
+| Positive / neutral / negative split | `SentimentBar` |
+| One item in a row or grid inside a card (theme, brand, comment) | `Tile` (a link with `href`, a button with `onclick`) |
 | Ordered steps / question list | `Steps` |
 | Conversation message, AI avatar | `ChatMessage` (`from="assistant"` shows the AI avatar; `avatar` snippet to replace it) |
 | Animated AI avatar (thinking, speaking) | `Orb` |

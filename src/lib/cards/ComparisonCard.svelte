@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Table } from '@latitudelabs/design-system';
+	import { SentimentBar, Table, type Sentiment } from '@latitudelabs/design-system';
 	import CardShell from './CardShell.svelte';
 	import { timecode } from './format';
 	import type { Card, ComparedVideo, ComparisonData, Insights } from './types';
@@ -9,7 +9,6 @@
 	const videos = $derived(data?.videos ?? []);
 	const focus = $derived(data?.focus ?? 'all');
 
-	type Sentiment = NonNullable<Insights['sentiment']>;
 	/** `value` ranks numeric cells: the highest one in a row is emphasised. */
 	type Cell = { text: string; value?: number; sentiment?: Sentiment } | undefined;
 	type Row = { label: string; cells: Cell[]; empty: (v: ComparedVideo) => string };
@@ -167,17 +166,7 @@
 							{#if !cell}
 								<span class="text-muted-foreground">{r.empty(v)}</span>
 							{:else if cell.sentiment}
-								<div class="flex flex-col gap-1">
-									<div class="flex h-2 gap-0.5 overflow-hidden rounded-full" aria-hidden="true">
-										<div class="bg-success" style:flex-grow={cell.sentiment.positive}></div>
-										<div class="bg-control" style:flex-grow={cell.sentiment.neutral}></div>
-										<div class="bg-destructive" style:flex-grow={cell.sentiment.negative}></div>
-									</div>
-									<span class="text-caption text-muted-foreground">
-										{cell.sentiment.positive} positive · {cell.sentiment.neutral} neutral · {cell
-											.sentiment.negative} negative
-									</span>
-								</div>
+								<SentimentBar {...cell.sentiment} />
 							{:else}
 								<span class={i === best ? 'font-medium' : undefined}>{cell.text}</span>
 							{/if}

@@ -267,6 +267,55 @@ only, not long content or multi-step flows.
 column by default; add `flex-row` for side-by-side layouts. Don't nest cards; use an inner panel
 (`rounded-sm bg-background p-4`) instead.
 
+### Card.Section
+
+```svelte
+<Card.Section title="Characters" count={characters.length}>
+	{#each characters as person (person.name)}
+		<li class="w-28">…</li>
+	{/each}
+</Card.Section>
+<Card.Section title="Themes" count={themes.length} collapsed>…</Card.Section>
+```
+
+A titled group inside `Card.Content`: the title (with `count`) toggles it open and closed, and its `<li>` items sit
+in one row that scrolls sideways, snapping to items, with back/forward buttons once they overflow. Give items a
+width. `collapsed` starts it closed: use it for secondary sections so the card opens short. Stack sections with
+`gap-5`.
+
+## Stat
+
+```svelte
+<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+	<Stat value="1,470" label="Views, last 12 months" />
+	<Stat value="4.7 / 5" label="Rating, 21 votes" />
+</div>
+```
+
+A key number on a muted tile (`text-heading` value, muted caption). Format the value yourself and say what it covers
+in the label. Use a few at the top of a card, not as a replacement for a `Table`.
+
+## SentimentBar
+
+```svelte
+<SentimentBar positive={23} neutral={10} negative={7} label="Comment sentiment:" />
+```
+
+Segments sized by count in `success`, `control` and `destructive`, with the counts as a caption. `legend={false}`
+drops the caption (e.g. in a table cell) and labels the bar for screen readers instead.
+
+## Tile
+
+```svelte
+<Tile><span class="text-caption">Female Solidarity</span><span class="text-caption text-muted-foreground">…</span></Tile>
+<Tile onclick={() => play(brand.time)}>…</Tile>
+<Tile href="/projects/{id}">…</Tile>
+```
+
+A small muted surface (`bg-muted`, `rounded-sm`, 12px padding) for one item in a row or grid inside a card. Plain by
+default; `href` makes it a link and `onclick` a button, both with hover and focus states. Not a card: don't put
+tiles on the page background or nest them.
+
 ## Steps
 
 ```svelte

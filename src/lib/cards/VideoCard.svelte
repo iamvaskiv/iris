@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { Avatar, Button, Card } from '@latitudelabs/design-system';
+	import { Avatar, Button, Card, Tile } from '@latitudelabs/design-system';
 	import { Play } from '@latitudelabs/design-system/icons';
-	import CardSection from './CardSection.svelte';
 	import { timecode } from './format';
 	import type { Card as CardData, VideoCardData } from './types';
 
@@ -83,9 +82,9 @@
 			</div>
 
 			{#if scenes.length}
-				<CardSection title="Scenes" count={scenes.length}>
+				<Card.Section title="Scenes" count={scenes.length}>
 					{#each scenes as scene, i (i)}
-						<li class="w-36 shrink-0 snap-start">
+						<li class="w-36">
 							<button
 								type="button"
 								disabled={!data.streamUrl}
@@ -106,13 +105,13 @@
 							</button>
 						</li>
 					{/each}
-				</CardSection>
+				</Card.Section>
 			{/if}
 
 			{#if characters.length}
-				<CardSection title="Characters" count={characters.length}>
+				<Card.Section title="Characters" count={characters.length}>
 					{#each characters as person, i (i)}
-						<li class="flex w-28 shrink-0 snap-start flex-col items-center gap-1 text-center">
+						<li class="flex w-28 flex-col items-center gap-1 text-center">
 							<Avatar.Root class="size-14 overflow-hidden">
 								<!-- Zoomed in: widescreen films are letterboxed inside 16:9 frames, and the bars would show. -->
 								{#if person.image}<Avatar.Image
@@ -129,33 +128,34 @@
 							{/if}
 						</li>
 					{/each}
-				</CardSection>
+				</Card.Section>
 			{/if}
 
 			{#if themes.length}
-				<CardSection title="Themes" count={themes.length} collapsed>
+				<Card.Section title="Themes" count={themes.length} collapsed>
 					{#each themes as theme, i (i)}
-						<li class="flex w-56 shrink-0 snap-start flex-col gap-1 rounded-sm bg-muted p-3">
-							<span class="text-caption">{theme.name}</span>
-							{#if theme.description}
-								<span class="line-clamp-3 text-caption text-muted-foreground"
-									>{theme.description}</span
-								>
-							{/if}
+						<li class="w-56">
+							<Tile class="h-full">
+								<span class="text-caption">{theme.name}</span>
+								{#if theme.description}
+									<span class="line-clamp-3 text-caption text-muted-foreground"
+										>{theme.description}</span
+									>
+								{/if}
+							</Tile>
 						</li>
 					{/each}
-				</CardSection>
+				</Card.Section>
 			{/if}
 
 			{#if brands.length}
-				<CardSection title="Brands" count={brands.length} collapsed>
+				<Card.Section title="Brands" count={brands.length} collapsed>
 					{#each brands as brand, i (i)}
-						<li class="w-44 shrink-0 snap-start">
-							<button
-								type="button"
+						<li class="w-44">
+							<Tile
+								class="h-full w-full"
 								disabled={!data.streamUrl || brand.time === undefined}
 								onclick={() => play(brand.time)}
-								class="flex h-full w-full flex-col gap-1 rounded-sm bg-muted p-3 text-left hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 							>
 								<span class="text-caption">{brand.name}</span>
 								<span class="text-caption text-muted-foreground">
@@ -163,10 +163,10 @@
 										.filter(Boolean)
 										.join(' · ')}
 								</span>
-							</button>
+							</Tile>
 						</li>
 					{/each}
-				</CardSection>
+				</Card.Section>
 			{/if}
 		</div>
 	</Card.Content>
