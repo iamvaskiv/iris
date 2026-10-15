@@ -16,3 +16,13 @@ This app uses the Latitude design system (`@latitudelabs/design-system`, Svelte 
   Elevation: `shadow-hairline` (cards, no borders) and `shadow-raised` (floating panels).
 - The brand gradient (`bg-brand`) is reserved for the AI avatar and brand moments.
 - Dark mode is automatic through the roles; don't add `dark:` color overrides.
+
+## How we work
+
+- **Diagrams.** Include a Mermaid diagram in plans, design docs and PR descriptions whenever there's a mechanism to
+  explain: how components or services connect, how data and control flow, a protocol or request sequence, state
+  transitions, processing stages. Pick the diagram type that explains it best (flowchart, sequence, state, ER…), label
+  every participant, connection and step, and keep the diagram in step with the prose around it: when the design or
+  change evolves, update the diagram too. In Iris that usually means the browser ↔ SvelteKit server ↔ Lumi (Claude) ↔
+  Lumiere flow, the card operations a chat turn produces, upload and ingestion states, and storage (`store.ts`: JSON
+  files in dev, D1 when deployed).
