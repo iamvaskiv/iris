@@ -38,6 +38,8 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 **For developers**
 
+- Docs pages in both Storybooks render Markdown with live Mermaid diagrams (one shared renderer); code blocks,
+  links and tables are styled.
 - An app Storybook (`pnpm storybook`) with every card type, Lumi's dock, the header, the sign-in page, this changelog
   and the architecture document.
 - `AGENTS.md` asks for Mermaid diagrams in plans, design docs and PRs; `docs/architecture.md` describes the current

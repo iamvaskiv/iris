@@ -2,7 +2,10 @@
 	import { marked } from 'marked';
 	import mermaid from 'mermaid';
 
-	/** A Markdown document from the repo, with ```mermaid blocks drawn as diagrams. */
+	/**
+	 * A Markdown document from the repo, with ```mermaid blocks drawn live as diagrams (in the Storybook theme, unless
+	 * a diagram sets its own with a `config` header). The same component renders docs in the design system's Storybook.
+	 */
 	let { source }: { source: string } = $props();
 
 	const diagrams: string[] = [];
@@ -13,7 +16,9 @@
 		renderer.code = (token) => {
 			if (token.lang !== 'mermaid') return code(token);
 			diagrams.push(token.text);
-			return `<div class="diagram" data-diagram="${diagrams.length - 1}"></div>`;
+			// A diagram that sets its own theme was drawn for a light page; keep it on a light panel in dark mode.
+			const ownTheme = /^---[\s\S]*?\btheme:/.test(token.text);
+			return `<div class="diagram${ownTheme ? ' own-theme' : ''}" data-diagram="${diagrams.length - 1}"></div>`;
 		};
 		return marked.parse(source, { renderer, async: false }) as string;
 	});
@@ -75,9 +80,19 @@
 	.doc :global(li) {
 		line-height: 1.6;
 	}
+	.doc :global(ul),
+	.doc :global(ol) {
+		padding-left: 1.5rem;
+	}
 	.doc :global(ul) {
 		list-style: disc;
-		padding-left: 1.5rem;
+	}
+	.doc :global(ol) {
+		list-style: decimal;
+	}
+	.doc :global(a) {
+		text-decoration: underline;
+		text-underline-offset: 2px;
 	}
 	/* The design system's weights are 400 and 500 only. */
 	.doc :global(strong) {
@@ -87,11 +102,34 @@
 		font-size: 0.9em;
 		color: var(--muted-foreground);
 	}
+	.doc :global(pre) {
+		overflow-x: auto;
+		border-radius: var(--radius-md);
+		background: var(--muted);
+		padding: 1rem;
+		line-height: 1.5;
+	}
+	.doc :global(pre code) {
+		color: var(--foreground);
+	}
+	.doc :global(table) {
+		border-collapse: collapse;
+	}
+	.doc :global(th),
+	.doc :global(td) {
+		border-bottom: 1px solid var(--border);
+		padding: 0.5rem 1rem 0.5rem 0;
+		text-align: left;
+		vertical-align: top;
+	}
 	.doc :global(.diagram) {
 		overflow-x: auto;
 		border-radius: var(--radius-md);
 		background: var(--card);
 		padding: 1rem;
+	}
+	.doc :global(.diagram.own-theme) {
+		background: white;
 	}
 	.doc :global(.diagram svg) {
 		max-width: none;
