@@ -6,7 +6,16 @@
 </script>
 
 <script lang="ts">
-	import { ChatMessage, ChoiceList, Kbd, Orb, PromptInput } from '@latitudelabs/design-system';
+	import {
+		ChatMessage,
+		ChoiceList,
+		Icon,
+		Kbd,
+		Orb,
+		PromptInput,
+		Tile
+	} from '@latitudelabs/design-system';
+	import type { ComponentProps } from 'svelte';
 	import { onMount } from 'svelte';
 	import { loadOrbVariant, orbVariant } from '#lib/orb-variant.svelte.js';
 	import { blocks, type Run } from '#lib/reply-format.js';
@@ -23,6 +32,8 @@
 		height?: number;
 		/** Answers offered with the reply: shown as buttons in place of the input, picking one sends it. */
 		choices?: string[];
+		/** Ways to get started, as cards above the input until the conversation starts; picking one sends it. */
+		suggestions?: { label: string; icon: ComponentProps<typeof Icon>['icon'] }[];
 		/** Empty-state layout: in the middle of the screen, large avatar above a larger, centered message. */
 		centered?: boolean;
 		/** With `centered`: sit in the page flow (e.g. above the projects grid) instead of fixed in the middle of the screen. */
@@ -38,6 +49,7 @@
 		placeholder = 'Press Enter to ask Lumi...',
 		height = $bindable(0),
 		choices = [],
+		suggestions = [],
 		centered = false,
 		inline = false,
 		onsubmit
@@ -48,6 +60,7 @@
 
 	// Choices sit above the input, which stays for typing something else.
 	const showChoices = $derived(choices.length > 0 && !thinking && !error);
+	const showSuggestions = $derived(suggestions.length > 0 && !reply && !thinking && !showChoices);
 	/** Inside the input or the choices: where the conversation's focus lives. */
 	const inPrompt = (el: EventTarget | null) =>
 		el instanceof Node && (el === input || !!choiceList?.contains(el));
@@ -196,6 +209,21 @@
 
 {#snippet prompt()}
 	<div class="flex flex-col gap-1">
+		{#if showSuggestions}
+			<ul class="mb-3 grid grid-cols-3 gap-3" aria-label="Ways to start">
+				{#each suggestions as s, i (s.label)}
+					<li class="suggestion" style:--index={i}>
+						<Tile
+							onclick={() => send(s.label)}
+							class="h-full w-full justify-between gap-3 text-body transition-[filter] hover:bg-muted hover:brightness-102 dark:hover:brightness-125"
+						>
+							<Icon icon={s.icon} class="text-muted-foreground" />
+							{s.label}
+						</Tile>
+					</li>
+				{/each}
+			</ul>
+		{/if}
 		{#if showChoices}
 			<ChoiceList bind:ref={choiceList} options={choices} onselect={send} />
 		{/if}
@@ -291,7 +319,8 @@
 		}
 	}
 	/* Choices rise in one after another, once the reply has started revealing. */
-	[data-dock] :global([data-slot='choice']) {
+	[data-dock] :global([data-slot='choice']),
+	.suggestion {
 		animation: reveal 420ms cubic-bezier(0.2, 0, 0, 1) both;
 		animation-delay: calc(var(--index) * 40ms);
 	}
@@ -316,6 +345,7 @@
 	@media (prefers-reduced-motion: reduce) {
 		.reveal-word,
 		[data-dock] :global([data-slot='choice']),
+		.suggestion,
 		.thinking,
 		:global([data-dock].dock-pop) {
 			animation: none;

@@ -4,6 +4,13 @@ What changed in Iris, newest first. Add a line under today's date with every cha
 notable behind-the-scenes ones); the app Storybook shows this file as its **Changelog** page. The deployed app
 (`iris.<account>.workers.dev`) runs whatever was last released with `pnpm run deploy`.
 
+## 2026-10-23
+
+**Lumi**
+
+- The projects page offers three ways to start as cards above the prompt: analyse a video's content, get viewers'
+  opinion, compare videos. Picking one asks Lumi; they go away once the conversation starts.
+
 ## 2026-10-15
 
 **Deployment**

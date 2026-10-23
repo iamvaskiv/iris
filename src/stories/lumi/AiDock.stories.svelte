@@ -1,6 +1,7 @@
 <script module lang="ts">
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import type { ComponentProps } from 'svelte';
+	import { ChartColumn, Users, Video } from '@latitudelabs/design-system/icons';
 	import AiDock from '#lib/components/AiDock.svelte';
 
 	const { Story } = defineMeta({
@@ -65,6 +66,15 @@ typed. Messages sent here are only logged.`
 
 <Story
 	name="Centred, inline (projects page)"
-	args={{ centered: true, inline: true, greeting: 'Good afternoon!' }}
+	args={{
+		centered: true,
+		inline: true,
+		greeting: 'Good afternoon!',
+		suggestions: [
+			{ label: 'Analyse and understand video content', icon: Video },
+			{ label: 'Get opinion from viewers', icon: Users },
+			{ label: 'Compare videos', icon: ChartColumn }
+		]
+	}}
 	template={page}
 />

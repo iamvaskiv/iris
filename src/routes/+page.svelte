@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import { Badge, Button, Card } from '@latitudelabs/design-system';
-	import { Plus } from '@latitudelabs/design-system/icons';
+	import { ChartColumn, Plus, Users, Video } from '@latitudelabs/design-system/icons';
 	import AiDock from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import { workspaceChat, type WorkspaceResponse } from '#lib/workspace-chat.svelte.js';
@@ -12,6 +12,13 @@
 	let thinking = $state(false);
 	let error = $state('');
 	let draft = $state('');
+
+	/** What Iris is for, offered above the input until the conversation starts. */
+	const suggestions = [
+		{ label: 'Analyse and understand video content', icon: Video },
+		{ label: 'Get opinion from viewers', icon: Users },
+		{ label: 'Compare videos', icon: ChartColumn }
+	];
 
 	// Dropping a video anywhere on the page starts a new project with it. Enter/leave fire for every element the drag
 	// crosses, so a counter (rather than the event target) tells when it has really left the page.
@@ -86,6 +93,7 @@
 				inline
 				reply={workspaceChat.reply}
 				choices={workspaceChat.choices}
+				{suggestions}
 				{thinking}
 				{error}
 				bind:draft
@@ -94,7 +102,9 @@
 		</section>
 
 		<section class="flex flex-col gap-4" aria-labelledby="projects-title">
-			<h1 id="projects-title" class="text-center text-title text-muted-foreground">Previously on Lumiere</h1>
+			<h1 id="projects-title" class="text-center text-title text-muted-foreground">
+				Previously on Lumiere
+			</h1>
 			<div class="grid grid-cols-1 gap-8 sm:grid-cols-2">
 				{#each data.projects as project (project.id)}
 					<a
