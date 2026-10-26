@@ -8,6 +8,8 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 **Studies**
 
+- Step types are colour-coded in the step lists: Video green, Multiple choice orange, Slider magenta (Open question
+  stays grey), from the design system's new category colours.
 - New step type: **Video**. Pick one of your videos in the preview (with an optional line before it) and play it
   there; Lumi can add video steps too. In sample results a video shows its views, how reactions split, and the
   reactions themselves.

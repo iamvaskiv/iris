@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ChoiceList, Progress, SentimentBar, Steps } from '@latitudelabs/design-system';
-	import { SCALE_MAX, SCALE_MIN, stepTitle, typeLabel } from './question-types';
+	import { SCALE_MAX, SCALE_MIN, stepTitle, typeColor, typeLabel } from './question-types';
 	import type { Question, SampleResults } from '../types';
 
 	/**
@@ -39,6 +39,7 @@
 	steps={questions.map((q) => ({
 		title: stepTitle(q),
 		description: typeLabel(q.type),
+		color: typeColor(q.type),
 		meta: `${results.questions[q.id]?.responses ?? 0} ${q.type === 'video' ? 'views' : 'answers'}`
 	}))}
 >

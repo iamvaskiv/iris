@@ -382,7 +382,8 @@ tiles on the page background or nest them.
 ```
 
 `onselect` makes steps buttons; the active one gets `aria-current="step"` (`current={-1}` for none). A step's `meta`
-sits at the end of its description line ("96 answers"). The `after` snippet (`(step, index)`) renders content below a
+sits at the end of its description line ("96 answers"), and `color` (`green`, `orange`, `magenta`) colours its
+description with a category colour to tell kinds of steps apart (keep the description as the label). The `after` snippet (`(step, index)`) renders content below a
 step, outside its button and lined up with its text, e.g. a `ChoiceList` with `shares` for that question's results.
 
 ## ChatMessage

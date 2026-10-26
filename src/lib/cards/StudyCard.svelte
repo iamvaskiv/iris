@@ -22,6 +22,7 @@
 		SCALE_MAX,
 		SCALE_MIN,
 		stepTitle,
+		typeColor,
 		typeLabel
 	} from './study/question-types';
 	import type { Card as CardData, Question, StudyData } from './types';
@@ -218,7 +219,8 @@
 						aria-label="Questions"
 						steps={questions.map((q) => ({
 							title: stepTitle(q),
-							description: typeLabel(q.type)
+							description: typeLabel(q.type),
+							color: typeColor(q.type)
 						}))}
 						current={selected}
 						onselect={(i: number) => (selected = i)}

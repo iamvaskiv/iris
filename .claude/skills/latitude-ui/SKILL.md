@@ -84,6 +84,7 @@ other CSS frameworks or global styles.
 | `text-placeholder` | placeholders and disabled only — never readable text |
 | `bg-brand` | the brand gradient: AI avatar and brand moments only |
 | `var(--orange-400)` | small product labels next to the logo ("alpha"); same in both themes, never body text |
+| `text-category-green/orange/magenta` | telling kinds of things apart in a list (e.g. a study's step types), always with a text label; below 4.5:1 on light surfaces |
 
 **Type.** Inter, weights 400 and 500 only (`font-medium` for emphasis — never `font-bold`/`font-semibold`).
 
