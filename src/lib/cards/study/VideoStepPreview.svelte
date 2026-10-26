@@ -85,10 +85,3 @@
 	{ontimeupdate}
 	{onseeked}
 ></video>
-<p class="text-caption text-muted-foreground">
-	{(step.questions ?? []).length
-		? step.questions!.length === 1
-			? '1 question pops up while it plays: it opens here when the video gets to it.'
-			: `${step.questions!.length} questions pop up while it plays: each opens here when the video gets to it.`
-		: 'Play or scrub to a moment, then add a question that pops up there.'}
-</p>
