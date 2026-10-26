@@ -11,7 +11,8 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 - Questions inside a video: play or scrub a video step's preview to a moment and **Add question at m:ss**. The
   video pauses there and that question opens (selected in the list too), with a small still of the video above it;
   its play button carries on watching from that moment. The video step's timeline marks each question with a dot in
-  its type's colour (click it to open the question). They're listed under the video
+  its type's colour (click it to open the question). Moving between a video and its questions morphs the big player
+  into the question's small video and back. They're listed under the video
   ("2.1 · 0:42 · Multiple choice"), their time can be edited, Lumi can add them at the right moments, and sample
   results include them.
 - Step types are colour-coded in the step lists: Video green, Multiple choice orange, Slider magenta (Open question

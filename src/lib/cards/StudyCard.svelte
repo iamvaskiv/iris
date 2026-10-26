@@ -150,14 +150,47 @@
 	// on from there. `resume` tells the video step where to carry on.
 	let resume = $state<{ stepId: string; time: number } | null>(null);
 	function reach(q: Question) {
-		resume = null;
-		selectId(q.id);
+		morph(() => {
+			resume = null;
+			return selectId(q.id);
+		});
 	}
 	function carryOn() {
 		if (!parent) return;
-		resume = { stepId: parent.id, time: question.time ?? 0 };
-		selectId(parent.id);
+		const time = question.time ?? 0;
+		const stepId = parent.id;
+		morph(() => {
+			resume = { stepId, time };
+			return selectId(stepId);
+		});
 	}
+
+	// Moving between a video step and its questions morphs the big player into the question's small video and
+	// back (a view transition: both carry the same view-transition-name); the rest cross-fades. It waits for the
+	// incoming video to show its frame (briefly) so the morph doesn't land on a blank one.
+	let preview = $state<HTMLElement | null>(null);
+	const videoName = $derived(`study-video-${card.id}`);
+	function frameShown() {
+		const v = preview?.querySelector<HTMLVideoElement>('[data-study-video]');
+		if (!v || (v.readyState >= 2 && !v.seeking)) return;
+		return new Promise<void>((done) => {
+			v.addEventListener('seeked', () => done(), { once: true });
+			v.addEventListener('loadeddata', () => done(), { once: true });
+			setTimeout(done, 500);
+		});
+	}
+	async function morph(update: () => unknown) {
+		const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		if (!document.startViewTransition || reduce) return update();
+		document.startViewTransition(async () => {
+			await update();
+			await tick();
+			await frameShown();
+		});
+	}
+	/** Whether going from the selected step to step `i` passes between a video and its questions. */
+	const aboutVideo = (i: number) =>
+		[steps[selected], steps[i]].some((s) => s && (s.parent || s.q.type === 'video'));
 
 	function setVideo(id: string) {
 		question.videoId = id;
@@ -279,7 +312,11 @@
 							number: s.number
 						}))}
 						current={selected}
-						onselect={(i: number) => ((resume = null), (selected = i))}
+						onselect={(i: number) => {
+							const go = () => ((resume = null), (selected = i));
+							if (aboutVideo(i)) morph(go);
+							else go();
+						}}
 					/>
 				</div>
 				<Button
@@ -293,6 +330,7 @@
 
 			<!-- Room at the bottom (pb-32) keeps the preview's content clear of Lumi's dock, which covers the card's foot. -->
 			<section
+				bind:this={preview}
 				aria-label="Preview"
 				class="relative flex flex-1 flex-col overflow-y-auto rounded-sm bg-background px-8 pt-16 pb-32"
 			>
@@ -339,6 +377,7 @@
 								streamUrl={m?.streamUrl}
 								poster={m?.poster}
 								time={question.time ?? 0}
+								transitionName={videoName}
 								oncontinue={carryOn}
 							/>
 						{/if}
@@ -386,6 +425,7 @@
 										poster={m?.poster}
 										{picker}
 										resumeAt={resume?.stepId === question.id ? resume.time : null}
+										transitionName={videoName}
 										onadd={addQuestionAt}
 										onreach={reach}
 									/>
@@ -463,3 +503,16 @@
 		</Card.Content>
 	{/if}
 </Card.Root>
+
+<style>
+	/* The video morphing between a video step's player and a question's small video. */
+	:global(::view-transition-group(*.study-video)) {
+		animation-duration: 450ms;
+		animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+	}
+	:global(::view-transition-old(*.study-video)),
+	:global(::view-transition-new(*.study-video)) {
+		height: 100%;
+		object-fit: cover;
+	}
+</style>

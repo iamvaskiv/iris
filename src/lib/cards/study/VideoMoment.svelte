@@ -11,11 +11,14 @@
 		streamUrl,
 		poster,
 		time,
+		transitionName,
 		oncontinue
 	}: {
 		streamUrl?: string | null;
 		poster?: string | null;
 		time: number;
+		/** Shared with the video step's player, so switching between them morphs one into the other. */
+		transitionName?: string;
 		oncontinue: () => void;
 	} = $props();
 
@@ -33,6 +36,9 @@
 	<!-- svelte-ignore a11y_media_has_caption -->
 	<video
 		bind:this={video}
+		data-study-video
+		style:view-transition-name={transitionName}
+		style:view-transition-class="study-video"
 		class="aspect-video w-full object-cover"
 		src={streamUrl ?? undefined}
 		poster={streamUrl ? undefined : (poster ?? undefined)}

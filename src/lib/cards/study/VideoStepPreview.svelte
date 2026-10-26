@@ -16,6 +16,7 @@
 		poster,
 		picker,
 		resumeAt = null,
+		transitionName,
 		onadd,
 		onreach
 	}: {
@@ -26,6 +27,8 @@
 		picker?: Snippet;
 		/** Start playing from here (seconds), past any question at or before it. */
 		resumeAt?: number | null;
+		/** Shared with the question view's small video, so switching between them morphs one into the other. */
+		transitionName?: string;
 		onadd: (time: number) => void;
 		onreach: (question: Question, time: number) => void;
 	} = $props();
@@ -115,6 +118,9 @@
 	<!-- svelte-ignore a11y_media_has_caption, a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
 	<video
 		bind:this={video}
+		data-study-video
+		style:view-transition-name={transitionName}
+		style:view-transition-class="study-video"
 		bind:currentTime
 		bind:duration
 		bind:paused
