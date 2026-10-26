@@ -32,7 +32,7 @@
 	});
 </script>
 
-<div class="relative w-56 overflow-hidden rounded-sm bg-muted">
+<div class="relative mb-12 w-56 overflow-hidden rounded-sm bg-muted">
 	<!-- svelte-ignore a11y_media_has_caption -->
 	<video
 		bind:this={video}
