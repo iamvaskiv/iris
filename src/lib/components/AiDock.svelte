@@ -215,7 +215,7 @@
 					<li class="suggestion" style:--index={i}>
 						<Tile
 							onclick={() => send(s.label)}
-							class="h-full w-full justify-between gap-3 text-body transition-[filter] hover:bg-muted hover:brightness-102 dark:hover:brightness-125"
+							class="h-full w-full justify-between gap-3 rounded-lg text-body transition-[filter] hover:bg-muted hover:brightness-102 dark:hover:brightness-125"
 						>
 							<Icon icon={s.icon} class="text-muted-foreground" />
 							{s.label}
