@@ -40,16 +40,18 @@ other CSS frameworks or global styles.
 | Text field + label | `Label` + `Input` (or `Textarea`) |
 | One-answer / AI prompt field with send (grows to 4 lines) | `PromptInput` |
 | Answers the assistant offers, one click each | `ChoiceList` (+ a `PromptInput` with a `Kbd` for "something else") |
+| How people answered a multiple-choice question | `ChoiceList` with `shares` (and `selected` to drill in) |
 | On/off setting that applies immediately | `Switch` + `Label` |
 | Pick an approximate value or range on a bounded scale | `Slider` + `Label` |
 | Pick one of a few short options that apply immediately (theme, view) | `SegmentedControl` + `Label` |
 | Upload / processing progress | `Progress` |
 | Numbers or short facts across a few columns | `Table.Root` › `Table.Header`/`Body` › `Table.Row` › `Table.Head`/`Cell` |
 | Confirm a destructive action, small focused form | `Dialog.Root` › `Dialog.Trigger` + `Dialog.Content` (`Header`, `Title`, `Description`, `Footer`, `Close`) |
+| A few settings or a note anchored to a button (share options, filters) | `Popover.Root` › `Popover.Trigger` + `Popover.Content` |
 | Grouped content on the page | `Card.Root` › `Card.Header` (`Title`, `Description`, `Action`) › `Card.Content` › `Card.Footer` |
 | A collapsible row of items inside a card (scenes, characters, themes) | `Card.Section` with `<li>` items |
-| Key numbers at the top of a card | `Stat` tiles in a grid |
-| Positive / neutral / negative split | `SentimentBar` |
+| Key numbers at the top of a card | `Stat` tiles in a grid; `variant="plain"` for a compact row under a title |
+| Positive / neutral / negative split | `SentimentBar`; `SentimentCounts` (three coloured numbers) where a bar won't fit |
 | One item in a row or grid inside a card (theme, brand, comment) | `Tile` (a link with `href`, a button with `onclick`) |
 | Ordered steps / question list | `Steps` |
 | Conversation message, AI avatar | `ChatMessage` (`from="assistant"` shows the AI avatar; `avatar` snippet to replace it) |

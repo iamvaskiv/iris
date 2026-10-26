@@ -93,6 +93,8 @@ For conversational, one-answer flows. Use `Input` + `Label` for regular forms.
 | Prop | Notes |
 | --- | --- |
 | `options` | 2–4 short answers (1–5 words), phrased as the user would say them |
+| `shares` | Results mode: percent per option; rows fill to their share and show it |
+| `selected` | Results mode: index of the picked option (pressed), e.g. to filter responses by it |
 | `onselect(option, index)` | called on click |
 | `numbered` | `Kbd` numbers before each option (default true). Number-key shortcuts are the app's to wire up |
 | `label` | accessible name of the group (default "Suggested answers") |
@@ -249,6 +251,23 @@ bindable for closing after an async action. Focus moves to the first focusable e
 Escape closes it, and focus returns to the trigger. Always include a `Dialog.Title`. Use dialogs for short decisions
 only, not long content or multi-step flows.
 
+## Popover
+
+```svelte
+<Popover.Root>
+	<Popover.Trigger class={buttonVariants({ variant: 'ghost', size: 'sm' })}><Share data-icon="inline-start" />Share</Popover.Trigger>
+	<Popover.Content align="end">
+		<p>Anyone with the link can answer.</p>
+		<div class="flex items-center justify-between gap-4"><Label for="open">Open for answers</Label><Switch id="open" /></div>
+	</Popover.Content>
+</Popover.Root>
+```
+
+A small floating panel (`bg-popover`, `shadow-raised`, 24px radius, 320px wide) anchored to its trigger. Escape or a
+click outside closes it and focus returns to the trigger; nothing behind it is blocked. `align` lines it up with the
+trigger; `Popover.Header` › `Title` + `Description` when it needs a heading. For a decision that must happen first,
+use a `Dialog`.
+
 ## Card
 
 ```svelte
@@ -295,6 +314,10 @@ width. `collapsed` starts it closed: use it for secondary sections so the card o
 A key number on a muted tile (`text-heading` value, muted caption). Format the value yourself and say what it covers
 in the label. Use a few at the top of a card, not as a replacement for a `Table`.
 
+`variant="plain"`: no tile, `text-body-lg` value; for a compact row of numbers under a card's title
+(`<div class="flex gap-5">`). Pass children instead of `value` for richer content:
+`<Stat variant="plain" label="Sentiment"><SentimentCounts positive={56} neutral={28} negative={16} unit="%" /></Stat>`.
+
 ## SentimentBar
 
 ```svelte
@@ -303,6 +326,15 @@ in the label. Use a few at the top of a card, not as a replacement for a `Table`
 
 Segments sized by count in `success`, `control` and `destructive`, with the counts as a caption. `legend={false}`
 drops the caption (e.g. in a table cell) and labels the bar for screen readers instead.
+
+## SentimentCounts
+
+```svelte
+<SentimentCounts positive={56} neutral={28} negative={16} unit="%" />
+```
+
+The same split as three numbers in `success`, `muted-foreground` and `destructive`, each labelled for screen readers.
+For tight spots such as a plain `Stat`; prefer `SentimentBar` when there's room.
 
 ## Tile
 
@@ -331,7 +363,9 @@ tiles on the page background or nest them.
 <Steps {steps} bind:current onselect={(i) => goTo(i)} />
 ```
 
-`onselect` makes steps buttons; the active one gets `aria-current="step"`.
+`onselect` makes steps buttons; the active one gets `aria-current="step"` (`current={-1}` for none). A step's `meta`
+sits at the end of its description line ("96 answers"). The `after` snippet (`(step, index)`) renders content below a
+step, outside its button and lined up with its text, e.g. a `ChoiceList` with `shares` for that question's results.
 
 ## ChatMessage
 
