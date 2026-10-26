@@ -251,6 +251,24 @@ bindable for closing after an async action. Focus moves to the first focusable e
 Escape closes it, and focus returns to the trigger. Always include a `Dialog.Title`. Use dialogs for short decisions
 only, not long content or multi-step flows.
 
+## Select
+
+```svelte
+<Select.Root type="single" bind:value={type}>
+	<Select.Trigger aria-label="Question type">{labels[type]}</Select.Trigger>
+	<Select.Content>
+		<Select.Item value="open" label="Open question" />
+		<Select.Item value="choice" label="Multiple choice" />
+	</Select.Content>
+</Select.Root>
+```
+
+A secondary-filled button showing the current value, opening a menu (popover surface, `shadow-raised`) with a check
+on the selected item. Keyboard and screen-reader support come from Bits UI. Put the current label inside the trigger
+yourself (or a placeholder; it's styled with `text-placeholder` when nothing is chosen). `size="sm"` for toolbars;
+`Select.Group` + `Select.Label` for long lists. Label it (`Label` + `id`, or `aria-label`). Two or three options that
+should stay visible: use `SegmentedControl`.
+
 ## Popover
 
 ```svelte

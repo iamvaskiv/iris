@@ -9,7 +9,7 @@
 		Label,
 		Popover,
 		PromptInput,
-		SegmentedControl,
+		Select,
 		Steps,
 		Switch
 	} from '@latitudelabs/design-system';
@@ -211,12 +211,16 @@
 				<p class="absolute top-4 left-4 text-caption text-muted-foreground">Preview</p>
 				{#if question}
 					<div class="absolute top-2 right-2 flex items-center gap-1">
-						<SegmentedControl
-							aria-label="Question type"
-							options={TYPES}
-							value={question.type}
-							onValueChange={setType}
-						/>
+						<Select.Root type="single" value={question.type} onValueChange={setType}>
+							<Select.Trigger size="sm" aria-label="Question type">
+								{typeLabel(question.type)}
+							</Select.Trigger>
+							<Select.Content align="end">
+								{#each TYPES as t (t.value)}
+									<Select.Item value={t.value} label={t.label} />
+								{/each}
+							</Select.Content>
+						</Select.Root>
 						<Button
 							variant="ghost"
 							size="icon-sm"

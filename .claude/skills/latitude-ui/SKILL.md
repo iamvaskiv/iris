@@ -44,6 +44,7 @@ other CSS frameworks or global styles.
 | On/off setting that applies immediately | `Switch` + `Label` |
 | Pick an approximate value or range on a bounded scale | `Slider` + `Label` |
 | Pick one of a few short options that apply immediately (theme, view) | `SegmentedControl` + `Label` |
+| Pick one value from a list that opens from a button (type, sort, team) | `Select.Root` › `Select.Trigger` + `Select.Content` › `Select.Item` |
 | Upload / processing progress | `Progress` |
 | Numbers or short facts across a few columns | `Table.Root` › `Table.Header`/`Body` › `Table.Row` › `Table.Head`/`Cell` |
 | Confirm a destructive action, small focused form | `Dialog.Root` › `Dialog.Trigger` + `Dialog.Content` (`Header`, `Title`, `Description`, `Footer`, `Close`) |
