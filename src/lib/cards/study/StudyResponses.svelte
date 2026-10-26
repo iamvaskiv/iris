@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button, Kbd } from '@latitudelabs/design-system';
 	import { X } from '@latitudelabs/design-system/icons';
+	import { SCALE_MAX } from './question-types';
 	import type { Question, SampleResults } from '../types';
 
 	/** One question's individual responses, newest first; filtered to an option when one is picked. */
@@ -53,7 +54,11 @@
 					<span>Respondent {person.respondent} · {person.age}</span>
 					<span>{person.when}</span>
 				</div>
-				{#if person.option !== undefined}
+				{#if person.value !== undefined}
+					<p class="text-body-lg">
+						{person.value}&nbsp;<span class="text-muted-foreground">/ {SCALE_MAX}</span>
+					</p>
+				{:else if person.option !== undefined}
 					<p class="flex items-center gap-3 text-body-lg">
 						<Kbd aria-hidden="true">{person.option + 1}</Kbd>
 						{optionLabel(person.option)}

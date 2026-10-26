@@ -9,6 +9,7 @@
 		Label,
 		Popover,
 		PromptInput,
+		Slider,
 		Select,
 		Steps,
 		Switch
@@ -16,15 +17,10 @@
 	import { Icon, Plus, Share, Trash, X } from '@latitudelabs/design-system/icons';
 	import { tick, untrack } from 'svelte';
 	import StudyResults from './study/StudyResults.svelte';
+	import { QUESTION_TYPES, SCALE_MAX, SCALE_MIN, typeLabel } from './study/question-types';
 	import type { Card as CardData, Question, StudyData } from './types';
 
 	let { card }: { card: CardData } = $props();
-
-	const TYPES = [
-		{ value: 'open', label: 'Open question' },
-		{ value: 'choice', label: 'Multiple choice' }
-	];
-	const typeLabel = (type: Question['type']) => TYPES.find((t) => t.value === type)!.label;
 
 	/** Edited here and saved in the background; replaced when the card itself changes (Lumi edited it). */
 	let questions = $state<Question[]>([]);
@@ -97,6 +93,7 @@
 
 	/** Tried out in the preview only; answers aren't collected yet. */
 	let answer = $state('');
+	let scaleValue = $state(5);
 
 	// Share: sharing isn't built yet, so it offers fake responses instead (Lumi writes them on the server).
 	let writing = $state(false);
@@ -216,7 +213,7 @@
 								{typeLabel(question.type)}
 							</Select.Trigger>
 							<Select.Content align="end">
-								{#each TYPES as t (t.value)}
+								{#each QUESTION_TYPES as t (t.value)}
 									<Select.Item value={t.value} label={t.label} />
 								{/each}
 							</Select.Content>
@@ -249,6 +246,24 @@
 								label="Answer (preview)"
 								onsubmit={() => (answer = '')}
 							/>
+						{:else if question.type === 'scale'}
+							<!-- Try it: the number picked shows on the right; the ends are labelled below. -->
+							<div class="flex items-center gap-4">
+								<Slider
+									type="single"
+									bind:value={scaleValue}
+									min={SCALE_MIN}
+									max={SCALE_MAX}
+									step={1}
+									aria-label="Answer (preview)"
+									class="flex-1"
+								/>
+								<span class="w-8 text-right text-body-lg font-medium">{scaleValue}</span>
+							</div>
+							<div class="-mt-2 flex justify-between pr-12 text-caption text-muted-foreground">
+								<span>{SCALE_MIN}</span>
+								<span>{SCALE_MAX}</span>
+							</div>
 						{:else}
 							<ol bind:this={optionsList} class="flex flex-col gap-1" aria-label="Options">
 								{#each question.options ?? [] as _, i (i)}

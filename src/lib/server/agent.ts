@@ -103,6 +103,12 @@ function describeCards(cards: Card[], focusedId?: string) {
 	return `Cards on screen, oldest first:\n${lines.join('\n')}`;
 }
 
+/** Mean of a 0–10 slider from its counts per value. */
+const average = (counts: number[]) => {
+	const n = counts.reduce((a, b) => a + b, 0);
+	return n ? counts.reduce((sum, c, value) => sum + c * value, 0) / n : 0;
+};
+
 /** A study's made-up results, when the card shows them (Share → Fake responses). */
 function describeSample(data: StudyData | undefined) {
 	const r = data?.sample?.enabled && data.sample.results;
@@ -110,7 +116,9 @@ function describeSample(data: StudyData | undefined) {
 	const perQuestion = (data.questions ?? []).map((q, i) => {
 		const a = r.questions[q.id];
 		if (!a) return `${i + 1}. no results`;
-		const detail = a.counts
+		const detail = q.type === 'scale' && a.counts
+			? `average ${average(a.counts).toFixed(1)} / 10`
+			: a.counts
 			? (q.options ?? []).map((o, k) => `${o}: ${a.counts![k] ?? 0}`).join(', ')
 			: (a.people ?? []).slice(0, 5).map((r) => `"${r.text}"`).join(' ');
 		return `${i + 1}. ${a.responses} answers; ${detail}`;
@@ -132,7 +140,7 @@ const questionsSchema = {
 	items: {
 		type: 'object',
 		properties: {
-			type: { type: 'string', enum: ['open', 'choice'], description: 'open: free-text answer; choice: pick one of options.' },
+			type: { type: 'string', enum: ['open', 'choice', 'scale'], description: 'open: free-text answer; choice: pick one of options; scale: a slider from 0 to 10 (for how much, how likely, how strongly).' },
 			text: { type: 'string' },
 			placeholder: { type: 'string', description: 'Open questions: hint in the empty answer field, e.g. "My name is…".' },
 			options: { type: 'array', items: { type: 'string' }, description: 'Multiple choice: the answers.' }

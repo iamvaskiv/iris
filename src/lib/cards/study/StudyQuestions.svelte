@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { ChoiceList, Steps } from '@latitudelabs/design-system';
+	import { ChoiceList, Progress, Steps } from '@latitudelabs/design-system';
+	import { SCALE_MAX, SCALE_MIN, typeLabel } from './question-types';
 	import type { Question, SampleResults } from '../types';
 
 	/**
@@ -23,6 +24,11 @@
 
 	const percent = (n: number, total: number) => (total ? (n / total) * 100 : 0);
 	const optionLabel = (q: Question, k: number) => q.options?.[k] || `Option ${k + 1}`;
+	/** A slider's average from its counts per value. */
+	const average = (counts: number[] = []) => {
+		const n = counts.reduce((a, b) => a + b, 0);
+		return n ? counts.reduce((sum, c, k) => sum + c * (SCALE_MIN + k), 0) / n : 0;
+	};
 </script>
 
 <Steps
@@ -32,7 +38,7 @@
 	onselect={(i: number) => onpick(questions[i].id)}
 	steps={questions.map((q) => ({
 		title: q.text || 'Untitled question',
-		description: q.type === 'choice' ? 'Multiple choice' : 'Open question',
+		description: typeLabel(q.type),
 		meta: `${results.questions[q.id]?.responses ?? 0} answers`
 	}))}
 >
@@ -47,6 +53,19 @@
 				selected={focused === q.id ? filter : null}
 				onselect={(_: string, k: number) => onpick(q.id, k)}
 			/>
+		{:else if q.type === 'scale'}
+			{@const avg = average(a?.counts)}
+			<div class="flex items-center gap-4">
+				<Progress
+					class="flex-1"
+					value={avg - SCALE_MIN}
+					max={SCALE_MAX - SCALE_MIN}
+					aria-label="Average answer to question {i + 1}"
+				/>
+				<span class="text-body-lg"
+					>{avg.toFixed(1)}&nbsp;<span class="text-muted-foreground">/ {SCALE_MAX}</span></span
+				>
+			</div>
 		{:else if a?.people?.length}
 			<ul class="flex flex-col gap-1" aria-label="Some answers to question {i + 1}">
 				{#each a.people.slice(0, 3) as person (person.respondent)}

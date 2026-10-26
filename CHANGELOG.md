@@ -8,6 +8,8 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 **Studies**
 
+- New question type: **Slider, 0–10**. Try it in the preview; Lumi can draft slider questions, and sample results show
+  the average (with a bar) and each response's number. The question type is picked from a dropdown.
 - New study card: questions to share with people, set up inside a project. Ask Lumi for a study and it drafts the
   first questions; on the card, add questions (**New**), pick one to edit it in place in the preview, switch between an
   open question and multiple choice, add or remove options, and delete questions. Edits save as you type. Sharing and

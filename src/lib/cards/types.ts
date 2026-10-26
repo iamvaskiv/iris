@@ -120,8 +120,8 @@ export type SampleResults = {
 	insights: { title: string; body: string }[];
 	quote: { text: string; who: string };
 	/**
-	 * By question id: how many answered, votes per option (multiple choice) and some individual responses (a sample of
-	 * everyone who answered, newest first).
+	 * By question id: how many answered, votes per option (multiple choice) or per value 0–10 (slider), and some
+	 * individual responses (a sample of everyone who answered, newest first).
 	 */
 	questions: Record<string, { responses: number; counts?: number[]; people?: SampleResponse[] }>;
 	/** Written by Lumi, or generic filler when Lumi couldn't be reached. */
@@ -141,12 +141,14 @@ export type SampleResponse = {
 	sentiment?: 'positive' | 'neutral' | 'negative';
 	/** Multiple choice: the option they picked (index). */
 	option?: number;
+	/** Slider: the number they picked, 0–10. */
+	value?: number;
 };
 
 export type Question = {
 	id: string;
-	/** `open`: a free-text answer. `choice`: one of `options`. */
-	type: 'open' | 'choice';
+	/** `open`: a free-text answer. `choice`: one of `options`. `scale`: a slider from 0 to 10. */
+	type: 'open' | 'choice' | 'scale';
 	text: string;
 	/** Open questions: hint in the empty answer field, e.g. "My name is…". */
 	placeholder?: string;

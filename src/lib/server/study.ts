@@ -2,12 +2,13 @@ import type Anthropic from '@anthropic-ai/sdk';
 import * as env from '$app/env/private';
 import type { Question, SampleResponse, SampleResults } from '#lib/cards/types.js';
 import { claude, MODEL } from './llm.js';
+import { SCALE_MAX, SCALE_MIN } from '#lib/cards/study/question-types.js';
 
 /** Questions as saved: known fields only, an id each, options only on multiple choice. */
 export function cleanQuestions(input: unknown[]): Question[] {
 	return input.map((raw) => {
 		const q = (raw ?? {}) as Partial<Question>;
-		const type = q.type === 'choice' ? 'choice' : 'open';
+		const type = q.type === 'choice' || q.type === 'scale' ? q.type : 'open';
 		return {
 			id: typeof q.id === 'string' && q.id ? q.id : crypto.randomUUID().slice(0, 8),
 			type,
@@ -87,12 +88,13 @@ const writtenSchema = obj({
 			shares: {
 				type: 'array',
 				items: { type: 'number' },
-				description: 'Multiple choice: percentage per option, in order. Empty for open questions.'
+				description:
+					'Multiple choice: percentage per option, in order. Slider: percentage per value from 0 to 10 (11 numbers). Empty for open questions.'
 			},
 			answers: {
 				type: 'array',
 				description:
-					"Open questions: 15 to 20 individual answers in the respondents' own words, varied in length, tone and opinion, in line with the sentiment split. Empty for multiple choice.",
+					"Open questions: 15 to 20 individual answers in the respondents' own words, varied in length, tone and opinion, in line with the sentiment split. Empty for multiple choice and sliders.",
 				items: obj({
 					text: { type: 'string' },
 					sentiment: { type: 'string', enum: ['positive', 'neutral', 'negative'] },
@@ -107,7 +109,7 @@ async function write(title: string, questions: Question[]): Promise<Written> {
 	const list = questions
 		.map(
 			(q, i) =>
-				`${i + 1}. ${q.text || '(untitled)'}${q.type === 'choice' ? ` [options: ${(q.options ?? []).join(' | ')}]` : ' [open answer]'}`
+				`${i + 1}. ${q.text || '(untitled)'}${q.type === 'choice' ? ` [options: ${(q.options ?? []).join(' | ')}]` : q.type === 'scale' ? ' [slider, 0 to 10]' : ' [open answer]'}`
 		)
 		.join('\n');
 	const res = await claude().messages.create({
@@ -141,15 +143,21 @@ const filler = (questions: Question[]): Written => ({
 	questions: questions.map((q, i) =>
 		q.type === 'choice'
 			? { index: i + 1, shares: (q.options ?? []).map(() => 1 + Math.random() * 9) }
-			: {
-					index: i + 1,
-					answers: [
-						{ text: 'I liked it.', sentiment: 'positive', age: '24–32' },
-						{ text: 'Hard to say.', sentiment: 'neutral', age: '33–44' },
-						{ text: 'It was fine, nothing special.', sentiment: 'neutral', age: '18–23' },
-						{ text: "Not for me, it didn't hold my attention.", sentiment: 'negative', age: '45+' }
-					]
-				}
+			: q.type === 'scale'
+				? { index: i + 1, shares: [1, 1, 2, 3, 5, 8, 12, 18, 22, 16, 12] }
+				: {
+						index: i + 1,
+						answers: [
+							{ text: 'I liked it.', sentiment: 'positive', age: '24–32' },
+							{ text: 'Hard to say.', sentiment: 'neutral', age: '33–44' },
+							{ text: 'It was fine, nothing special.', sentiment: 'neutral', age: '18–23' },
+							{
+								text: "Not for me, it didn't hold my attention.",
+								sentiment: 'negative',
+								age: '45+'
+							}
+						]
+					}
 	)
 });
 
@@ -217,12 +225,14 @@ export async function sampleResults(title: string, questions: Question[]): Promi
 		const responses = Math.round(views - ((views - finished) * (i + 1)) / questions.length);
 		const w = written.questions?.find((x) => x.index === i + 1);
 		const used = new Set<number>();
-		if (q.type === 'choice') {
+		if (q.type === 'choice' || q.type === 'scale') {
+			// Buckets: the options, or each slider value from 0 to 10.
+			const buckets = q.type === 'choice' ? (q.options ?? []).length : SCALE_MAX - SCALE_MIN + 1;
 			const counts = split(
 				responses,
-				(q.options ?? []).map((_, k) => clamp(w?.shares?.[k], 0, 100, 1))
+				Array.from({ length: buckets }, (_, k) => clamp(w?.shares?.[k], 0, 100, 1))
 			);
-			// A sample of 18 people, in proportion to the counts, with someone for every option anyone picked.
+			// A sample of 18 people, in proportion to the counts, with someone for every answer anyone picked.
 			const sample = split(Math.min(18, responses), counts);
 			counts.forEach((n, k) => {
 				if (n > 0 && sample[k] === 0) {
@@ -236,7 +246,12 @@ export async function sampleResults(title: string, questions: Question[]): Promi
 			results[q.id] = {
 				responses,
 				counts,
-				people: newestFirst(picks.map((option) => ({ ...who(used, i * 7), option })))
+				people: newestFirst(
+					picks.map((k) => ({
+						...who(used, i * 7),
+						...(q.type === 'choice' ? { option: k } : { value: SCALE_MIN + k })
+					}))
+				)
 			};
 		} else {
 			results[q.id] = {
