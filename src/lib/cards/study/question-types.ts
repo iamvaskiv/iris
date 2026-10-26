@@ -4,7 +4,7 @@ import type { Question } from '../types';
 export const QUESTION_TYPES: { value: Question['type']; label: string }[] = [
 	{ value: 'open', label: 'Open question' },
 	{ value: 'choice', label: 'Multiple choice' },
-	{ value: 'scale', label: 'Slider, 0–10' }
+	{ value: 'scale', label: 'Slider' }
 ];
 
 export const typeLabel = (type: Question['type']) =>
