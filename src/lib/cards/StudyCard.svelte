@@ -299,6 +299,16 @@
 				<p class="absolute top-4 left-4 text-caption text-muted-foreground">Preview</p>
 				{#if question}
 					<div class="absolute top-2 right-2 flex items-center gap-1">
+						{#if parent}
+							<!-- When it pops up in the video: type a new time to move it. -->
+							<input
+								value={timecode(question.time ?? 0)}
+								onchange={(e) => setTime(e.currentTarget.value)}
+								aria-label="Pops up in the video at (m:ss)"
+								title="Pops up in the video at"
+								class="h-8 w-14 rounded-sm bg-secondary text-center text-body font-medium text-secondary-foreground outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
+							/>
+						{/if}
 						<Select.Root type="single" value={question.type} onValueChange={setType}>
 							<Select.Trigger size="sm" aria-label="Question type">
 								{typeLabel(question.type)}
@@ -331,16 +341,6 @@
 								time={question.time ?? 0}
 								oncontinue={carryOn}
 							/>
-							<!-- When it pops up: type a new time to move it. -->
-							<label class="flex items-center gap-2 text-caption text-muted-foreground">
-								Pops up in {stepTitle(parent)} at
-								<input
-									value={timecode(question.time ?? 0)}
-									onchange={(e) => setTime(e.currentTarget.value)}
-									aria-label="Time in the video (m:ss)"
-									class="w-14 rounded-sm bg-input px-2 py-1 text-body text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-								/>
-							</label>
 						{/if}
 						<textarea
 							bind:this={questionField}
