@@ -82,6 +82,9 @@ Signed media URLs expire, so page loads rebuild video and comparison card data; 
 
 ## Editing a study
 
+A study's steps are questions (open, multiple choice, slider) and videos; a video step holds its own questions, each
+with a time, that pop up while it plays (`flatSteps` lists them right after it as "2.1", "2.2").
+
 Lumi drafts a study's questions (`show_card` / `update_card` with `questions`); edits made on the card save straight to
 the project, without a chat turn. Lumi sees the saved questions on its next turn.
 

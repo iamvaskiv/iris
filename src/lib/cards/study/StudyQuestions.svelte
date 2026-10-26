@@ -1,6 +1,13 @@
 <script lang="ts">
 	import { ChoiceList, Progress, SentimentBar, Steps } from '@latitudelabs/design-system';
-	import { SCALE_MAX, SCALE_MIN, stepTitle, typeColor, typeLabel } from './question-types';
+	import {
+		SCALE_MAX,
+		SCALE_MIN,
+		flatSteps,
+		stepDescription,
+		stepTitle,
+		typeColor
+	} from './question-types';
 	import type { Question, SampleResults } from '../types';
 
 	/**
@@ -22,6 +29,8 @@
 		onpick: (id: string, option?: number) => void;
 	} = $props();
 
+	/** Questions inside a video are listed right after it, indented. */
+	const steps = $derived(flatSteps(questions));
 	const percent = (n: number, total: number) => (total ? (n / total) * 100 : 0);
 	const optionLabel = (q: Question, k: number) => q.options?.[k] || `Option ${k + 1}`;
 	/** A slider's average from its counts per value. */
@@ -34,21 +43,23 @@
 <Steps
 	aria-label="Answers per question"
 	class="gap-4"
-	current={questions.findIndex((q) => q.id === focused)}
-	onselect={(i: number) => onpick(questions[i].id)}
-	steps={questions.map((q) => ({
-		title: stepTitle(q),
-		description: typeLabel(q.type),
-		color: typeColor(q.type),
-		meta: `${results.questions[q.id]?.responses ?? 0} ${q.type === 'video' ? 'views' : 'answers'}`
+	current={steps.findIndex((s) => s.q.id === focused)}
+	onselect={(i: number) => onpick(steps[i].q.id)}
+	steps={steps.map((s) => ({
+		title: stepTitle(s.q),
+		description: stepDescription(s),
+		color: typeColor(s.q.type),
+		indent: !!s.parent,
+		number: s.number,
+		meta: `${results.questions[s.q.id]?.responses ?? 0} ${s.q.type === 'video' ? 'views' : 'answers'}`
 	}))}
 >
 	{#snippet after(_: unknown, i: number)}
-		{@const q = questions[i]}
+		{@const q = steps[i].q}
 		{@const a = results.questions[q.id]}
 		{#if q.type === 'choice'}
 			<ChoiceList
-				label="Answers to question {i + 1}"
+				label="Answers to question {steps[i].number}"
 				options={(q.options ?? []).map((_, k) => optionLabel(q, k))}
 				shares={(q.options ?? []).map((_, k) => percent(a?.counts?.[k] ?? 0, a?.responses ?? 0))}
 				selected={focused === q.id ? filter : null}
@@ -64,14 +75,14 @@
 					class="flex-1"
 					value={avg - SCALE_MIN}
 					max={SCALE_MAX - SCALE_MIN}
-					aria-label="Average answer to question {i + 1}"
+					aria-label="Average answer to question {steps[i].number}"
 				/>
 				<span class="text-body-lg"
 					>{avg.toFixed(1)}&nbsp;<span class="text-muted-foreground">/ {SCALE_MAX}</span></span
 				>
 			</div>
 		{:else if a?.people?.length}
-			<ul class="flex flex-col gap-1" aria-label="Some answers to question {i + 1}">
+			<ul class="flex flex-col gap-1" aria-label="Some answers to question {steps[i].number}">
 				{#each a.people.slice(0, 3) as person (person.respondent)}
 					<li class="text-body text-muted-foreground">“{person.text}”</li>
 				{/each}

@@ -3,13 +3,19 @@ import * as env from '$app/env/private';
 import type { Question, SampleResponse, SampleResults } from '#lib/cards/types.js';
 import { assets } from './assets.js';
 import { claude, MODEL } from './llm.js';
-import { SCALE_MAX, SCALE_MIN } from '#lib/cards/study/question-types.js';
+import { SCALE_MAX, SCALE_MIN, flatSteps, timecode } from '#lib/cards/study/question-types.js';
 
-/** Questions as saved: known fields only, an id each, options only on multiple choice. */
-export function cleanQuestions(input: unknown[]): Question[] {
-	return input.map((raw) => {
+/**
+ * Questions as saved: known fields only, an id each, options only on multiple choice. A video step keeps its own
+ * questions (`inside`: those, with a time each, in time order, and never videos).
+ */
+export function cleanQuestions(input: unknown[], inside = false): Question[] {
+	const cleaned = input.map((raw): Question => {
 		const q = (raw ?? {}) as Partial<Question>;
-		const type = q.type === 'choice' || q.type === 'scale' || q.type === 'video' ? q.type : 'open';
+		const type =
+			q.type === 'choice' || q.type === 'scale' || (q.type === 'video' && !inside)
+				? q.type
+				: 'open';
 		return {
 			id: typeof q.id === 'string' && q.id ? q.id : crypto.randomUUID().slice(0, 8),
 			type,
@@ -20,10 +26,18 @@ export function cleanQuestions(input: unknown[]): Question[] {
 				: {}),
 			...(type === 'video' && q.videoId
 				? { videoId: String(q.videoId), ...(q.videoName ? { videoName: String(q.videoName) } : {}) }
-				: {})
+				: {}),
+			...(type === 'video' && Array.isArray(q.questions) && q.questions.length
+				? { questions: cleanQuestions(q.questions, true) }
+				: {}),
+			...(inside ? { time: Math.max(0, Number(q.time) || 0) } : {})
 		};
 	});
+	return inside ? cleaned.sort((a, b) => (a.time ?? 0) - (b.time ?? 0)) : cleaned;
 }
+
+/** Every question in list order, a video's questions right after it. */
+const everyQuestion = (questions: Question[]) => flatSteps(questions).map((s) => s.q);
 
 /** Fills in the names of video steps' videos from the user's assets (Lumi only gives the id). */
 export async function nameVideos(questions: Question[]) {
@@ -44,8 +58,9 @@ const SAMPLE_VERSION = 4;
 export const basisOf = (questions: Question[]) =>
 	JSON.stringify([
 		SAMPLE_VERSION,
-		...questions.map((q) => [
+		...everyQuestion(questions).map((q) => [
 			q.type,
+			q.time ?? null,
 			q.text,
 			q.type === 'choice' ? q.options : q.type === 'video' ? q.videoId : null
 		])
@@ -126,10 +141,12 @@ const writtenSchema = obj({
 });
 
 async function write(title: string, questions: Question[]): Promise<Written> {
-	const list = questions
+	// Numbered in list order, a video's questions right after it (and marked as popping up in it).
+	const steps = flatSteps(questions);
+	const list = steps
 		.map(
-			(q, i) =>
-				`${i + 1}. ${q.text || '(untitled)'}${q.type === 'choice' ? ` [options: ${(q.options ?? []).join(' | ')}]` : q.type === 'scale' ? ' [slider, 0 to 10]' : q.type === 'video' ? ` [video "${q.videoName ?? q.videoId}": people watch it and react]` : ' [open answer]'}`
+			({ q, parent }, i) =>
+				`${i + 1}. ${parent ? `(pops up during the video above, at ${timecode(q.time ?? 0)}) ` : ''}${q.text || '(untitled)'}${q.type === 'choice' ? ` [options: ${(q.options ?? []).join(' | ')}]` : q.type === 'scale' ? ' [slider, 0 to 10]' : q.type === 'video' ? ` [video "${q.videoName ?? q.videoId}": people watch it and react]` : ' [open answer]'}`
 		)
 		.join('\n');
 	const res = await claude().messages.create({
@@ -160,7 +177,7 @@ const filler = (questions: Question[]): Written => ({
 	sentiment: { positive: 56, neutral: 24, negative: 20 },
 	rating: 78,
 	completion: 85,
-	questions: questions.map((q, i) =>
+	questions: everyQuestion(questions).map((q, i) =>
 		q.type === 'choice'
 			? { index: i + 1, shares: (q.options ?? []).map(() => 1 + Math.random() * 9) }
 			: q.type === 'scale'
@@ -241,7 +258,7 @@ export async function sampleResults(title: string, questions: Question[]): Promi
 		list.sort((a, b) => a.days - b.days).map(({ days: _, ...r }) => r);
 
 	const results: SampleResults['questions'] = {};
-	questions.forEach((q, i) => {
+	everyQuestion(questions).forEach((q, i) => {
 		// Fewer people get to each later question, down to those who finished.
 		const responses = Math.round(views - ((views - finished) * (i + 1)) / questions.length);
 		const w = written.questions?.find((x) => x.index === i + 1);

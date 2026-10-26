@@ -7,6 +7,7 @@ import { insights } from './insights.js';
 import { comparisonData } from './comparison.js';
 import { assets, describeAssets } from './assets.js';
 import { cleanQuestions, nameVideos } from './study.js';
+import { flatSteps, timecode } from '#lib/cards/study/question-types.js';
 import type { Card, CardOp, ChatResponse, ComparisonData, StudyData } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
 import { claude, MODEL } from './llm.js';
@@ -113,9 +114,10 @@ const average = (counts: number[]) => {
 function describeSample(data: StudyData | undefined) {
 	const r = data?.sample?.enabled && data.sample.results;
 	if (!r) return '';
-	const perQuestion = (data.questions ?? []).map((q, i) => {
+	const perQuestion = flatSteps(data.questions ?? []).map(({ q, number, parent }) => {
 		const a = r.questions[q.id];
-		if (!a) return `${i + 1}. no results`;
+		const label = `${number}${parent ? ` (in the video, at ${timecode(q.time ?? 0)})` : ''}`;
+		if (!a) return `${label} no results`;
 		const detail = q.type === 'video' && a.counts
 			? `watched by ${a.responses}; reactions ${a.counts.join('/')} positive/neutral/negative: ${(a.people ?? []).slice(0, 4).map((r) => `"${r.text}"`).join(' ')}`
 			: q.type === 'scale' && a.counts
@@ -123,7 +125,7 @@ function describeSample(data: StudyData | undefined) {
 			: a.counts
 			? (q.options ?? []).map((o, k) => `${o}: ${a.counts![k] ?? 0}`).join(', ')
 			: (a.people ?? []).slice(0, 5).map((r) => `"${r.text}"`).join(' ');
-		return `${i + 1}. ${a.responses} answers; ${detail}`;
+		return `${label} ${a.responses} answers; ${detail}`;
 	});
 	return ` | SHOWING SAMPLE RESULTS (made up, not real answers): ${r.views} views, ${r.completion}% completion, rating ${r.rating}%, sentiment ${r.sentiment.positive}/${r.sentiment.neutral}/${r.sentiment.negative}% positive/neutral/negative; summary: ${r.summary}; ${perQuestion.join('; ')}`;
 }
@@ -136,12 +138,26 @@ const tableSchema = {
 	rows: { type: 'array', items: { type: 'array', items: { type: ['string', 'number'] } } }
 };
 
+/** A question that pops up while a video step plays. */
+const popUpSchema = {
+	type: 'object',
+	properties: {
+		type: { type: 'string', enum: ['open', 'choice', 'scale'] },
+		time: { type: 'number', description: 'Seconds into the video when it pops up (the video pauses until it is answered). Time it to the moment it asks about; get_chapters and get_moments give the timings.' },
+		text: { type: 'string' },
+		placeholder: { type: 'string' },
+		options: { type: 'array', items: { type: 'string' } }
+	},
+	required: ['type', 'time', 'text']
+};
+
 const questionsSchema = {
 	type: 'array',
 	description: 'Study cards: the questions, in order.',
 	items: {
 		type: 'object',
 		properties: {
+			questions: { type: 'array', items: popUpSchema, description: 'Video steps: questions that pop up while it plays, each at a time. Ask about a moment right after it happens.' },
 			type: { type: 'string', enum: ['open', 'choice', 'scale', 'video'], description: 'open: free-text answer; choice: pick one of options; scale: a slider from 0 to 10 (for how much, how likely, how strongly); video: show one of the user\'s videos (set videoId; text is an optional line before it), usually followed by questions about it.' },
 			videoId: { type: 'string', description: 'Video steps: the id of one of the user\'s videos (assets).' },
 			text: { type: 'string' },

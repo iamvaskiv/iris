@@ -3,6 +3,7 @@
 	import StudyOverview from './StudyOverview.svelte';
 	import StudyQuestions from './StudyQuestions.svelte';
 	import StudyResponses from './StudyResponses.svelte';
+	import { flatSteps } from './question-types';
 	import type { Question, SampleResults } from '../types';
 
 	/**
@@ -27,7 +28,7 @@
 		filter = null;
 	}
 
-	const question = $derived(questions.find((q) => q.id === shown));
+	const question = $derived(flatSteps(questions).find((s) => s.q.id === shown)?.q);
 	const answers = $derived(shown ? results.questions[shown] : undefined);
 
 	// The panes fill the whole card (Card.Root is their positioned parent) and start their content below the header and

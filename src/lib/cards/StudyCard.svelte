@@ -17,11 +17,16 @@
 	import { Icon, Plus, Share, Trash, X } from '@latitudelabs/design-system/icons';
 	import { tick, untrack } from 'svelte';
 	import StudyResults from './study/StudyResults.svelte';
+	import VideoStepPreview from './study/VideoStepPreview.svelte';
 	import {
 		QUESTION_TYPES,
 		SCALE_MAX,
 		SCALE_MIN,
+		flatSteps,
+		parseTime,
+		stepDescription,
 		stepTitle,
+		timecode,
 		typeColor,
 		typeLabel
 	} from './study/question-types';
@@ -40,12 +45,25 @@
 		untrack(() => {
 			questions = latest;
 			sample = latestSample;
-			selected = Math.min(selected, Math.max(0, latest.length - 1));
+			selected = Math.min(selected, Math.max(0, flatSteps(latest).length - 1));
 		});
 	});
 	/** With fake responses on, the card shows (made-up) results instead of the setup. */
 	const results = $derived(sample?.enabled ? sample.results : undefined);
-	const question = $derived(questions[selected]);
+	/** Every step in list order, with questions inside a video right after it; `selected` indexes this. */
+	const steps = $derived(flatSteps(questions));
+	const question = $derived(steps[selected]?.q);
+	/** The video a selected question pops up in, if it's inside one. */
+	const parent = $derived(steps[selected]?.parent);
+	const selectId = async (id: string) => {
+		await tick();
+		selected = Math.max(
+			0,
+			steps.findIndex((s) => s.q.id === id)
+		);
+		await tick();
+		list?.querySelector('[aria-current=step]')?.scrollIntoView({ block: 'nearest' });
+	};
 
 	/** Saves a moment after the last edit. Storybook has no project, so nothing is saved there. */
 	let timer: ReturnType<typeof setTimeout>;
@@ -65,18 +83,39 @@
 	let questionField = $state<HTMLTextAreaElement | null>(null);
 	let list = $state<HTMLElement | null>(null);
 	async function addQuestion() {
-		questions.push({ id: crypto.randomUUID().slice(0, 8), type: 'open', text: '' });
-		selected = questions.length - 1;
+		const id = crypto.randomUUID().slice(0, 8);
+		questions.push({ id, type: 'open', text: '' });
 		save();
-		await tick();
-		list?.querySelector('[aria-current=step]')?.scrollIntoView({ block: 'nearest' });
+		await selectId(id);
+		questionField?.focus({ preventScroll: true });
+	}
+
+	/** A question inside the selected video, popping up at `time`; kept in time order. */
+	async function addQuestionAt(time: number) {
+		const video = question;
+		const id = crypto.randomUUID().slice(0, 8);
+		(video.questions ??= []).push({ id, type: 'open', text: '', time });
+		video.questions.sort((a, b) => (a.time ?? 0) - (b.time ?? 0));
+		save();
+		await selectId(id);
 		questionField?.focus({ preventScroll: true });
 	}
 
 	function removeQuestion() {
-		questions.splice(selected, 1);
-		selected = Math.max(0, Math.min(selected, questions.length - 1));
+		const from = parent ? parent.questions! : questions;
+		from.splice(from.indexOf(question), 1);
+		selected = Math.max(0, Math.min(selected - (parent ? 1 : 0), flatSteps(questions).length - 1));
 		save();
+	}
+
+	/** Moves a question inside a video to another time ("1:05" or seconds), keeping time order. */
+	function setTime(text: string) {
+		const time = parseTime(text);
+		if (time === null || !parent) return;
+		question.time = time;
+		parent.questions!.sort((a, b) => (a.time ?? 0) - (b.time ?? 0));
+		save();
+		selectId(question.id);
 	}
 
 	function setType(type: string) {
@@ -217,10 +256,12 @@
 				<div bind:this={list} class="min-h-0 overflow-y-auto">
 					<Steps
 						aria-label="Questions"
-						steps={questions.map((q) => ({
-							title: stepTitle(q),
-							description: typeLabel(q.type),
-							color: typeColor(q.type)
+						steps={steps.map((s) => ({
+							title: stepTitle(s.q),
+							description: stepDescription(s),
+							color: typeColor(s.q.type),
+							indent: !!s.parent,
+							number: s.number
 						}))}
 						current={selected}
 						onselect={(i: number) => (selected = i)}
@@ -235,9 +276,10 @@
 				</Button>
 			</div>
 
+			<!-- Room at the bottom (pb-32) keeps the preview's content clear of Lumi's dock, which covers the card's foot. -->
 			<section
 				aria-label="Preview"
-				class="relative flex flex-1 flex-col overflow-y-auto rounded-sm bg-background px-8 pt-16 pb-8"
+				class="relative flex flex-1 flex-col overflow-y-auto rounded-sm bg-background px-8 pt-16 pb-32"
 			>
 				<p class="absolute top-4 left-4 text-caption text-muted-foreground">Preview</p>
 				{#if question}
@@ -247,7 +289,8 @@
 								{typeLabel(question.type)}
 							</Select.Trigger>
 							<Select.Content align="end">
-								{#each QUESTION_TYPES as t (t.value)}
+								<!-- Questions inside a video can't be videos themselves. -->
+								{#each QUESTION_TYPES.filter((t) => !parent || t.value !== 'video') as t (t.value)}
 									<Select.Item value={t.value} label={t.label} />
 								{/each}
 							</Select.Content>
@@ -264,6 +307,18 @@
 
 					<!-- The preview is also where the question is written: edit it as people will see it. -->
 					<div class="m-auto flex w-full max-w-xl flex-col gap-4">
+						{#if parent}
+							<!-- When it pops up: type a new time to move it. -->
+							<label class="flex items-center gap-2 text-caption text-muted-foreground">
+								Pops up in {stepTitle(parent)} at
+								<input
+									value={timecode(question.time ?? 0)}
+									onchange={(e) => setTime(e.currentTarget.value)}
+									aria-label="Time in the video (m:ss)"
+									class="w-14 rounded-sm bg-input px-2 py-1 text-body text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+								/>
+							</label>
+						{/if}
 						<textarea
 							bind:this={questionField}
 							bind:value={question.text}
@@ -283,31 +338,35 @@
 								onsubmit={() => (answer = '')}
 							/>
 						{:else if question.type === 'video'}
-							<Select.Root type="single" value={question.videoId ?? ''} onValueChange={setVideo}>
-								<Select.Trigger aria-label="Video" class="max-w-full self-start">
-									<span class="truncate">{question.videoName ?? 'Choose a video'}</span>
-								</Select.Trigger>
-								<Select.Content>
-									{#each videos ?? [] as v (v.id)}
-										<Select.Item value={v.id} label={v.name} />
-									{:else}
-										<p class="px-3 py-2 text-caption text-muted-foreground">
-											{videos ? 'No videos yet. Drop one on the page to upload it.' : 'Loading…'}
-										</p>
-									{/each}
-								</Select.Content>
-							</Select.Root>
+							{#snippet picker()}
+								<Select.Root type="single" value={question.videoId ?? ''} onValueChange={setVideo}>
+									<Select.Trigger aria-label="Video" class="max-w-full min-w-0">
+										<span class="truncate">{question.videoName ?? 'Choose a video'}</span>
+									</Select.Trigger>
+									<Select.Content>
+										{#each videos ?? [] as v (v.id)}
+											<Select.Item value={v.id} label={v.name} />
+										{:else}
+											<p class="px-3 py-2 text-caption text-muted-foreground">
+												{videos ? 'No videos yet. Drop one on the page to upload it.' : 'Loading…'}
+											</p>
+										{/each}
+									</Select.Content>
+								</Select.Root>
+							{/snippet}
 							{#if question.videoId}
 								{@const m = media[question.videoId]}
-								<!-- svelte-ignore a11y_media_has_caption -->
-								<video
-									class="aspect-video w-full rounded-lg bg-muted object-contain"
-									src={m?.streamUrl ?? undefined}
-									poster={m?.poster ?? undefined}
-									controls
-									preload="none"
-								></video>
+								{#key question.videoId}
+									<VideoStepPreview
+										step={question}
+										streamUrl={m?.streamUrl}
+										poster={m?.poster}
+										{picker}
+										onadd={addQuestionAt}
+									/>
+								{/key}
 							{:else}
+								<div class="self-start">{@render picker()}</div>
 								<div
 									class="flex aspect-video w-full items-center justify-center rounded-lg bg-muted text-body text-muted-foreground"
 								>

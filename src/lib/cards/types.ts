@@ -161,6 +161,10 @@ export type Question = {
 	/** Video steps: which video (asset id), and its name for showing without a lookup. */
 	videoId?: string;
 	videoName?: string;
+	/** Video steps: questions that pop up while the video plays, in time order (never videos themselves). */
+	questions?: Question[];
+	/** Questions inside a video: when they pop up, in seconds from the start. */
+	time?: number;
 };
 
 /** What the assistant did to the cards this turn, in order. */
