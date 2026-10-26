@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Kbd } from '@latitudelabs/design-system';
 	import { X } from '@latitudelabs/design-system/icons';
-	import { SCALE_MAX } from './question-types';
+	import { SCALE_MAX, stepTitle } from './question-types';
 	import type { Question, SampleResults } from '../types';
 
 	/** One question's individual responses, newest first; filtered to an option when one is picked. */
@@ -30,11 +30,12 @@
 
 <div class="flex items-start justify-between gap-4">
 	<div class="flex flex-col">
-		<h3 class="text-body-lg font-medium">{question.text || 'Untitled question'}</h3>
+		<h3 class="text-body-lg font-medium">{stepTitle(question)}</h3>
 		<p class="text-caption text-muted-foreground">
 			Showing {people.length} of {filter === null
 				? answers.responses
-				: (answers.counts?.[filter] ?? 0)} responses
+				: (answers.counts?.[filter] ?? 0)}
+			{question.type === 'video' ? 'reactions' : 'responses'}
 		</p>
 	</div>
 	{#if filter !== null}

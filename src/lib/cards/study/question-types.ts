@@ -4,7 +4,8 @@ import type { Question } from '../types';
 export const QUESTION_TYPES: { value: Question['type']; label: string }[] = [
 	{ value: 'open', label: 'Open question' },
 	{ value: 'choice', label: 'Multiple choice' },
-	{ value: 'scale', label: 'Slider' }
+	{ value: 'scale', label: 'Slider' },
+	{ value: 'video', label: 'Video' }
 ];
 
 export const typeLabel = (type: Question['type']) =>
@@ -13,3 +14,7 @@ export const typeLabel = (type: Question['type']) =>
 /** Slider questions run from SCALE_MIN to SCALE_MAX in whole steps. */
 export const SCALE_MIN = 0;
 export const SCALE_MAX = 10;
+
+/** What a step is called in lists: its text, or the video's name for a video step. */
+export const stepTitle = (q: Question) =>
+	q.text || (q.type === 'video' ? q.videoName || 'Untitled video' : 'Untitled question');

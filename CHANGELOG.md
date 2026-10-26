@@ -8,6 +8,9 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 **Studies**
 
+- New step type: **Video**. Pick one of your videos in the preview (with an optional line before it) and play it
+  there; Lumi can add video steps too. In sample results a video shows its views, how reactions split, and the
+  reactions themselves.
 - New question type: **Slider** (0 to 10). Try it in the preview; Lumi can draft slider questions, and sample results show
   the average (with a bar) and each response's number. The question type is picked from a dropdown.
 - New study card: questions to share with people, set up inside a project. Ask Lumi for a study and it drafts the

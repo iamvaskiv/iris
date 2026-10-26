@@ -17,7 +17,13 @@
 	import { Icon, Plus, Share, Trash, X } from '@latitudelabs/design-system/icons';
 	import { tick, untrack } from 'svelte';
 	import StudyResults from './study/StudyResults.svelte';
-	import { QUESTION_TYPES, SCALE_MAX, SCALE_MIN, typeLabel } from './study/question-types';
+	import {
+		QUESTION_TYPES,
+		SCALE_MAX,
+		SCALE_MIN,
+		stepTitle,
+		typeLabel
+	} from './study/question-types';
 	import type { Card as CardData, Question, StudyData } from './types';
 
 	let { card }: { card: CardData } = $props();
@@ -75,6 +81,32 @@
 	function setType(type: string) {
 		question.type = type as Question['type'];
 		if (question.type === 'choice' && !question.options?.length) question.options = ['', ''];
+		save();
+	}
+
+	// Video steps: the user's videos to pick from, and each picked video's playable link (signed, fetched on demand;
+	// Storybook has no server, so it shows only the names saved on the step).
+	type VideoAsset = { id: string; name: string; thumbnail?: string };
+	let videos = $state<VideoAsset[] | null>(null);
+	let media = $state<Record<string, { streamUrl: string | null; poster: string | null }>>({});
+	$effect(() => {
+		if (question?.type !== 'video' || !page.params.id) return;
+		if (!videos)
+			fetch('/api/assets')
+				.then((r) => r.json())
+				.then((list: VideoAsset[]) => (videos = list))
+				.catch(() => (videos = []));
+		const id = question.videoId;
+		if (id && !media[id])
+			fetch(`/api/assets/${id}/media`)
+				.then((r) => r.json())
+				.then((m) => (media[id] = m))
+				.catch(() => {});
+	});
+
+	function setVideo(id: string) {
+		question.videoId = id;
+		question.videoName = videos?.find((v) => v.id === id)?.name;
 		save();
 	}
 
@@ -185,7 +217,7 @@
 					<Steps
 						aria-label="Questions"
 						steps={questions.map((q) => ({
-							title: q.text || 'Untitled question',
+							title: stepTitle(q),
 							description: typeLabel(q.type)
 						}))}
 						current={selected}
@@ -236,7 +268,9 @@
 							oninput={save}
 							rows="1"
 							aria-label="Question"
-							placeholder="Type your question"
+							placeholder={question.type === 'video'
+								? 'Say something before the video (optional)'
+								: 'Type your question'}
 							class="field-sizing-content resize-none bg-transparent text-heading outline-none placeholder:text-placeholder"
 						></textarea>
 						{#if question.type === 'open'}
@@ -246,6 +280,38 @@
 								label="Answer (preview)"
 								onsubmit={() => (answer = '')}
 							/>
+						{:else if question.type === 'video'}
+							<Select.Root type="single" value={question.videoId ?? ''} onValueChange={setVideo}>
+								<Select.Trigger aria-label="Video" class="max-w-full self-start">
+									<span class="truncate">{question.videoName ?? 'Choose a video'}</span>
+								</Select.Trigger>
+								<Select.Content>
+									{#each videos ?? [] as v (v.id)}
+										<Select.Item value={v.id} label={v.name} />
+									{:else}
+										<p class="px-3 py-2 text-caption text-muted-foreground">
+											{videos ? 'No videos yet. Drop one on the page to upload it.' : 'Loading…'}
+										</p>
+									{/each}
+								</Select.Content>
+							</Select.Root>
+							{#if question.videoId}
+								{@const m = media[question.videoId]}
+								<!-- svelte-ignore a11y_media_has_caption -->
+								<video
+									class="aspect-video w-full rounded-lg bg-muted object-contain"
+									src={m?.streamUrl ?? undefined}
+									poster={m?.poster ?? undefined}
+									controls
+									preload="none"
+								></video>
+							{:else}
+								<div
+									class="flex aspect-video w-full items-center justify-center rounded-lg bg-muted text-body text-muted-foreground"
+								>
+									Pick one of your videos to show here.
+								</div>
+							{/if}
 						{:else if question.type === 'scale'}
 							<!-- Try it: the number picked shows on the right; the ends are labelled below. -->
 							<div class="flex items-center gap-4">

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { ChoiceList, Progress, Steps } from '@latitudelabs/design-system';
-	import { SCALE_MAX, SCALE_MIN, typeLabel } from './question-types';
+	import { ChoiceList, Progress, SentimentBar, Steps } from '@latitudelabs/design-system';
+	import { SCALE_MAX, SCALE_MIN, stepTitle, typeLabel } from './question-types';
 	import type { Question, SampleResults } from '../types';
 
 	/**
@@ -37,9 +37,9 @@
 	current={questions.findIndex((q) => q.id === focused)}
 	onselect={(i: number) => onpick(questions[i].id)}
 	steps={questions.map((q) => ({
-		title: q.text || 'Untitled question',
+		title: stepTitle(q),
 		description: typeLabel(q.type),
-		meta: `${results.questions[q.id]?.responses ?? 0} answers`
+		meta: `${results.questions[q.id]?.responses ?? 0} ${q.type === 'video' ? 'views' : 'answers'}`
 	}))}
 >
 	{#snippet after(_: unknown, i: number)}
@@ -53,6 +53,9 @@
 				selected={focused === q.id ? filter : null}
 				onselect={(_: string, k: number) => onpick(q.id, k)}
 			/>
+		{:else if q.type === 'video'}
+			{@const [positive = 0, neutral = 0, negative = 0] = a?.counts ?? []}
+			<SentimentBar {positive} {neutral} {negative} label="Reactions:" />
 		{:else if q.type === 'scale'}
 			{@const avg = average(a?.counts)}
 			<div class="flex items-center gap-4">

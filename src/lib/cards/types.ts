@@ -120,8 +120,9 @@ export type SampleResults = {
 	insights: { title: string; body: string }[];
 	quote: { text: string; who: string };
 	/**
-	 * By question id: how many answered, votes per option (multiple choice) or per value 0–10 (slider), and some
-	 * individual responses (a sample of everyone who answered, newest first).
+	 * By question id: how many answered (or, for a video, watched), votes per option (multiple choice), per value 0–10
+	 * (slider) or per sentiment (video: positive, neutral, negative), and some individual responses (a sample of
+	 * everyone who answered, newest first; for a video, their reactions).
 	 */
 	questions: Record<string, { responses: number; counts?: number[]; people?: SampleResponse[] }>;
 	/** Written by Lumi, or generic filler when Lumi couldn't be reached. */
@@ -147,13 +148,19 @@ export type SampleResponse = {
 
 export type Question = {
 	id: string;
-	/** `open`: a free-text answer. `choice`: one of `options`. `scale`: a slider from 0 to 10. */
-	type: 'open' | 'choice' | 'scale';
+	/**
+	 * `open`: a free-text answer. `choice`: one of `options`. `scale`: a slider from 0 to 10. `video`: one of the
+	 * user's videos (assets), shown to people; `text` is an optional line before it.
+	 */
+	type: 'open' | 'choice' | 'scale' | 'video';
 	text: string;
 	/** Open questions: hint in the empty answer field, e.g. "My name is…". */
 	placeholder?: string;
 	/** Multiple choice: the answers to pick from. */
 	options?: string[];
+	/** Video steps: which video (asset id), and its name for showing without a lookup. */
+	videoId?: string;
+	videoName?: string;
 };
 
 /** What the assistant did to the cards this turn, in order. */

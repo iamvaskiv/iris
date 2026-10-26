@@ -6,7 +6,7 @@ import { videoCardData } from './video-card.js';
 import { insights } from './insights.js';
 import { comparisonData } from './comparison.js';
 import { assets, describeAssets } from './assets.js';
-import { cleanQuestions } from './study.js';
+import { cleanQuestions, nameVideos } from './study.js';
 import type { Card, CardOp, ChatResponse, ComparisonData, StudyData } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
 import { claude, MODEL } from './llm.js';
@@ -116,7 +116,9 @@ function describeSample(data: StudyData | undefined) {
 	const perQuestion = (data.questions ?? []).map((q, i) => {
 		const a = r.questions[q.id];
 		if (!a) return `${i + 1}. no results`;
-		const detail = q.type === 'scale' && a.counts
+		const detail = q.type === 'video' && a.counts
+			? `watched by ${a.responses}; reactions ${a.counts.join('/')} positive/neutral/negative: ${(a.people ?? []).slice(0, 4).map((r) => `"${r.text}"`).join(' ')}`
+			: q.type === 'scale' && a.counts
 			? `average ${average(a.counts).toFixed(1)} / 10`
 			: a.counts
 			? (q.options ?? []).map((o, k) => `${o}: ${a.counts![k] ?? 0}`).join(', ')
@@ -140,7 +142,8 @@ const questionsSchema = {
 	items: {
 		type: 'object',
 		properties: {
-			type: { type: 'string', enum: ['open', 'choice', 'scale'], description: 'open: free-text answer; choice: pick one of options; scale: a slider from 0 to 10 (for how much, how likely, how strongly).' },
+			type: { type: 'string', enum: ['open', 'choice', 'scale', 'video'], description: 'open: free-text answer; choice: pick one of options; scale: a slider from 0 to 10 (for how much, how likely, how strongly); video: show one of the user\'s videos (set videoId; text is an optional line before it), usually followed by questions about it.' },
+			videoId: { type: 'string', description: 'Video steps: the id of one of the user\'s videos (assets).' },
 			text: { type: 'string' },
 			placeholder: { type: 'string', description: 'Open questions: hint in the empty answer field, e.g. "My name is…".' },
 			options: { type: 'array', items: { type: 'string' }, description: 'Multiple choice: the answers.' }
@@ -330,7 +333,7 @@ type CardInput = Omit<Card, 'id' | 'data'> & {
 async function makeCard(input: CardInput): Promise<Card> {
 	const { videoId, videoIds, focus, questions, ...rest } = input;
 	const card: Card = { id: crypto.randomUUID().slice(0, 8), ...rest, data: videoId ? { videoId } : undefined };
-	if (card.type === 'study') card.data = { questions: cleanQuestions(questions ?? []) };
+	if (card.type === 'study') card.data = { questions: await nameVideos(cleanQuestions(questions ?? [])) };
 	if (card.type === 'video' && videoId) card.data = await videoCardData(videoId);
 	if (card.type === 'insights') {
 		const data = videoId && (await insights.get(videoId));
@@ -384,7 +387,7 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 				delete card.rows;
 			}
 			Object.assign(card, changes);
-			if (card.type === 'study' && Array.isArray(questions)) card.data = { ...card.data, questions: cleanQuestions(questions) };
+			if (card.type === 'study' && Array.isArray(questions)) card.data = { ...card.data, questions: await nameVideos(cleanQuestions(questions)) };
 			ops.push({ op: 'update', card: { ...card } });
 			return { updated: true };
 		}

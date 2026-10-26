@@ -1,6 +1,7 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import * as env from '$app/env/private';
 import type { Question, SampleResponse, SampleResults } from '#lib/cards/types.js';
+import { assets } from './assets.js';
 import { claude, MODEL } from './llm.js';
 import { SCALE_MAX, SCALE_MIN } from '#lib/cards/study/question-types.js';
 
@@ -8,7 +9,7 @@ import { SCALE_MAX, SCALE_MIN } from '#lib/cards/study/question-types.js';
 export function cleanQuestions(input: unknown[]): Question[] {
 	return input.map((raw) => {
 		const q = (raw ?? {}) as Partial<Question>;
-		const type = q.type === 'choice' || q.type === 'scale' ? q.type : 'open';
+		const type = q.type === 'choice' || q.type === 'scale' || q.type === 'video' ? q.type : 'open';
 		return {
 			id: typeof q.id === 'string' && q.id ? q.id : crypto.randomUUID().slice(0, 8),
 			type,
@@ -16,9 +17,24 @@ export function cleanQuestions(input: unknown[]): Question[] {
 			...(type === 'open' && q.placeholder ? { placeholder: String(q.placeholder) } : {}),
 			...(type === 'choice'
 				? { options: (Array.isArray(q.options) ? q.options : []).map(String) }
+				: {}),
+			...(type === 'video' && q.videoId
+				? { videoId: String(q.videoId), ...(q.videoName ? { videoName: String(q.videoName) } : {}) }
 				: {})
 		};
 	});
+}
+
+/** Fills in the names of video steps' videos from the user's assets (Lumi only gives the id). */
+export async function nameVideos(questions: Question[]) {
+	const ids = questions.filter((q) => q.type === 'video' && q.videoId && !q.videoName);
+	await Promise.all(
+		ids.map(async (q) => {
+			const asset = await assets.get(q.videoId!);
+			if (asset) q.videoName = asset.name;
+		})
+	);
+	return questions;
 }
 
 /** Bumped when sample results gain something new, so older ones are written again. */
@@ -28,7 +44,11 @@ const SAMPLE_VERSION = 4;
 export const basisOf = (questions: Question[]) =>
 	JSON.stringify([
 		SAMPLE_VERSION,
-		...questions.map((q) => [q.type, q.text, q.type === 'choice' ? q.options : null])
+		...questions.map((q) => [
+			q.type,
+			q.text,
+			q.type === 'choice' ? q.options : q.type === 'video' ? q.videoId : null
+		])
 	]);
 
 type WrittenAnswer = { text: string; sentiment: 'positive' | 'neutral' | 'negative'; age: string };
@@ -89,12 +109,12 @@ const writtenSchema = obj({
 				type: 'array',
 				items: { type: 'number' },
 				description:
-					'Multiple choice: percentage per option, in order. Slider: percentage per value from 0 to 10 (11 numbers). Empty for open questions.'
+					'Multiple choice: percentage per option, in order. Slider: percentage per value from 0 to 10 (11 numbers). Video: percentage of positive, neutral and negative reactions (3 numbers). Empty for open questions.'
 			},
 			answers: {
 				type: 'array',
 				description:
-					"Open questions: 15 to 20 individual answers in the respondents' own words, varied in length, tone and opinion, in line with the sentiment split. Empty for multiple choice and sliders.",
+					"Open questions: 15 to 20 individual answers in the respondents' own words, varied in length, tone and opinion, in line with the sentiment split. Videos: 15 to 20 short reactions to the video, in line with its shares. Empty for multiple choice and sliders.",
 				items: obj({
 					text: { type: 'string' },
 					sentiment: { type: 'string', enum: ['positive', 'neutral', 'negative'] },
@@ -109,7 +129,7 @@ async function write(title: string, questions: Question[]): Promise<Written> {
 	const list = questions
 		.map(
 			(q, i) =>
-				`${i + 1}. ${q.text || '(untitled)'}${q.type === 'choice' ? ` [options: ${(q.options ?? []).join(' | ')}]` : q.type === 'scale' ? ' [slider, 0 to 10]' : ' [open answer]'}`
+				`${i + 1}. ${q.text || '(untitled)'}${q.type === 'choice' ? ` [options: ${(q.options ?? []).join(' | ')}]` : q.type === 'scale' ? ' [slider, 0 to 10]' : q.type === 'video' ? ` [video "${q.videoName ?? q.videoId}": people watch it and react]` : ' [open answer]'}`
 		)
 		.join('\n');
 	const res = await claude().messages.create({
@@ -146,6 +166,7 @@ const filler = (questions: Question[]): Written => ({
 			: q.type === 'scale'
 				? { index: i + 1, shares: [1, 1, 2, 3, 5, 8, 12, 18, 22, 16, 12] }
 				: {
+						...(q.type === 'video' ? { shares: [60, 25, 15] } : {}),
 						index: i + 1,
 						answers: [
 							{ text: 'I liked it.', sentiment: 'positive', age: '24–32' },
@@ -256,6 +277,15 @@ export async function sampleResults(title: string, questions: Question[]): Promi
 		} else {
 			results[q.id] = {
 				responses,
+				// Videos: how the reactions split, positive / neutral / negative.
+				...(q.type === 'video'
+					? {
+							counts: split(
+								responses,
+								[0, 1, 2].map((k) => clamp(w?.shares?.[k], 0, 100, 1))
+							)
+						}
+					: {}),
 				people: newestFirst(
 					(w?.answers ?? []).map((a) => ({
 						...who(used, i * 7, a.age),
