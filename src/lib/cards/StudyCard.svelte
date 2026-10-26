@@ -17,6 +17,7 @@
 	import { Icon, Plus, Share, Trash, X } from '@latitudelabs/design-system/icons';
 	import { tick, untrack } from 'svelte';
 	import StudyResults from './study/StudyResults.svelte';
+	import VideoMoment from './study/VideoMoment.svelte';
 	import VideoStepPreview from './study/VideoStepPreview.svelte';
 	import {
 		QUESTION_TYPES,
@@ -130,19 +131,33 @@
 	let videos = $state<VideoAsset[] | null>(null);
 	let media = $state<Record<string, { streamUrl: string | null; poster: string | null }>>({});
 	$effect(() => {
-		if (question?.type !== 'video' || !page.params.id) return;
+		// A video step, or a question inside one (shown with the video's moment above it).
+		const id = question?.type === 'video' ? question.videoId : parent?.videoId;
+		if (!id || !page.params.id) return;
 		if (!videos)
 			fetch('/api/assets')
 				.then((r) => r.json())
 				.then((list: VideoAsset[]) => (videos = list))
 				.catch(() => (videos = []));
-		const id = question.videoId;
-		if (id && !media[id])
+		if (!media[id])
 			fetch(`/api/assets/${id}/media`)
 				.then((r) => r.json())
 				.then((m) => (media[id] = m))
 				.catch(() => {});
 	});
+
+	// Playing a video step hands over to each of its questions as the video reaches it; the question's moment plays
+	// on from there. `resume` tells the video step where to carry on.
+	let resume = $state<{ stepId: string; time: number } | null>(null);
+	function reach(q: Question) {
+		resume = null;
+		selectId(q.id);
+	}
+	function carryOn() {
+		if (!parent) return;
+		resume = { stepId: parent.id, time: question.time ?? 0 };
+		selectId(parent.id);
+	}
 
 	function setVideo(id: string) {
 		question.videoId = id;
@@ -264,7 +279,7 @@
 							number: s.number
 						}))}
 						current={selected}
-						onselect={(i: number) => (selected = i)}
+						onselect={(i: number) => ((resume = null), (selected = i))}
 					/>
 				</div>
 				<Button
@@ -308,6 +323,14 @@
 					<!-- The preview is also where the question is written: edit it as people will see it. -->
 					<div class="m-auto flex w-full max-w-xl flex-col gap-4">
 						{#if parent}
+							{@const m = parent.videoId ? media[parent.videoId] : undefined}
+							<!-- The moment it pops up at; play to carry on watching from there. -->
+							<VideoMoment
+								streamUrl={m?.streamUrl}
+								poster={m?.poster}
+								time={question.time ?? 0}
+								oncontinue={carryOn}
+							/>
 							<!-- When it pops up: type a new time to move it. -->
 							<label class="flex items-center gap-2 text-caption text-muted-foreground">
 								Pops up in {stepTitle(parent)} at
@@ -362,7 +385,9 @@
 										streamUrl={m?.streamUrl}
 										poster={m?.poster}
 										{picker}
+										resumeAt={resume?.stepId === question.id ? resume.time : null}
 										onadd={addQuestionAt}
+										onreach={reach}
 									/>
 								{/key}
 							{:else}
