@@ -3,9 +3,11 @@
 	import {
 		Badge,
 		Button,
+		buttonVariants,
 		Card,
 		Kbd,
 		Label,
+		Popover,
 		PromptInput,
 		SegmentedControl,
 		Steps,
@@ -13,7 +15,7 @@
 	} from '@latitudelabs/design-system';
 	import { Icon, Plus, Share, Trash, X } from '@latitudelabs/design-system/icons';
 	import { tick, untrack } from 'svelte';
-	import StudyResults from './StudyResults.svelte';
+	import StudyResults from './study/StudyResults.svelte';
 	import type { Card as CardData, Question, StudyData } from './types';
 
 	let { card }: { card: CardData } = $props();
@@ -97,16 +99,8 @@
 	let answer = $state('');
 
 	// Share: sharing isn't built yet, so it offers fake responses instead (Lumi writes them on the server).
-	let shareOpen = $state(false);
-	let shareButton = $state<HTMLButtonElement | null>(null);
-	let sharePanel = $state<HTMLElement | null>(null);
 	let writing = $state(false);
 	let sampleError = $state('');
-
-	function closeShare(refocus = false) {
-		shareOpen = false;
-		if (refocus) shareButton?.focus();
-	}
 
 	// Sample results from before individual responses existed: have Lumi write them again (once per page view).
 	let refreshed = false;
@@ -143,23 +137,11 @@
 	}
 </script>
 
-<svelte:window
-	onpointerdown={(e) => {
-		const t = e.target as Node;
-		if (shareOpen && !sharePanel?.contains(t) && !shareButton?.contains(t)) closeShare();
-	}}
-	onkeydown={(e) => {
-		if (shareOpen && e.key === 'Escape') {
-			e.preventDefault(); // just the popover, not the responses view under it
-			closeShare(sharePanel?.contains(document.activeElement));
-		}
-	}}
-/>
-
 <!-- As tall as the project page allows a full-size card (--card-height: below the header, behind Lumi's dock); the
      question list and the preview scroll inside. -->
-<Card.Root class="h-(--card-height) min-h-100">
-	<Card.Header>
+<Card.Root class="relative h-(--card-height) min-h-100">
+	<!-- Above the results, which scroll up underneath it on the right. -->
+	<Card.Header class={[results && 'relative z-20']}>
 		<Card.Title class="flex items-center gap-2">
 			{card.title}
 			{#if results}<Badge variant="secondary">Sample data</Badge>{/if}
@@ -168,27 +150,13 @@
 				>{/if}
 		</Card.Title>
 		<Card.Description>{card.subtitle ?? 'Questions to share with people'}</Card.Description>
-		<Card.Action class="relative">
-			<Button
-				bind:ref={shareButton}
-				variant="ghost"
-				size="sm"
-				aria-expanded={shareOpen}
-				aria-controls="share-{card.id}"
-				onclick={() => (shareOpen = !shareOpen)}
-			>
-				<Share data-icon="inline-start" />Share
-			</Button>
-			{#if shareOpen}
-				<!-- A small popover under the button; closes on Escape or a click elsewhere. -->
-				<div
-					bind:this={sharePanel}
-					id="share-{card.id}"
-					role="dialog"
-					aria-label="Share"
-					class="absolute top-full right-0 z-10 mt-2 flex w-80 flex-col gap-4 rounded-xl bg-popover p-4 text-popover-foreground shadow-raised"
-				>
-					<p class="text-body">
+		<Card.Action>
+			<Popover.Root>
+				<Popover.Trigger class={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+					<Share data-icon="inline-start" />Share
+				</Popover.Trigger>
+				<Popover.Content align="end" aria-label="Share">
+					<p>
 						Sorry, sharing doesn't work yet. But we can pretend some answers have already come in.
 					</p>
 					<div class="flex items-center justify-between gap-4">
@@ -205,8 +173,8 @@
 					{:else if sampleError}
 						<p class="text-caption text-destructive">{sampleError}</p>
 					{/if}
-				</div>
-			{/if}
+				</Popover.Content>
+			</Popover.Root>
 		</Card.Action>
 	</Card.Header>
 	{#if results}

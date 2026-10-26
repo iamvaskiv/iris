@@ -660,7 +660,7 @@ packages:
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
   '@latitudelabs/design-system@file:.latitude/latitudelabs-design-system-0.0.1.tgz':
-    resolution: {integrity: sha512-gbWM2KWFN79GWdEoqjvHnGKXV32nsDkrPDNICU7tu/oFrHTjzJTRP2hhcyDHiqp7eHYSiHYCMSc5d46I0OzUHA==, tarball: file:.latitude/latitudelabs-design-system-0.0.1.tgz}
+    resolution: {integrity: sha512-zVNibNS2ztuHx+HTxpP7CCPI3dVaRXhuH4/unOQAHwnRlVluLzAIZL4X/qt2o9d+cDvT6PORGQpQ+L6h0hIHHg==, tarball: file:.latitude/latitudelabs-design-system-0.0.1.tgz}
     version: 0.0.1
     hasBin: true
     peerDependencies:
@@ -1525,8 +1525,8 @@ packages:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
 
-  bits-ui@2.19.5:
-    resolution: {integrity: sha512-TEwkLSYElE5SE0fIdcItiFPfyg9vrR67N1Mt6VvZCqZo24dwTA1MpGVV3WeyIg7rfVAaZ0So8a0/dcnPngCoew==}
+  bits-ui@2.20.2:
+    resolution: {integrity: sha512-cb1eQD1wZEhJWb1dTLiAdYWqeUI5v7f+7EAHmetxBuELI9lo4cpAIfGEjald/PR4wTR80Fu5DFH+IaY1OKn+tg==}
     engines: {node: '>=20'}
     peerDependencies:
       '@internationalized/date': ^3.8.1
@@ -3408,7 +3408,7 @@ snapshots:
       '@fontsource-variable/inter': 5.3.0
       '@internationalized/date': 3.12.4
       '@lucide/svelte': 1.56.0(svelte@5.57.2(@typescript-eslint/types@8.71.2))
-      bits-ui: 2.19.5(@internationalized/date@3.12.4)(@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))(typescript@6.0.3)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))
+      bits-ui: 2.20.2(@internationalized/date@3.12.4)(@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))(typescript@6.0.3)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))
       cn: 0.4.0
       svelte: 5.57.2(@typescript-eslint/types@8.71.2)
       tailwind-variants: 3.3.1(tailwindcss@4.3.3)
@@ -4171,7 +4171,7 @@ snapshots:
 
   balanced-match@4.0.4: {}
 
-  bits-ui@2.19.5(@internationalized/date@3.12.4)(@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))(typescript@6.0.3)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)))(svelte@5.57.2(@typescript-eslint/types@8.71.2)):
+  bits-ui@2.20.2(@internationalized/date@3.12.4)(@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))(typescript@6.0.3)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)))(svelte@5.57.2(@typescript-eslint/types@8.71.2)):
     dependencies:
       '@floating-ui/core': 1.8.0
       '@floating-ui/dom': 1.8.0
