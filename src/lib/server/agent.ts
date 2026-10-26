@@ -6,9 +6,10 @@ import { videoCardData } from './video-card.js';
 import { insights } from './insights.js';
 import { comparisonData } from './comparison.js';
 import { assets, describeAssets } from './assets.js';
-import type { Card, CardOp, ChatResponse, ComparisonData } from '#lib/cards/types.js';
+import { cleanQuestions } from './study.js';
+import type { Card, CardOp, ChatResponse, ComparisonData, StudyData } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
-const MODEL = 'claude-sonnet-5-5';
+import { claude, MODEL } from './llm.js';
 const MAX_STEPS = 8;
 
 /** Lumiere is an invisible service behind Iris; both assistants share these rules. */
@@ -61,6 +62,7 @@ Choosing how to answer, in this order:
 Card rules:
 - Never create a card that repeats or overlaps an existing one: same subject, same entity, same list. Update or focus it instead.
 - A card is about one subject. Keep titles short and stable so the card can be found and extended later.
+- A study card can show sample results: made-up answers for a demo, because sharing isn't built yet (Share → Fake responses). You may talk about them, but always say they're sample answers, never real ones.
 - "upload" cards are managed by the app (upload progress); never update or focus them.
 - Don't repeat a card's content in your text reply; point to it ("Added her scenes to Envy's card.").
 
@@ -94,17 +96,49 @@ function describeCards(cards: Card[], focusedId?: string) {
 		const table = c.columns?.length
 			? ` | columns: ${c.columns.join(', ')} | rows: ${(c.rows ?? []).map((r) => r[0]).join('; ').slice(0, 300)}`
 			: '';
-		return `- [${c.id}] ${c.type} "${c.title}"${c.subtitle ? ` (${c.subtitle})` : ''}${c.id === focusedId ? ' (in focus)' : ''}${items}${table}${body}`;
+		// A study's questions in full (as JSON), since update_card replaces the whole list.
+		const study = c.type === 'study' ? ` | questions: ${JSON.stringify((c.data as StudyData | undefined)?.questions ?? [])}${describeSample(c.data as StudyData | undefined)}` : '';
+		return `- [${c.id}] ${c.type} "${c.title}"${c.subtitle ? ` (${c.subtitle})` : ''}${c.id === focusedId ? ' (in focus)' : ''}${items}${table}${body}${study}`;
 	});
 	return `Cards on screen, oldest first:\n${lines.join('\n')}`;
 }
 
+/** A study's made-up results, when the card shows them (Share → Fake responses). */
+function describeSample(data: StudyData | undefined) {
+	const r = data?.sample?.enabled && data.sample.results;
+	if (!r) return '';
+	const perQuestion = (data.questions ?? []).map((q, i) => {
+		const a = r.questions[q.id];
+		if (!a) return `${i + 1}. no results`;
+		const detail = a.counts
+			? (q.options ?? []).map((o, k) => `${o}: ${a.counts![k] ?? 0}`).join(', ')
+			: (a.people ?? []).slice(0, 5).map((r) => `"${r.text}"`).join(' ');
+		return `${i + 1}. ${a.responses} answers; ${detail}`;
+	});
+	return ` | SHOWING SAMPLE RESULTS (made up, not real answers): ${r.views} views, ${r.completion}% completion, rating ${r.rating}%, sentiment ${r.sentiment.positive}/${r.sentiment.neutral}/${r.sentiment.negative}% positive/neutral/negative; summary: ${r.summary}; ${perQuestion.join('; ')}`;
+}
+
 /** Card types the assistant can create (upload cards are the app's own). */
-const CARD_TYPES = ['video', 'insights', 'comparison', 'list', 'quotes', 'table', 'text'];
+const CARD_TYPES = ['video', 'insights', 'comparison', 'list', 'quotes', 'table', 'text', 'study'];
 
 const tableSchema = {
 	columns: { type: 'array', items: { type: 'string' } },
 	rows: { type: 'array', items: { type: 'array', items: { type: ['string', 'number'] } } }
+};
+
+const questionsSchema = {
+	type: 'array',
+	description: 'Study cards: the questions, in order.',
+	items: {
+		type: 'object',
+		properties: {
+			type: { type: 'string', enum: ['open', 'choice'], description: 'open: free-text answer; choice: pick one of options.' },
+			text: { type: 'string' },
+			placeholder: { type: 'string', description: 'Open questions: hint in the empty answer field, e.g. "My name is…".' },
+			options: { type: 'array', items: { type: 'string' }, description: 'Multiple choice: the answers.' }
+		},
+		required: ['type', 'text']
+	}
 };
 
 const itemsSchema = {
@@ -219,7 +253,8 @@ const allTools: Anthropic.Tool[] = [
 - "list": a list of things (characters, scenes, themes, brands...). Fill items with title/subtitle/description and time (seconds) when known.
 - "quotes": lines spoken by someone. items: title = the quote, subtitle = speaker, time = seconds.
 - "table": numbers or short facts across a few dimensions (metrics per video, counts per character, side-by-side comparisons). Pass columns (headings; the first labels the rows) and rows (arrays of cells, same length as columns). Keep cells short; use numbers for numeric cells.
-- "text": anything else; put the content in body (plain text, line breaks allowed).`,
+- "text": anything else; put the content in body (plain text, line breaks allowed).
+- "study": questions to share with people (a study, survey, quiz or questionnaire). Pass questions: a few short, clear drafts the user can edit on the card (they add, remove and rewrite questions there). Title: what the study is about. Sharing and collecting answers aren't available yet; say so if asked.`,
 		input_schema: {
 			type: 'object',
 			properties: {
@@ -231,6 +266,7 @@ const allTools: Anthropic.Tool[] = [
 				videoIds: { type: 'array', items: { type: 'string' }, description: 'Comparison cards: the videos, in column order.' },
 				focus: { type: 'string', enum: ['all', 'content', 'audience'], description: 'Comparison cards: which rows to show.' },
 				items: itemsSchema,
+				questions: questionsSchema,
 				...tableSchema
 			},
 			required: ['type', 'title']
@@ -249,6 +285,7 @@ const allTools: Anthropic.Tool[] = [
 				subtitle: { type: 'string' },
 				body: { type: 'string' },
 				items: itemsSchema,
+				questions: { ...questionsSchema, description: 'Study cards: the whole list of questions (replaces it).' },
 				...tableSchema
 			},
 			required: ['id']
@@ -275,11 +312,17 @@ const allTools: Anthropic.Tool[] = [
 export const LIBRARY_ONLY = ['list_folder'];
 const toolsFor = (library: boolean) => (library ? allTools : allTools.filter((t) => !LIBRARY_ONLY.includes(t.name)));
 
-type CardInput = Omit<Card, 'id' | 'data'> & { videoId?: string; videoIds?: string[]; focus?: ComparisonData['focus'] };
+type CardInput = Omit<Card, 'id' | 'data'> & {
+	videoId?: string;
+	videoIds?: string[];
+	focus?: ComparisonData['focus'];
+	questions?: unknown[];
+};
 
 async function makeCard(input: CardInput): Promise<Card> {
-	const { videoId, videoIds, focus, ...rest } = input;
+	const { videoId, videoIds, focus, questions, ...rest } = input;
 	const card: Card = { id: crypto.randomUUID().slice(0, 8), ...rest, data: videoId ? { videoId } : undefined };
+	if (card.type === 'study') card.data = { questions: cleanQuestions(questions ?? []) };
 	if (card.type === 'video' && videoId) card.data = await videoCardData(videoId);
 	if (card.type === 'insights') {
 		const data = videoId && (await insights.get(videoId));
@@ -323,7 +366,7 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 			return { shown: true, id: card.id };
 		}
 		case 'update_card': {
-			const { id: _, ...changes } = input;
+			const { id: _, questions, ...changes } = input;
 			const card = find();
 			// Converting to another type: the old content doesn't belong to the new template.
 			if (changes.type && changes.type !== card.type) {
@@ -333,6 +376,7 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 				delete card.rows;
 			}
 			Object.assign(card, changes);
+			if (card.type === 'study' && Array.isArray(questions)) card.data = { ...card.data, questions: cleanQuestions(questions) };
 			ops.push({ op: 'update', card: { ...card } });
 			return { updated: true };
 		}
@@ -385,10 +429,7 @@ export async function runLoop(opts: {
 	message: string;
 	exec: (name: string, input: Record<string, unknown>) => Promise<unknown>;
 }): Promise<{ text: string; history: Anthropic.MessageParam[] }> {
-	const client = new Anthropic({
-		apiKey: env.ANTHROPIC_API_KEY,
-		defaultHeaders: env.ANTHROPIC_WORKSPACE_ID ? { 'anthropic-workspace-id': env.ANTHROPIC_WORKSPACE_ID } : undefined
-	});
+	const client = claude();
 	const messages: Anthropic.MessageParam[] = [...opts.history, { role: 'user', content: opts.message }];
 
 	let nudged = false;

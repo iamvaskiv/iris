@@ -8,8 +8,8 @@ import { unflatten } from 'devalue';
 
 const BASE = process.argv[2] ?? 'http://localhost:5173';
 const OUT = 'src/stories/fixtures';
-// Projects whose cards make good examples: a video with full analysis, insights + lists, comparisons.
-const PROJECTS = ['261e9e50', 'a796d6eb', '19d3003d'];
+// Projects whose cards make good examples: a video with full analysis, insights + lists, comparisons, a study.
+const PROJECTS = ['261e9e50', 'a796d6eb', '19d3003d', 'b701005e'];
 
 mkdirSync(`${OUT}/images`, { recursive: true });
 

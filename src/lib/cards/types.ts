@@ -13,7 +13,17 @@ export type CardItem = {
 
 export type Card = {
 	id: string;
-	type: 'video' | 'insights' | 'comparison' | 'list' | 'quotes' | 'table' | 'text' | 'upload' | (string & {});
+	type:
+		| 'video'
+		| 'insights'
+		| 'comparison'
+		| 'list'
+		| 'quotes'
+		| 'table'
+		| 'text'
+		| 'upload'
+		| 'study'
+		| (string & {});
 	title: string;
 	subtitle?: string;
 	body?: string;
@@ -86,6 +96,62 @@ export type ComparedVideo = {
 	brands?: string[];
 	/** Viewer insights, when the video was shown to an audience. */
 	audience?: Insights;
+};
+
+/**
+ * Study card data: questions to share with people. Sharing isn't built yet; `sample` holds made-up results Lumi
+ * writes for a demo (Share → Fake responses), shown instead of the setup while `enabled`.
+ */
+export type StudyData = {
+	questions: Question[];
+	sample?: { enabled: boolean; results?: SampleResults };
+};
+
+/** Made-up study results. All numbers and text are invented; the card labels them "Sample data". */
+export type SampleResults = {
+	/** The questions these results were written for; regenerated when they change. */
+	basis: string;
+	views: number;
+	/** Percentages. */
+	completion: number;
+	rating: number;
+	sentiment: { positive: number; neutral: number; negative: number };
+	summary: string;
+	insights: { title: string; body: string }[];
+	quote: { text: string; who: string };
+	/**
+	 * By question id: how many answered, votes per option (multiple choice) and some individual responses (a sample of
+	 * everyone who answered, newest first).
+	 */
+	questions: Record<string, { responses: number; counts?: number[]; people?: SampleResponse[] }>;
+	/** Written by Lumi, or generic filler when Lumi couldn't be reached. */
+	by: 'lumi' | 'filler';
+};
+
+/** One (made-up) person's answer to a question. */
+export type SampleResponse = {
+	/** "Respondent 23". */
+	respondent: number;
+	/** Age band, e.g. "24–32". */
+	age: string;
+	/** When they answered, e.g. "2 days ago". */
+	when: string;
+	/** Open questions: what they wrote, and how it reads. */
+	text?: string;
+	sentiment?: 'positive' | 'neutral' | 'negative';
+	/** Multiple choice: the option they picked (index). */
+	option?: number;
+};
+
+export type Question = {
+	id: string;
+	/** `open`: a free-text answer. `choice`: one of `options`. */
+	type: 'open' | 'choice';
+	text: string;
+	/** Open questions: hint in the empty answer field, e.g. "My name is…". */
+	placeholder?: string;
+	/** Multiple choice: the answers to pick from. */
+	options?: string[];
 };
 
 /** What the assistant did to the cards this turn, in order. */

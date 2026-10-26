@@ -4,7 +4,7 @@
 	import { replaceState } from '$app/navigation';
 	import AiDock, { timeOfDayGreeting } from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
-	import { cardComponent, isWide } from '#lib/cards/registry.js';
+	import { cardComponent, cardSize } from '#lib/cards/registry.js';
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 	import { takePendingVideo } from '#lib/new-project.js';
 	import type { PageProps } from './$types';
@@ -168,14 +168,30 @@
 	let cardHeights = $state<Record<string, number>>({});
 	const snapArea = $derived(viewHeight - HEADER - dockHeight - DOCK_GAP);
 
+	// Full-size cards (studies) start a little below the header and run behind Lumi's dock down to its input, so they
+	// keep their size however long Lumi's reply is. Their height is passed down as --card-height.
+	const FULL_TOP = 16;
+	const FULL_BOTTOM = DOCK_GAP + 56; // the dock's input (48) and padding (8)
+	const fullHeight = $derived(viewHeight - HEADER - FULL_TOP - FULL_BOTTOM);
+	const isFull = (id: string | undefined) => {
+		const card = id ? project.cards.find((c) => c.id === id) : undefined;
+		return !!card && cardSize(card) === 'full';
+	};
+
 	// Just enough space before the first and after the last card to center them in the visible area (a tall card
 	// gets a small gap instead). With a single short card the content fits the view exactly: nothing to scroll.
 	const edgeSpace = (id: string | undefined, chrome: number) => {
 		const h = id ? (cardHeights[id] ?? 0) : 0;
 		return chrome + (h && h < snapArea ? (snapArea - h) / 2 : 32);
 	};
-	const padTop = $derived(edgeSpace(project.cards[0]?.id, HEADER));
-	const padBottom = $derived(edgeSpace(project.cards.at(-1)?.id, dockHeight + DOCK_GAP));
+	const padTop = $derived(
+		isFull(project.cards[0]?.id) ? HEADER + FULL_TOP : edgeSpace(project.cards[0]?.id, HEADER)
+	);
+	const padBottom = $derived(
+		isFull(project.cards.at(-1)?.id)
+			? FULL_BOTTOM
+			: edgeSpace(project.cards.at(-1)?.id, dockHeight + DOCK_GAP)
+	);
 
 	/** Visible region for cards, in scroller coordinates (below the header, above the dock). */
 	function region() {
@@ -199,7 +215,11 @@
 		const r = region();
 		const { top, height } = layoutBox(el, r.box);
 		const available = r.bottom - r.top;
-		const target = height <= available ? r.top + (available - height) / 2 : r.top + PEEK;
+		const target = isFull(id)
+			? r.top + FULL_TOP
+			: height <= available
+				? r.top + (available - height) / 2
+				: r.top + PEEK;
 		autoScrolling = true;
 		scroller.scrollTo({ top: scroller.scrollTop + top - target, behavior });
 		// scrollend may not fire if nothing moved; don't leave the guard stuck.
@@ -323,9 +343,10 @@
 		/>
 		{#if project.cards.length > 0}
 			<div
-				class="mx-auto flex max-w-5xl flex-col gap-5 px-4"
+				class="flex flex-col gap-5 px-4"
 				style:padding-top="{padTop}px"
 				style:padding-bottom="{padBottom}px"
+				style:--card-height="{fullHeight}px"
 			>
 				{#each project.cards as card (card.id)}
 					{@const CardView = cardComponent(card.type)}
@@ -335,8 +356,10 @@
 						bind:offsetHeight={cardHeights[card.id]}
 						class={[
 							'mx-auto w-full transition-[opacity,scale] duration-300',
-							isWide(card) ? 'max-w-5xl' : 'max-w-3xl',
-							(cardHeights[card.id] ?? 0) <= snapArea && 'snap-center',
+							{ normal: 'max-w-3xl', wide: 'max-w-5xl', full: '' }[cardSize(card)],
+							cardSize(card) === 'full'
+								? 'snap-start scroll-mt-4'
+								: (cardHeights[card.id] ?? 0) <= snapArea && 'snap-center',
 							card.id !== project.focusedId && 'scale-90 opacity-60 hover:opacity-100'
 						]}
 						onclick={() => {

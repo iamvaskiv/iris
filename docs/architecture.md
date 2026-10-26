@@ -46,7 +46,7 @@ flowchart TB
 | Part          | Where                                                          | What it does                                                                                                                   |
 | ------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Pages         | `src/routes`                                                   | Projects page (tiles, Lumi, drop a video → new project), project page (card stack, focus, uploads), assets, settings, `/login` |
-| Cards         | `src/lib/cards`                                                | Video, Insights, Comparison, List, Quotes, Table, Text, Upload; built from design-system components                            |
+| Cards         | `src/lib/cards`                                                | Video, Insights, Comparison, List, Quotes, Table, Text, Upload, Study; built from design-system components                     |
 | Password gate | `src/hooks.server.ts`                                          | Production only: a session cookie from `SITE_PASSWORD`, otherwise `/login`                                                     |
 | Lumi          | `src/lib/server/agent.ts`, `workspace-agent.ts`                | Claude tool loops: read analysis and insights, browse the library across the user's teams, add/update/focus cards              |
 | Card data     | `src/lib/server/video-card.ts`, `insights.ts`, `comparison.ts` | Fill cards from Lumiere; insights cached for six hours                                                                         |
@@ -79,6 +79,46 @@ sequenceDiagram
 ```
 
 Signed media URLs expire, so page loads rebuild video and comparison card data; insights come from the cache.
+
+## Editing a study
+
+Lumi drafts a study's questions (`show_card` / `update_card` with `questions`); edits made on the card save straight to
+the project, without a chat turn. Lumi sees the saved questions on its next turn.
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant SC as Study card
+    participant API as PUT /api/projects/[id]/cards/[cardId]
+    participant S as store.ts
+    U->>SC: add, select, edit, retype or delete a question
+    SC->>SC: update the preview right away
+    SC->>API: questions (400 ms after the last edit)
+    API->>API: clean them (ids, types, options only on multiple choice)
+    API->>S: save on the study card (retry if a chat turn saved meanwhile)
+```
+
+Sharing isn't built yet. **Share → Fake responses** stands in for it: Lumi writes made-up results for the questions
+(structured output), including 15–20 answers per open question; the server works out the counts and a matching sample
+of respondents per question, and the card shows them as **Sample data**. They're
+kept on the card and written again only when the questions change.
+
+```mermaid
+sequenceDiagram
+    participant SC as Study card
+    participant API as POST …/cards/[cardId]/sample
+    participant Cl as Claude (Lumi)
+    participant S as store.ts
+    SC->>API: enabled: true
+    alt no results yet, questions changed, or last time was generic filler
+        API->>Cl: questions + JSON schema (summary, insights, quote, shares, answers)
+        Cl-->>API: written results (or an error: generic filler)
+        API->>API: views, completion, counts per option that add up, respondents per question
+    end
+    API->>S: save as the card's sample (enabled)
+    API-->>SC: sample results
+    SC->>SC: switch to results, badge "Sample data"
+```
 
 ## How an upload flows
 

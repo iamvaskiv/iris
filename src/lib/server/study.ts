@@ -1,0 +1,274 @@
+import type Anthropic from '@anthropic-ai/sdk';
+import * as env from '$app/env/private';
+import type { Question, SampleResponse, SampleResults } from '#lib/cards/types.js';
+import { claude, MODEL } from './llm.js';
+
+/** Questions as saved: known fields only, an id each, options only on multiple choice. */
+export function cleanQuestions(input: unknown[]): Question[] {
+	return input.map((raw) => {
+		const q = (raw ?? {}) as Partial<Question>;
+		const type = q.type === 'choice' ? 'choice' : 'open';
+		return {
+			id: typeof q.id === 'string' && q.id ? q.id : crypto.randomUUID().slice(0, 8),
+			type,
+			text: String(q.text ?? ''),
+			...(type === 'open' && q.placeholder ? { placeholder: String(q.placeholder) } : {}),
+			...(type === 'choice'
+				? { options: (Array.isArray(q.options) ? q.options : []).map(String) }
+				: {})
+		};
+	});
+}
+
+/** Bumped when sample results gain something new, so older ones are written again. */
+const SAMPLE_VERSION = 4;
+
+/** What sample results depend on: when this changes, they're written again. */
+export const basisOf = (questions: Question[]) =>
+	JSON.stringify([
+		SAMPLE_VERSION,
+		...questions.map((q) => [q.type, q.text, q.type === 'choice' ? q.options : null])
+	]);
+
+type WrittenAnswer = { text: string; sentiment: 'positive' | 'neutral' | 'negative'; age: string };
+
+/** What Lumi writes; the app turns it into counts that add up (see sampleResults). */
+type Written = {
+	summary: string;
+	insights: { title: string; body: string }[];
+	quote: { text: string; who: string };
+	sentiment: { positive: number; neutral: number; negative: number };
+	rating: number;
+	completion: number;
+	questions: { index: number; shares?: number[]; answers?: WrittenAnswer[] }[];
+};
+
+const AGES = ['18–23', '24–32', '33–44', '45+'];
+
+/** The shape Lumi writes in (structured output: every object closed, every field required). */
+const obj = (properties: Record<string, unknown>) => ({
+	type: 'object',
+	properties,
+	required: Object.keys(properties),
+	additionalProperties: false
+});
+const writtenSchema = obj({
+	summary: {
+		type: 'string',
+		description: 'Two or three sentences: what the (made-up) audience thought overall.'
+	},
+	insights: {
+		type: 'array',
+		description: 'Exactly two key insights.',
+		items: obj({
+			title: { type: 'string', description: 'A few words.' },
+			body: { type: 'string', description: 'One or two sentences.' }
+		})
+	},
+	quote: obj({
+		text: { type: 'string', description: 'One telling answer from a respondent.' },
+		who: { type: 'string', description: 'e.g. "Respondent, 24–32"' }
+	}),
+	sentiment: obj({
+		positive: { type: 'number' },
+		neutral: { type: 'number' },
+		negative: { type: 'number' }
+	}),
+	rating: { type: 'number', description: 'Average rating as a percentage, 0-100.' },
+	completion: {
+		type: 'number',
+		description: 'Percentage of people who answered every question, 50-98.'
+	},
+	questions: {
+		type: 'array',
+		description: 'One entry per question.',
+		items: obj({
+			index: { type: 'integer', description: 'Question number, from 1.' },
+			shares: {
+				type: 'array',
+				items: { type: 'number' },
+				description: 'Multiple choice: percentage per option, in order. Empty for open questions.'
+			},
+			answers: {
+				type: 'array',
+				description:
+					"Open questions: 15 to 20 individual answers in the respondents' own words, varied in length, tone and opinion, in line with the sentiment split. Empty for multiple choice.",
+				items: obj({
+					text: { type: 'string' },
+					sentiment: { type: 'string', enum: ['positive', 'neutral', 'negative'] },
+					age: { type: 'string', enum: AGES }
+				})
+			}
+		})
+	}
+});
+
+async function write(title: string, questions: Question[]): Promise<Written> {
+	const list = questions
+		.map(
+			(q, i) =>
+				`${i + 1}. ${q.text || '(untitled)'}${q.type === 'choice' ? ` [options: ${(q.options ?? []).join(' | ')}]` : ' [open answer]'}`
+		)
+		.join('\n');
+	const res = await claude().messages.create({
+		model: MODEL,
+		max_tokens: 16000,
+		output_config: { format: { type: 'json_schema', schema: writtenSchema } },
+		messages: [
+			{
+				role: 'user',
+				content: `Invent believable results for this study, as if about a hundred people had answered it. It's for a product demo: make the results varied and plausible (not all positive), specific to these questions, with a clear story. Sentiment is the percentage of positive, neutral and negative answers.\n\nStudy: ${title}\n${list}`
+			}
+		]
+	});
+	if (res.stop_reason === 'refusal') throw new Error('Lumi declined to write sample results');
+	const text = res.content.find((b): b is Anthropic.TextBlock => b.type === 'text')?.text;
+	if (!text) throw new Error('No sample results written');
+	return JSON.parse(text) as Written;
+}
+
+/** Generic results when Lumi can't be reached, so the toggle still works. */
+const filler = (questions: Question[]): Written => ({
+	summary: 'Most people responded well, with a clear minority who were unconvinced.',
+	insights: [
+		{ title: 'Strong first impression', body: 'Early answers were the most positive.' },
+		{ title: 'Interest fades', body: 'Fewer people answered the later questions.' }
+	],
+	quote: { text: 'Not what I expected, in a good way.', who: 'Respondent' },
+	sentiment: { positive: 56, neutral: 24, negative: 20 },
+	rating: 78,
+	completion: 85,
+	questions: questions.map((q, i) =>
+		q.type === 'choice'
+			? { index: i + 1, shares: (q.options ?? []).map(() => 1 + Math.random() * 9) }
+			: {
+					index: i + 1,
+					answers: [
+						{ text: 'I liked it.', sentiment: 'positive', age: '24–32' },
+						{ text: 'Hard to say.', sentiment: 'neutral', age: '33–44' },
+						{ text: 'It was fine, nothing special.', sentiment: 'neutral', age: '18–23' },
+						{ text: "Not for me, it didn't hold my attention.", sentiment: 'negative', age: '45+' }
+					]
+				}
+	)
+});
+
+const pick = <T>(list: T[]) => list[Math.floor(Math.random() * list.length)];
+const ago = (days: number) =>
+	days === 0 ? 'Today' : days === 1 ? 'Yesterday' : `${days} days ago`;
+
+const clamp = (n: unknown, min: number, max: number, fallback: number) =>
+	typeof n === 'number' && Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+
+/** Splits `total` across `weights` so the parts are whole numbers that add up to it. */
+function split(total: number, weights: number[]) {
+	const sum = weights.reduce((a, b) => a + Math.max(0, b), 0) || 1;
+	const exact = weights.map((w) => (Math.max(0, w) / sum) * total);
+	const parts = exact.map(Math.floor);
+	const order = exact.map((e, i) => [e - Math.floor(e), i]).sort((a, b) => b[0] - a[0]);
+	const missing = total - parts.reduce((a, b) => a + b, 0);
+	for (let k = 0; k < missing; k++) parts[order[k % order.length][1]]++;
+	return parts;
+}
+
+/** Made-up results for a study: Lumi writes the story and the shares; counts are worked out here so they add up. */
+export async function sampleResults(title: string, questions: Question[]): Promise<SampleResults> {
+	let written: Written;
+	let by: SampleResults['by'] = 'lumi';
+	try {
+		if (!env.ANTHROPIC_API_KEY) throw new Error('No Anthropic key');
+		written = await write(title, questions);
+	} catch (e) {
+		console.error('[study] Lumi could not write sample results, using filler:', e);
+		written = filler(questions);
+		by = 'filler';
+	}
+
+	const views = 80 + Math.floor(Math.random() * 80);
+	const completion = Math.round(clamp(written.completion, 30, 100, 85));
+	const finished = Math.round((views * completion) / 100);
+	const s = written.sentiment ?? {};
+	const [positive, neutral, negative] = split(
+		100,
+		[s.positive, s.neutral, s.negative].map((n) => clamp(n, 0, 100, 1))
+	);
+
+	// The people who answered, in random order, each with an age band and a day they answered.
+	const people = Array.from({ length: views }, (_, k) => ({
+		respondent: k + 1,
+		age: pick(AGES),
+		days: Math.floor(Math.random() * 14)
+	})).sort(() => Math.random() - 0.5);
+	/** Someone who hasn't answered this question yet, from `start` on; in the age band when one is given. */
+	const who = (used: Set<number>, start: number, age?: string) => {
+		const order = people
+			.map((_, n) => people[(start + n) % people.length])
+			.filter((p) => !used.has(p.respondent));
+		const p = order.find((p) => !age || p.age === age) ?? order[0];
+		used.add(p.respondent);
+		return { respondent: p.respondent, age: p.age, when: ago(p.days), days: p.days };
+	};
+	const newestFirst = (list: (SampleResponse & { days: number })[]) =>
+		list.sort((a, b) => a.days - b.days).map(({ days: _, ...r }) => r);
+
+	const results: SampleResults['questions'] = {};
+	questions.forEach((q, i) => {
+		// Fewer people get to each later question, down to those who finished.
+		const responses = Math.round(views - ((views - finished) * (i + 1)) / questions.length);
+		const w = written.questions?.find((x) => x.index === i + 1);
+		const used = new Set<number>();
+		if (q.type === 'choice') {
+			const counts = split(
+				responses,
+				(q.options ?? []).map((_, k) => clamp(w?.shares?.[k], 0, 100, 1))
+			);
+			// A sample of 18 people, in proportion to the counts, with someone for every option anyone picked.
+			const sample = split(Math.min(18, responses), counts);
+			counts.forEach((n, k) => {
+				if (n > 0 && sample[k] === 0) {
+					sample[sample.indexOf(Math.max(...sample))]--;
+					sample[k] = 1;
+				}
+			});
+			const picks = sample
+				.flatMap((n, option) => Array(n).fill(option))
+				.sort(() => Math.random() - 0.5);
+			results[q.id] = {
+				responses,
+				counts,
+				people: newestFirst(picks.map((option) => ({ ...who(used, i * 7), option })))
+			};
+		} else {
+			results[q.id] = {
+				responses,
+				people: newestFirst(
+					(w?.answers ?? []).map((a) => ({
+						...who(used, i * 7, a.age),
+						text: String(a.text),
+						sentiment: (['positive', 'neutral', 'negative'] as const).includes(a.sentiment)
+							? a.sentiment
+							: 'neutral'
+					}))
+				)
+			};
+		}
+	});
+
+	return {
+		basis: basisOf(questions),
+		views,
+		completion,
+		rating: Math.round(clamp(written.rating, 0, 100, 75)),
+		sentiment: { positive, neutral, negative },
+		summary: String(written.summary ?? ''),
+		insights: (written.insights ?? [])
+			.slice(0, 2)
+			.map((x) => ({ title: String(x.title), body: String(x.body) })),
+		quote: {
+			text: String(written.quote?.text ?? ''),
+			who: String(written.quote?.who ?? 'Respondent')
+		},
+		questions: results,
+		by
+	};
+}

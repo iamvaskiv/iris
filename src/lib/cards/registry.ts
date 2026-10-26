@@ -4,6 +4,7 @@ import ComparisonCard from './ComparisonCard.svelte';
 import InsightsCard from './InsightsCard.svelte';
 import ListCard from './ListCard.svelte';
 import QuotesCard from './QuotesCard.svelte';
+import StudyCard from './StudyCard.svelte';
 import TableCard from './TableCard.svelte';
 import TextCard from './TextCard.svelte';
 import UploadCard from './UploadCard.svelte';
@@ -16,6 +17,7 @@ const registry: Record<string, Component<{ card: Card }>> = {
 	comparison: ComparisonCard,
 	list: ListCard,
 	quotes: QuotesCard,
+	study: StudyCard,
 	table: TableCard,
 	text: TextCard,
 	upload: UploadCard
@@ -23,7 +25,18 @@ const registry: Record<string, Component<{ card: Card }>> = {
 
 export const cardComponent = (type: string) => registry[type] ?? TextCard;
 
-/** Cards that need more room than the reading width: comparisons of three or more videos, tables with many columns. */
-export const isWide = (card: Card) =>
-	(card.type === 'comparison' && ((card.data?.videoIds as string[] | undefined)?.length ?? 0) >= 3) ||
-	(card.type === 'table' && (card.columns?.length ?? 0) >= 5);
+/**
+ * How much room a card takes: the reading width; `wide` for comparisons of three or more videos and tables with many
+ * columns; `full` (the page's width, from below the header to behind Lumi's input) for studies, a question list beside
+ * a preview.
+ */
+export function cardSize(card: Card): 'normal' | 'wide' | 'full' {
+	if (card.type === 'study') return 'full';
+	const videos = (card.data?.videoIds as string[] | undefined)?.length ?? 0;
+	if (
+		(card.type === 'comparison' && videos >= 3) ||
+		(card.type === 'table' && (card.columns?.length ?? 0) >= 5)
+	)
+		return 'wide';
+	return 'normal';
+}

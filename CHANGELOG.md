@@ -4,6 +4,24 @@ What changed in Iris, newest first. Add a line under today's date with every cha
 notable behind-the-scenes ones); the app Storybook shows this file as its **Changelog** page. The deployed app
 (`iris.<account>.workers.dev`) runs whatever was last released with `pnpm run deploy`.
 
+## 2026-10-26
+
+**Studies**
+
+- New study card: questions to share with people, set up inside a project. Ask Lumi for a study and it drafts the
+  first questions; on the card, add questions (**New**), pick one to edit it in place in the preview, switch between an
+  open question and multiple choice, add or remove options, and delete questions. Edits save as you type. Sharing and
+  collecting answers come later.
+- **Share** on a study can't share yet, but offers **Fake responses**: Lumi makes up believable results for the
+  questions (views, sentiment, average rating, completion, a summary, two key insights, a quote, answers per question)
+  and the card switches to them, marked **Sample data**. Lumi knows they're made up when you ask about them. Turn it off
+  to edit the questions again.
+- In sample results, click a question to slide the overview aside and read its individual responses: each with a
+  respondent number, age band and when they answered, open answers with a sentiment dot. Click an option to see who
+  picked it. Back with the overview's edge, Escape or the question again.
+- The study card fills the page: full width, from below the header down behind Lumi to its input. The question list
+  scrolls inside it, with **New** always in view.
+
 ## 2026-10-23
 
 **Lumi**

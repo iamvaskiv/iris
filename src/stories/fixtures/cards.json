@@ -1006,5 +1006,1005 @@
 				}
 			]
 		}
+	},
+	"Women Talking Study · Women Talking trailer: viewer reactions": {
+		"id": "ba8d350b",
+		"type": "study",
+		"title": "Women Talking trailer: viewer reactions",
+		"body": "Draft questions for viewers of the trailer.",
+		"data": {
+			"questions": [
+				{
+					"id": "817fbb50",
+					"type": "choice",
+					"text": "How would you rate this trailer overall?",
+					"options": ["Excellent", "Good", "Average", "Poor"]
+				},
+				{
+					"id": "2ffb731f",
+					"type": "choice",
+					"text": "How likely are you to watch the full film after seeing this trailer?",
+					"options": ["Definitely", "Probably", "Not sure", "Probably not", "Definitely not"]
+				},
+				{
+					"id": "83e23b37",
+					"type": "open",
+					"text": "In a few words, how did the trailer make you feel?",
+					"placeholder": "It made me feel…"
+				},
+				{
+					"id": "70562903",
+					"type": "choice",
+					"text": "What was the trailer's main subject, in your view?",
+					"options": [
+						"Faith and forgiveness",
+						"Women's solidarity",
+						"Resistance to abuse",
+						"Not clear to me"
+					]
+				},
+				{
+					"id": "c6c8cc0e",
+					"type": "choice",
+					"text": "Did the trailer give you a clear idea of what the film is about?",
+					"options": ["Very clear", "Somewhat clear", "Not very clear", "Not clear at all"]
+				},
+				{
+					"id": "e386fb21",
+					"type": "choice",
+					"text": "How did you find the tone and intensity of the trailer?",
+					"options": ["Too heavy", "Just right", "Not intense enough"]
+				},
+				{
+					"id": "6b6fffdb",
+					"type": "open",
+					"text": "Was anything confusing, or is there something you wish the trailer had shown?",
+					"placeholder": "I wish the trailer had…"
+				},
+				{
+					"id": "9e9fc16f",
+					"type": "open",
+					"text": "What would you tell a friend about this film, based on the trailer?",
+					"placeholder": "I'd tell them…"
+				},
+				{
+					"id": "d0b27272",
+					"type": "open",
+					"text": "What's your name?"
+				}
+			]
+		}
+	},
+	"Women Talking Study · Women Talking trailer: short version": {
+		"id": "420614f7",
+		"type": "study",
+		"title": "Women Talking trailer: short version",
+		"body": "A shorter alternative, focused on first impressions, interest and word of mouth.",
+		"data": {
+			"questions": [
+				{
+					"id": "72ddda82",
+					"type": "open",
+					"text": "What was your first impression of the trailer, in one sentence?",
+					"placeholder": "My first impression was…"
+				},
+				{
+					"id": "5a389eba",
+					"type": "choice",
+					"text": "How interested are you in seeing this film?",
+					"options": ["Very interested", "Somewhat interested", "Neutral", "Not interested"]
+				},
+				{
+					"id": "cde6ca46",
+					"type": "choice",
+					"text": "What most influenced your interest?",
+					"options": [
+						"The story and themes",
+						"The cast",
+						"The director and filmmakers",
+						"The mood and visuals",
+						"Nothing in particular"
+					]
+				},
+				{
+					"id": "fb6136e6",
+					"type": "choice",
+					"text": "How emotionally engaging was the trailer?",
+					"options": [
+						"Very engaging",
+						"Somewhat engaging",
+						"Not very engaging",
+						"Not engaging at all"
+					]
+				},
+				{
+					"id": "1e496a9d",
+					"type": "choice",
+					"text": "In your own words, what is the film about?",
+					"options": [
+						"A community facing a moral choice",
+						"A story of abuse and its aftermath",
+						"A drama about faith",
+						"I'm not sure"
+					]
+				},
+				{
+					"id": "073edcce",
+					"type": "open",
+					"text": "Which moment or line from the trailer stays with you most, and why?",
+					"placeholder": "What stays with me is…"
+				},
+				{
+					"id": "7e89dc59",
+					"type": "choice",
+					"text": "How likely are you to recommend this trailer to a friend?",
+					"options": ["Very likely", "Likely", "Unlikely", "Very unlikely"]
+				}
+			],
+			"sample": {
+				"enabled": true,
+				"results": {
+					"basis": "[4,[\"open\",\"What was your first impression of the trailer, in one sentence?\",null],[\"choice\",\"How interested are you in seeing this film?\",[\"Very interested\",\"Somewhat interested\",\"Neutral\",\"Not interested\"]],[\"choice\",\"What most influenced your interest?\",[\"The story and themes\",\"The cast\",\"The director and filmmakers\",\"The mood and visuals\",\"Nothing in particular\"]],[\"choice\",\"How emotionally engaging was the trailer?\",[\"Very engaging\",\"Somewhat engaging\",\"Not very engaging\",\"Not engaging at all\"]],[\"choice\",\"In your own words, what is the film about?\",[\"A community facing a moral choice\",\"A story of abuse and its aftermath\",\"A drama about faith\",\"I'm not sure\"]],[\"open\",\"Which moment or line from the trailer stays with you most, and why?\",null],[\"choice\",\"How likely are you to recommend this trailer to a friend?\",[\"Very likely\",\"Likely\",\"Unlikely\",\"Very unlikely\"]]]",
+					"views": 98,
+					"completion": 84,
+					"rating": 71,
+					"sentiment": {
+						"positive": 56,
+						"neutral": 28,
+						"negative": 16
+					},
+					"summary": "Roughly seven in ten respondents left the short trailer at least somewhat interested, and the weighty premise and ensemble cast did most of the work. The desaturated, talk-heavy tone divided people: some found it gripping and others found it slow or hard to follow. A noticeable minority were unsure what the film is actually about.",
+					"insights": [
+						{
+							"title": "Themes pull people in",
+							"body": "41% said the story and themes most influenced their interest, well ahead of the cast at 22%. The moral-choice premise is what people respond to, not star power."
+						},
+						{
+							"title": "Premise clarity lags behind mood",
+							"body": "Only 52% read the film as a community facing a moral choice, while 27% saw it mainly as a story of abuse and 12% weren't sure. The short cut sets the tone well but leaves the central question vague for newcomers."
+						}
+					],
+					"quote": {
+						"text": "I couldn't tell you the whole plot, but the women sitting in that barn deciding what to do next felt heavy and real. I wanted to know what they choose.",
+						"who": "Respondent, 24–32"
+					},
+					"questions": {
+						"72ddda82": {
+							"responses": 96,
+							"people": [
+								{
+									"respondent": 16,
+									"age": "18–23",
+									"when": "3 days ago",
+									"text": "Gave me chills near the end, when the voices came together.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 67,
+									"age": "24–32",
+									"when": "4 days ago",
+									"text": "Quiet, intense and beautifully acted, and I immediately wanted to know what they decide.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 74,
+									"age": "33–44",
+									"when": "4 days ago",
+									"text": "It looks like a heavy drama with a lot of dialogue. Interesting, but I'd wait for reviews.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 75,
+									"age": "24–32",
+									"when": "4 days ago",
+									"text": "Intriguing setup, though the trailer was too short to tell me much.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 29,
+									"age": "33–44",
+									"when": "5 days ago",
+									"text": "Powerful cast, serious subject, and it doesn't feel like a typical trailer, which I liked.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 88,
+									"age": "24–32",
+									"when": "5 days ago",
+									"text": "Serious and thoughtful, the kind of film I'd want to see with someone to talk about it afterwards.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 90,
+									"age": "33–44",
+									"when": "5 days ago",
+									"text": "I felt like I was watching a play. Not much visual excitement at all.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 6,
+									"age": "18–23",
+									"when": "6 days ago",
+									"text": "It looks like a film made of conversations, and somehow that is more gripping than action.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 92,
+									"age": "24–32",
+									"when": "6 days ago",
+									"text": "Unusual and bold, and the cast alone makes me want to watch.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 7,
+									"age": "33–44",
+									"when": "7 days ago",
+									"text": "Gripping for something so still. It feels important.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 56,
+									"age": "45+",
+									"when": "8 days ago",
+									"text": "Haunting. The muted colors and the faces say a lot without explaining everything.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 81,
+									"age": "33–44",
+									"when": "9 days ago",
+									"text": "Moving and restrained, and it left me curious rather than told what to feel.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 18,
+									"age": "45+",
+									"when": "10 days ago",
+									"text": "Strong ensemble, and I trust the director to handle heavy material with care.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 94,
+									"age": "18–23",
+									"when": "10 days ago",
+									"text": "Good performances, but I'm still not sure what the actual story is.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 31,
+									"age": "45+",
+									"when": "10 days ago",
+									"text": "Depressing, and I couldn't work out who anyone was or what was at stake.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 63,
+									"age": "45+",
+									"when": "11 days ago",
+									"text": "Very grey and serious. Clearly an awards-type film.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 45,
+									"age": "18–23",
+									"when": "11 days ago",
+									"text": "Too slow and dreary for a trailer. Nothing made me want to rush to the cinema.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 12,
+									"age": "24–32",
+									"when": "13 days ago",
+									"text": "Somber and talky. I can tell it's well made but I'm not sure it's for me.",
+									"sentiment": "neutral"
+								}
+							]
+						},
+						"5a389eba": {
+							"responses": 93,
+							"counts": [35, 32, 16, 10],
+							"people": [
+								{
+									"respondent": 78,
+									"age": "45+",
+									"when": "Today",
+									"option": 1
+								},
+								{
+									"respondent": 73,
+									"age": "33–44",
+									"when": "Today",
+									"option": 0
+								},
+								{
+									"respondent": 16,
+									"age": "18–23",
+									"when": "3 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 11,
+									"age": "45+",
+									"when": "3 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 74,
+									"age": "33–44",
+									"when": "4 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 90,
+									"age": "33–44",
+									"when": "5 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 92,
+									"age": "24–32",
+									"when": "6 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 7,
+									"age": "33–44",
+									"when": "7 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 34,
+									"age": "33–44",
+									"when": "7 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 64,
+									"age": "33–44",
+									"when": "9 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 49,
+									"age": "45+",
+									"when": "9 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 31,
+									"age": "45+",
+									"when": "10 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 94,
+									"age": "18–23",
+									"when": "10 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 70,
+									"age": "33–44",
+									"when": "10 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 63,
+									"age": "45+",
+									"when": "11 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 45,
+									"age": "18–23",
+									"when": "11 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 85,
+									"age": "45+",
+									"when": "13 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 23,
+									"age": "45+",
+									"when": "13 days ago",
+									"option": 2
+								}
+							]
+						},
+						"cde6ca46": {
+							"responses": 91,
+							"counts": [37, 20, 11, 17, 6],
+							"people": [
+								{
+									"respondent": 78,
+									"age": "45+",
+									"when": "Today",
+									"option": 3
+								},
+								{
+									"respondent": 73,
+									"age": "33–44",
+									"when": "Today",
+									"option": 4
+								},
+								{
+									"respondent": 22,
+									"age": "33–44",
+									"when": "Yesterday",
+									"option": 1
+								},
+								{
+									"respondent": 62,
+									"age": "45+",
+									"when": "2 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 11,
+									"age": "45+",
+									"when": "3 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 24,
+									"age": "18–23",
+									"when": "4 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 3,
+									"age": "33–44",
+									"when": "5 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 92,
+									"age": "24–32",
+									"when": "6 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 34,
+									"age": "33–44",
+									"when": "7 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 64,
+									"age": "33–44",
+									"when": "9 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 49,
+									"age": "45+",
+									"when": "9 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 94,
+									"age": "18–23",
+									"when": "10 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 70,
+									"age": "33–44",
+									"when": "10 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 45,
+									"age": "18–23",
+									"when": "11 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 48,
+									"age": "18–23",
+									"when": "11 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 23,
+									"age": "45+",
+									"when": "13 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 57,
+									"age": "33–44",
+									"when": "13 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 37,
+									"age": "18–23",
+									"when": "13 days ago",
+									"option": 2
+								}
+							]
+						},
+						"fb6136e6": {
+							"responses": 89,
+							"counts": [29, 37, 16, 7],
+							"people": [
+								{
+									"respondent": 73,
+									"age": "33–44",
+									"when": "Today",
+									"option": 0
+								},
+								{
+									"respondent": 22,
+									"age": "33–44",
+									"when": "Yesterday",
+									"option": 1
+								},
+								{
+									"respondent": 62,
+									"age": "45+",
+									"when": "2 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 27,
+									"age": "45+",
+									"when": "2 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 11,
+									"age": "45+",
+									"when": "3 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 24,
+									"age": "18–23",
+									"when": "4 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 82,
+									"age": "45+",
+									"when": "4 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 2,
+									"age": "18–23",
+									"when": "4 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 3,
+									"age": "33–44",
+									"when": "5 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 34,
+									"age": "33–44",
+									"when": "7 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 84,
+									"age": "45+",
+									"when": "7 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 70,
+									"age": "33–44",
+									"when": "10 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 48,
+									"age": "18–23",
+									"when": "11 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 77,
+									"age": "18–23",
+									"when": "11 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 57,
+									"age": "33–44",
+									"when": "13 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 37,
+									"age": "18–23",
+									"when": "13 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 17,
+									"age": "45+",
+									"when": "13 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 12,
+									"age": "24–32",
+									"when": "13 days ago",
+									"option": 0
+								}
+							]
+						},
+						"1e496a9d": {
+							"responses": 87,
+							"counts": [45, 24, 8, 10],
+							"people": [
+								{
+									"respondent": 62,
+									"age": "45+",
+									"when": "2 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 27,
+									"age": "45+",
+									"when": "2 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 65,
+									"age": "18–23",
+									"when": "3 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 82,
+									"age": "45+",
+									"when": "4 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 2,
+									"age": "18–23",
+									"when": "4 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 75,
+									"age": "24–32",
+									"when": "4 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 3,
+									"age": "33–44",
+									"when": "5 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 84,
+									"age": "45+",
+									"when": "7 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 95,
+									"age": "45+",
+									"when": "10 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 48,
+									"age": "18–23",
+									"when": "11 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 77,
+									"age": "18–23",
+									"when": "11 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 13,
+									"age": "18–23",
+									"when": "11 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 43,
+									"age": "45+",
+									"when": "11 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 87,
+									"age": "24–32",
+									"when": "11 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 37,
+									"age": "18–23",
+									"when": "13 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 17,
+									"age": "45+",
+									"when": "13 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 12,
+									"age": "24–32",
+									"when": "13 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 47,
+									"age": "24–32",
+									"when": "13 days ago",
+									"option": 1
+								}
+							]
+						},
+						"073edcce": {
+							"responses": 84,
+							"people": [
+								{
+									"respondent": 26,
+									"age": "33–44",
+									"when": "Today",
+									"text": "A woman saying they have a few hours to decide. The ticking clock gave it urgency.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 27,
+									"age": "45+",
+									"when": "2 days ago",
+									"text": "The part about forgiveness being tested. I'm still thinking about whether I'd forgive in their place.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 65,
+									"age": "18–23",
+									"when": "3 days ago",
+									"text": "The title card after all the talking. It landed, though I'm not sure why it stuck with me.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 91,
+									"age": "33–44",
+									"when": "3 days ago",
+									"text": "The mention of what happened to them. It was brief but clearly central.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 4,
+									"age": "24–32",
+									"when": "3 days ago",
+									"text": "No single line. It was so quiet and low-key that I forgot most of it right away.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 75,
+									"age": "24–32",
+									"when": "4 days ago",
+									"text": "The wide shot of them gathered in the hayloft. It felt like a trial, but a gentle one.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 97,
+									"age": "18–23",
+									"when": "6 days ago",
+									"text": "Honestly nothing stood out. The whole thing blurred into one grey mood.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 84,
+									"age": "45+",
+									"when": "7 days ago",
+									"text": "The line about whether they're allowed to decide for themselves. It's what the whole film seems to be about.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 19,
+									"age": "33–44",
+									"when": "9 days ago",
+									"text": "The women arguing in low voices. It was tense, but I couldn't follow who was who.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 32,
+									"age": "33–44",
+									"when": "10 days ago",
+									"text": "Any of the arguments between the older and younger women. Real disagreement, no easy answers.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 95,
+									"age": "45+",
+									"when": "10 days ago",
+									"text": "The ending music felt like it was trying too hard to make me emotional.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 28,
+									"age": "33–44",
+									"when": "11 days ago",
+									"text": "The closing shot of them singing together. It was the one moment of warmth and it hit hard.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 77,
+									"age": "18–23",
+									"when": "11 days ago",
+									"text": "A close-up of a woman's face as she listens to the others. You can see everything she's thinking.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 13,
+									"age": "18–23",
+									"when": "11 days ago",
+									"text": "The shot of the fields in the morning light. It's so calm, which makes the dread worse.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 87,
+									"age": "24–32",
+									"when": "11 days ago",
+									"text": "The music swelling just as the vote is mentioned. Goosebumps.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 43,
+									"age": "45+",
+									"when": "11 days ago",
+									"text": "Mostly the visuals: the washed-out colors and old-fashioned clothes. Not a specific line.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 12,
+									"age": "24–32",
+									"when": "13 days ago",
+									"text": "The moment the women weigh up staying, fighting or leaving. It boils a huge dilemma down to one simple choice.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 47,
+									"age": "24–32",
+									"when": "13 days ago",
+									"text": "The vote scene, I think. Interesting but I wanted more context.",
+									"sentiment": "neutral"
+								}
+							]
+						},
+						"7e89dc59": {
+							"responses": 82,
+							"counts": [18, 32, 22, 10],
+							"people": [
+								{
+									"respondent": 55,
+									"age": "24–32",
+									"when": "Yesterday",
+									"option": 2
+								},
+								{
+									"respondent": 44,
+									"age": "45+",
+									"when": "Yesterday",
+									"option": 1
+								},
+								{
+									"respondent": 96,
+									"age": "18–23",
+									"when": "2 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 5,
+									"age": "24–32",
+									"when": "2 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 65,
+									"age": "18–23",
+									"when": "3 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 4,
+									"age": "24–32",
+									"when": "3 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 36,
+									"age": "18–23",
+									"when": "3 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 8,
+									"age": "18–23",
+									"when": "3 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 97,
+									"age": "18–23",
+									"when": "6 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 15,
+									"age": "18–23",
+									"when": "8 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 20,
+									"age": "18–23",
+									"when": "9 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 41,
+									"age": "45+",
+									"when": "9 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 95,
+									"age": "45+",
+									"when": "10 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 32,
+									"age": "33–44",
+									"when": "10 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 87,
+									"age": "24–32",
+									"when": "11 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 28,
+									"age": "33–44",
+									"when": "11 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 47,
+									"age": "24–32",
+									"when": "13 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 72,
+									"age": "18–23",
+									"when": "13 days ago",
+									"option": 2
+								}
+							]
+						}
+					},
+					"by": "lumi"
+				}
+			}
+		}
 	}
 }

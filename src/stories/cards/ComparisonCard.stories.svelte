@@ -12,7 +12,7 @@
 				description: {
 					component: `Two to four videos side by side: rows from the analysis and from audience data, then Lumi's own rows.
 The best number in a row is emphasised; empty cells say whether the video isn't analysed or has no viewers. Three or
-more videos make the card wide (\`isWide\` in \`src/lib/cards/registry.ts\`).`
+more videos make the card wide (\`cardSize\` in \`src/lib/cards/registry.ts\`).`
 				}
 			}
 		}
