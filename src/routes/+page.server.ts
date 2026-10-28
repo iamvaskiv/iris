@@ -1,3 +1,4 @@
+import { isFielding } from '#lib/cards/study/fielding.js';
 import { thumbnail } from '#lib/server/assets.js';
 import { refreshCardData } from '#lib/server/card-data.js';
 import { projects } from '#lib/server/projects.js';
@@ -13,6 +14,8 @@ export const load: PageServerLoad = async () => ({
 			name: p.name,
 			summary: p.summary,
 			status: p.status,
+			/** A study in the project is fielding (has sample results on): the tile says so, like the card does. */
+			fielding: p.cards.some(isFielding),
 			// The latest cards peek out of the bottom of the tile, oldest first (the newest lies on top). Their data
 			// is refreshed like on the project page, so videos and charts show as they are now.
 			cards: await (async () => {

@@ -267,7 +267,9 @@
 				>{/if}
 		</Card.Title>
 		<Card.Description>{card.subtitle ?? 'Questions to share with people'}</Card.Description>
-		<Card.Action>
+		<!-- With sample results the study reads as live: a "Fielding in progress" badge beside Share. -->
+		<Card.Action class="flex items-center gap-2">
+			{#if results}<Badge variant="success">Fielding in progress</Badge>{/if}
 			<Popover.Root>
 				<Popover.Trigger class={buttonVariants({ variant: 'ghost', size: 'sm' })}>
 					<Share data-icon="inline-start" />Share

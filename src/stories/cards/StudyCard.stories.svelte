@@ -17,7 +17,7 @@ its text, an open answer field (\`PromptInput\`) or multiple-choice options, its
 delete. Lumi drafts the first questions; edits save to the project (not in Storybook).
 
 **Share** can't share yet: it offers **Fake responses**, which swaps the setup for (made-up) results Lumi writes from
-the questions, labelled **Sample data**. Pick a question there to slide the overview aside and read its individual
+the questions, labelled **Sample data**, with a green **Fielding in progress** badge beside Share. Pick a question there to slide the overview aside and read its individual
 responses; pick an option to see who chose it.`
 				}
 			}

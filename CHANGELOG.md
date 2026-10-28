@@ -17,6 +17,8 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   with it in focus. Cards keep their state across the switch.
 - Project tiles on the projects page show the project's two latest cards in miniature (as they look in the project,
   with fresh video and chart data) instead of video thumbnails. A project with no cards yet still shows its videos.
+- A quiz with fake responses switched on shows a green **Fielding in progress** badge beside Share, so it reads as
+  live, and so does its project's tile on the projects page.
 - New Tooltip component (with TooltipGroup, so neighbouring tooltips open straight away once one has), built on
   bits-ui like the design system's Popover. A candidate for the design system.
 

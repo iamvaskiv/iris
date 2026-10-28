@@ -116,6 +116,10 @@
 							<Card.Header>
 								<Card.Title>{project.name}</Card.Title>
 								{#if project.summary}<Card.Description>{project.summary}</Card.Description>{/if}
+								{#if project.fielding}
+									<!-- Under the description: a quiz in the project is fielding (see isFielding). -->
+									<div class="mt-2"><Badge variant="success">Fielding in progress</Badge></div>
+								{/if}
 								{#if project.status}
 									<Card.Action><Badge variant="secondary">{project.status}</Badge></Card.Action>
 								{/if}
