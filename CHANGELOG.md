@@ -4,6 +4,24 @@ What changed in Iris, newest first. Add a line under today's date with every cha
 notable behind-the-scenes ones); the app Storybook shows this file as its **Changelog** page. The deployed app
 (`iris.<account>.workers.dev`) runs whatever was last released with `pnpm run deploy`.
 
+## 2026-10-28
+
+**Lumi**
+
+- Lumi's dock comes in three sizes. **Compact**: the avatar sits to the left of the input and the latest reply is
+  hidden (screen readers still hear it); errors and choices still show. **Default**: the latest reply, as before.
+  **Expanded**: the whole conversation in the project, scrollable, newest at the bottom: your messages as
+  right-aligned bubbles in the accent colour, Lumi's answers as plain text (not her tool calls). Her avatar sits
+  beside her latest answer, exactly where it is in the default dock, so expanding just adds the earlier messages
+  above. A pull tab on top of the dock (just above it when compact, so the compact box has even padding) changes
+  size: drag it down for smaller, up for larger, or click it (arrow keys work too). The size changes while you're
+  still holding, at set distances from where you pressed (one size at 60px, two at 200px), so you can go through all
+  three in one drag and back; a quick flick doesn't skip the middle size. Changing size opens or closes the box like
+  a drawer, quicker for small changes (compact ↔ default) and slower for big ones (up to 0.56s for a long
+  conversation), with Lumi's latest message staying in place instead of re-revealing, and her avatar no longer
+  flashes white. While you drag, the whole dock squeezes or stretches under your pointer, then morphs to the new
+  size and springs back when you let go.
+
 ## 2026-10-26
 
 **Studies**

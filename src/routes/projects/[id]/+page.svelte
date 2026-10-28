@@ -2,11 +2,12 @@
 	import { onMount, tick } from 'svelte';
 	import { page } from '$app/state';
 	import { replaceState } from '$app/navigation';
-	import AiDock, { timeOfDayGreeting } from '#lib/components/AiDock.svelte';
+	import AiDock, { timeOfDayGreeting, type DockMode } from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import { cardComponent, cardSize } from '#lib/cards/registry.js';
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 	import { takePendingVideo } from '#lib/new-project.js';
+	import { transcript, type TranscriptMessage } from '#lib/transcript.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -17,6 +18,11 @@
 	let thinking = $state(false);
 	let error = $state('');
 	let draft = $state('');
+	/** Lumi's dock size, changed with its pull tab. */
+	let dockMode = $state<DockMode>('default');
+	/** The conversation for the expanded dock; the message being sent shows right away, Lumi's answer when it lands. */
+	// svelte-ignore state_referenced_locally
+	let messages = $state<TranscriptMessage[]>(data.transcript);
 	let dragging = $state(false);
 
 	// Empty projects show the dock centred; when the first card arrives it morphs down to the bottom panel
@@ -282,6 +288,7 @@
 		draft = '';
 		error = '';
 		thinking = true;
+		messages = [...messages, { from: 'user', text: message }];
 		try {
 			await ensureSaved();
 			const res = await fetch('/api/chat', {
@@ -292,6 +299,7 @@
 			const data: ChatResponse = await res.json();
 			project.reply = data.text;
 			project.choices = data.choices;
+			if (!data.error) messages = transcript(data.history);
 			error = data.error ?? '';
 			if (data.project) Object.assign(project, data.project);
 			data.ops.forEach(apply);
@@ -385,6 +393,8 @@
 		{thinking}
 		{error}
 		bind:draft
+		bind:mode={dockMode}
+		{messages}
 		bind:height={dockHeight}
 		onsubmit={send}
 	/>

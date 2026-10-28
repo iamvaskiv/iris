@@ -1,4 +1,8 @@
 <script lang="ts" module>
+	/** Docked sizes, smallest first; the pull tab steps between neighbours. */
+	const MODES = ['compact', 'default', 'expanded'] as const;
+	export type DockMode = (typeof MODES)[number];
+
 	export function timeOfDayGreeting() {
 		const hour = new Date().getHours();
 		return hour < 12 ? 'Good morning!' : hour < 18 ? 'Good afternoon!' : 'Good evening!';
@@ -6,19 +10,13 @@
 </script>
 
 <script lang="ts">
-	import {
-		ChatMessage,
-		ChoiceList,
-		Icon,
-		Kbd,
-		Orb,
-		PromptInput,
-		Tile
-	} from '@latitudelabs/design-system';
+	import { ChoiceList, Icon, Kbd, Orb, PromptInput, Tile } from '@latitudelabs/design-system';
 	import type { ComponentProps } from 'svelte';
 	import { onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
 	import { loadOrbVariant, orbVariant } from '#lib/orb-variant.svelte.js';
 	import { blocks, type Run } from '#lib/reply-format.js';
+	import type { TranscriptMessage } from '#lib/transcript.js';
 
 	type Props = {
 		reply?: string;
@@ -38,6 +36,13 @@
 		centered?: boolean;
 		/** With `centered`: sit in the page flow (e.g. above the projects grid) instead of fixed in the middle of the screen. */
 		inline?: boolean;
+		/** Docked layout size, bindable; the pull tab on top of the dock steps between them (drag down to shrink, up to
+		 *  grow). `compact`: the avatar sits left of the input and the reply is hidden (still read out to screen
+		 *  readers); errors and choices still show. `default`: the latest reply above the input. `expanded`: the whole
+		 *  conversation (`messages`), scrollable, above the input. */
+		mode?: DockMode;
+		/** The conversation so far, oldest first, for the expanded layout (see transcript.ts). */
+		messages?: TranscriptMessage[];
 		onsubmit: (message: string) => void;
 	};
 	let {
@@ -52,6 +57,8 @@
 		suggestions = [],
 		centered = false,
 		inline = false,
+		mode = $bindable('default'),
+		messages = [],
 		onsubmit
 	}: Props = $props();
 
@@ -108,8 +115,212 @@
 		return () => clearTimeout(t);
 	});
 	const orbState = $derived(thinking ? 'thinking' : speaking ? 'speaking' : 'idle');
-	/** Natural height of the docked message, so its box can animate between heights. */
-	let messageHeight = $state(0);
+	/** Change size. The dock is one layout for all three sizes, so this only changes the values that differ between
+	 *  them (conversation height, padding, input offset, orb position); CSS transitions animate those (see below). */
+	function setMode(next: DockMode) {
+		if (next === mode) return;
+		mode = next;
+		if (viewport) viewport.scrollTop = 0; // newest message in view (the conversation scrolls from the bottom)
+	}
+	/** One size smaller (`-1`) or larger (`1`), or undefined at either end. */
+	const step = (by: -1 | 1) => MODES[MODES.indexOf(mode) + by];
+
+	// Pull tab: drag up for larger, down for smaller, through all three sizes in one drag if you like. The size changes
+	// while the button is still held, at detents measured from where the drag started: one size at PULL_DETENTS[0],
+	// two at PULL_DETENTS[1], far enough apart that a quick flick doesn't skip the middle size. Heading back, a size
+	// lets go PULL_SLACK before its detent, so it doesn't flicker on and off right at the line. While dragging, the
+	// whole dock squeezes (down) or stretches (up) from its bottom edge, measured from the last detent passed, with
+	// rubber-band resistance, and springs back on release; pulling the way that wouldn't change anything gives a
+	// quarter of the give. A drag swallows the click that follows it. Click (or Enter/Space) shows more (compact →
+	// default → expanded) and goes back from expanded; arrow keys step either way.
+	const PULL_DETENTS = [60, 200];
+	const PULL_SLACK = 24;
+	let pullStart = $state<number | null>(null);
+	let pullY = $state(0);
+	let pulled = false;
+	/** Size the drag started at (index into MODES), and how many sizes it has moved from there (+ up, − down). */
+	let pullFrom = 0;
+	let pullSteps = $state(0);
+	/** Drag distance (up positive) at which `steps` sizes are reached. */
+	const detent = (steps: number) =>
+		steps ? Math.sign(steps) * PULL_DETENTS[Math.abs(steps) - 1] : 0;
+	/** Whether there's a size `steps` away from where the drag started. */
+	const canStep = (steps: number) => !!MODES[pullFrom + steps];
+	/** Vertical scale for the current drag: up to ±25%, easing off the further you pull. */
+	const squeeze = $derived.by(() => {
+		const towardChange = canStep(pullSteps + (pullY > 0 ? -1 : 1));
+		const give = 0.25 * (1 - Math.exp(-Math.abs(pullY) / 60)) * (towardChange ? 1 : 0.25);
+		return pullY > 0 ? 1 - give : 1 + give;
+	});
+	/** The dock's `scale`: squeezing also widens it slightly (and stretching narrows it), like something soft. */
+	const dockScale = $derived(squeeze === 1 ? undefined : `${1 + (1 - squeeze) * 0.1} ${squeeze}`);
+	// The drag is followed on the window rather than captured by the tab, so it carries on wherever the pointer goes
+	// as the dock changes size under it.
+	function onpullstart(e: PointerEvent) {
+		if (e.button !== 0) return;
+		e.preventDefault(); // no text selection while dragging
+		pullStart = e.clientY;
+		pulled = false;
+		pullFrom = MODES.indexOf(mode);
+		pullSteps = 0;
+		window.addEventListener('pointermove', onpullmove);
+		window.addEventListener('pointerup', stopPull);
+		window.addEventListener('pointercancel', stopPull);
+	}
+	function onpullmove(e: PointerEvent) {
+		if (pullStart === null) return;
+		const up = pullStart - e.clientY;
+		if (Math.abs(up) > 4) pulled = true;
+		let steps = pullSteps;
+		// Back toward the start: once PULL_SLACK short of the current detent.
+		while (steps > 0 && up < detent(steps) - PULL_SLACK) steps--;
+		while (steps < 0 && up > detent(steps) + PULL_SLACK) steps++;
+		// Outward: past the next detent, if there's a size there.
+		while (steps >= 0 && canStep(steps + 1) && up >= detent(steps + 1)) steps++;
+		while (steps <= 0 && canStep(steps - 1) && up <= detent(steps - 1)) steps--;
+		if (steps !== pullSteps) {
+			pullSteps = steps;
+			setMode(MODES[pullFrom + steps]);
+		}
+		pullY = detent(steps) - up;
+	}
+	function stopPull() {
+		pullStart = null;
+		pullY = 0;
+		window.removeEventListener('pointermove', onpullmove);
+		window.removeEventListener('pointerup', stopPull);
+		window.removeEventListener('pointercancel', stopPull);
+	}
+	onMount(() => stopPull);
+	function onpullclick() {
+		if (pulled) return void (pulled = false);
+		setMode(mode === 'expanded' ? 'default' : step(1)!);
+	}
+	function onpullkeydown(e: KeyboardEvent) {
+		const next = e.key === 'ArrowUp' ? step(1) : e.key === 'ArrowDown' ? step(-1) : undefined;
+		if (!next) return;
+		e.preventDefault();
+		setMode(next);
+	}
+	const pullLabel = $derived(
+		mode === 'compact'
+			? "Show Lumi's reply"
+			: mode === 'default'
+				? 'Show the whole conversation'
+				: 'Show only the latest reply'
+	);
+
+	// The conversation, oldest first, ending with Lumi's latest message: her latest reply (or the greeting, before
+	// there is one), or a status row while she thinks or after an error. With no history, that last row is all there
+	// is. The reply prop wins over the history's copy of it (scripted mode adds a note to it).
+	const conversation = $derived.by<TranscriptMessage[]>(() => {
+		if (thinking || error) return messages;
+		const last = messages.at(-1);
+		if (last?.from === 'assistant')
+			return [...messages.slice(0, -1), { from: 'assistant', text: reply || last.text }];
+		return [...messages, { from: 'assistant', text: reply || greeting }];
+	});
+	const status = $derived(thinking || !!error);
+	/** Lumi's latest message, the one that reveals word by word (−1 while a status row stands in for it). */
+	const liveIndex = $derived(status ? -1 : conversation.length - 1);
+
+	// One layout for all three docked sizes. The conversation sits in a viewport that scrolls from the bottom; its
+	// height is what changes: nothing (compact), the last row (default), or the whole conversation up to a maximum
+	// (expanded). Growing uncovers earlier messages from the top, like a drawer. The orb is a single element laid over
+	// the dock, moved between the last row and the input, so it never remounts mid-change. Everything that differs
+	// between sizes is a plain value, animated by CSS transitions over --dock-duration (see resizeDuration).
+	let viewport = $state<HTMLElement | null>(null);
+	let content = $state<HTMLElement | null>(null);
+	let promptBox = $state<HTMLElement | null>(null);
+	let compactError = $state<HTMLElement | null>(null);
+	/** Measured heights: the whole conversation, its last row, the input (with any choices), compact's error line. */
+	let contentHeight = $state(0);
+	let lastRowHeight = $state(0);
+	let promptHeight = $state(0);
+	let compactErrorHeight = $state(0);
+	let viewHeight = $state(800);
+	function measure() {
+		contentHeight = content?.offsetHeight ?? 0;
+		lastRowHeight = (content?.lastElementChild as HTMLElement | null)?.offsetHeight ?? 0;
+		promptHeight = promptBox?.offsetHeight ?? 0;
+		compactErrorHeight = compactError?.offsetHeight ?? 0;
+		viewHeight = window.innerHeight;
+	}
+	// Measured right after each render (before paint) and whenever anything resizes, e.g. a reply arriving or the
+	// input growing a line.
+	$effect(() => {
+		const els = [content, promptBox, compactError].filter((el): el is HTMLElement => !!el);
+		measure();
+		const observer = new ResizeObserver(measure);
+		for (const el of els) observer.observe(el);
+		window.addEventListener('resize', measure);
+		return () => {
+			observer.disconnect();
+			window.removeEventListener('resize', measure);
+		};
+	});
+	/** The viewport's padding around the rows: room for the orb's glow above, and the gap to the input below. */
+	const VIEWPORT_PAD = 12;
+	const VIEWPORT_PAD_BOTTOM = 20;
+	const maxViewport = $derived(Math.min(viewHeight * 0.6, 640));
+	const viewportHeight = $derived(
+		mode === 'compact'
+			? 0
+			: mode === 'default'
+				? VIEWPORT_PAD + lastRowHeight + VIEWPORT_PAD_BOTTOM
+				: Math.min(contentHeight, maxViewport)
+	);
+	const scrolls = $derived(mode === 'expanded' && contentHeight > maxViewport);
+	/** The orb's distance from the dock's bottom edge: level with the input (compact), or at the top of the last row. */
+	const orbBottom = $derived(
+		mode === 'compact' ? 12 : 8 + promptHeight + VIEWPORT_PAD_BOTTOM + lastRowHeight - 40
+	);
+	// Scrolled back through the conversation, the latest row is out of view, so the orb beside it steps aside too.
+	let scrolledBack = $state(false);
+	/** The viewport's height is mid-change. Then (and when scrolled back) its top edge fades out, so earlier messages
+	 *  slide in or out softly instead of showing a hard cut right under the pull tab. */
+	let resizingNow = $state(false);
+	function onviewportscroll() {
+		scrolledBack = !!viewport && viewport.scrollTop < -4;
+	}
+	$effect(() => {
+		if (!scrolls) scrolledBack = false;
+	});
+
+	/** Transition time for a change of `px` in height: short hops stay quick, big ones get time to read as movement. */
+	const resizeDuration = (px: number) => Math.round(Math.min(560, Math.max(240, 200 + px)));
+	let duration = $state(300);
+	let previousHeight: number | undefined;
+	$effect.pre(() => {
+		const h = viewportHeight;
+		if (previousHeight !== undefined) duration = resizeDuration(Math.abs(h - previousHeight));
+		previousHeight = h;
+	});
+	// No transitions until the first measurement has landed, so the dock doesn't animate into place on load.
+	let ready = $state(false);
+	onMount(() => {
+		const frame = requestAnimationFrame(() => (ready = true));
+		return () => cancelAnimationFrame(frame);
+	});
+
+	/** Height the page keeps clear for the dock. Expanded overlays the page, so it reports the default size, and each
+	 *  size reports its final height straight away rather than every frame of the change. */
+	$effect(() => {
+		if (centered) return;
+		height =
+			mode === 'compact'
+				? 16 + compactErrorHeight + promptHeight
+				: 16 + lastRowHeight + VIEWPORT_PAD_BOTTOM + promptHeight + 8;
+	});
+
+	/** The message whose word-by-word reveal has already played. Showing it again (moving from the centred layout to
+	 *  the docked one remounts it) shows it straight away, so it doesn't blank out and fade back in. Set after each render, and
+	 *  deliberately not reactive: updating it must not re-render the message it was just set from. */
+	// svelte-ignore non_reactive_update
+	let revealedText: string | undefined;
+	$effect(() => {
+		revealedText = error || reply || greeting;
+	});
 
 	/** A word (or the whitespace after it) of a reply; `i` numbers the words in reading order, -1 for whitespace. */
 	type Word = { text: string; bold: boolean; i: number };
@@ -178,10 +389,10 @@
 {/snippet}
 
 {#snippet reveal(text: string)}
-	<!-- Keyed on the text so every new message replays the reveal. -->
+	<!-- Keyed on the text so every new message plays the reveal (once: see revealedText). -->
 	{#key text}
 		{@const { parts, delay } = layout(text)}
-		<div class="flex flex-col gap-2">
+		<div class={['flex flex-col gap-2', text === revealedText && 'no-reveal']}>
 			{#each parts as part, j (j)}
 				{#if part.kind === 'paragraph'}
 					<p>{@render line(part.words, delay)}</p>
@@ -203,6 +414,11 @@
 	{:else}
 		{@render reveal(reply || greeting)}
 	{/if}
+{/snippet}
+
+<!-- An earlier message: same formatting as the latest reply, without the word-by-word reveal. -->
+{#snippet formatted(text: string)}
+	<div class="no-reveal">{@render reveal(text)}</div>
 {/snippet}
 
 {#snippet fieldKey()}<Kbd aria-hidden="true">{choices.length + 1}</Kbd>{/snippet}
@@ -265,39 +481,131 @@
 		<div class="w-full max-w-140">{@render prompt()}</div>
 	</div>
 {:else}
+	<!-- Docked: one layout for all three sizes (see the script). The values that differ between sizes are set inline and
+	     animated by the dock-* transitions in the styles. -->
 	<div
 		data-dock
-		bind:offsetHeight={height}
 		{onfocusin}
-		class="fixed bottom-8 left-1/2 flex w-full max-w-140 -translate-x-1/2 flex-col gap-5 rounded-xl bg-card p-2 shadow-raised"
+		class={[
+			'fixed bottom-8 left-1/2 flex w-full max-w-140 -translate-x-1/2 flex-col rounded-xl bg-card px-2 pb-2 shadow-raised',
+			ready && 'dock-animate'
+		]}
+		class:pull-release={pullStart === null}
+		style:padding-top="{mode === 'compact' ? 8 : 16}px"
+		style:scale={dockScale}
+		style:--dock-duration="{duration}ms"
 		style:view-transition-name="iris-dock"
 	>
-		<!-- Height animates to the message's natural height (auto until first measured). The clip box extends 8px
-		     past the content (-m-2 p-2) so the orb's blur isn't cut off; height includes that padding. -->
-		<div
-			class="-m-2 overflow-hidden p-2 transition-[height] duration-300 ease-out"
-			style:height={messageHeight ? `${messageHeight + 16}px` : 'auto'}
+		<!-- In the taller top padding, or just above the dock when compact, whose padding is even all round. Drag or
+		     arrow keys step the size; click shows more. -->
+		<button
+			type="button"
+			class="group dock-move absolute left-1/2 z-10 flex h-4 w-16 -translate-x-1/2 cursor-grab touch-none items-center justify-center active:cursor-grabbing"
+			style:top="{mode === 'compact' ? -16 : 0}px"
+			aria-label={pullLabel}
+			aria-keyshortcuts="ArrowUp ArrowDown"
+			onpointerdown={onpullstart}
+			onclick={onpullclick}
+			onkeydown={onpullkeydown}
 		>
-			<div bind:offsetHeight={messageHeight}>
-				<ChatMessage>
-					{#snippet avatar()}
-						<Orb
-							size={40}
-							state={orbState}
-							pulse={shown}
-							variant={orbVariant.current}
-							transitionName="iris-avatar"
-							label="Lumi"
-						/>
-					{/snippet}
-					<!-- At least orb height, centred: one line sits level with the orb; longer replies start at its top. -->
-					<div class="flex min-h-10 items-center">
-						<div aria-live="polite">{@render message()}</div>
-					</div>
-				</ChatMessage>
+			<span
+				class="h-1 w-8 rounded-full bg-muted-foreground/30 transition-colors group-hover:bg-muted-foreground/60 group-focus-visible:bg-muted-foreground/60"
+			></span>
+		</button>
+
+		<!-- The conversation, scrolling from the bottom (column-reverse), so changing its height uncovers or covers earlier
+		     messages from the top. -mx-3 and the rows' 12px padding leave room for the orb's glow; the 20px below is the gap to the input. Each question sits just
+		     above its answer (gap-3); turns are set apart (mt-5 before each later question). Lumi's rows start past the
+		     orb's column (pl-16: 16px to the orb + 40px orb + 16px gap, less the 8px the dock's padding gives). -->
+		<div
+			bind:this={viewport}
+			class={[
+				'dock-size -mx-3 flex flex-col-reverse overscroll-contain',
+				scrolls ? 'overflow-y-auto' : 'overflow-hidden',
+				(resizingNow || scrolledBack) && 'fade-top'
+			]}
+			style:height="{viewportHeight}px"
+			style:margin-top="{mode === 'compact' ? 0 : -VIEWPORT_PAD}px"
+			onscroll={onviewportscroll}
+			ontransitionrun={(e) =>
+				e.target === viewport && e.propertyName === 'height' && (resizingNow = true)}
+			ontransitionend={(e) =>
+				e.target === viewport && e.propertyName === 'height' && (resizingNow = false)}
+			ontransitioncancel={(e) =>
+				e.target === viewport && e.propertyName === 'height' && (resizingNow = false)}
+			role="log"
+			aria-label="Conversation with Lumi"
+		>
+			<div bind:this={content} class="flex shrink-0 flex-col gap-3 px-3 pt-3 pb-5">
+				<!-- Rows before the latest only show when expanded, fading in as the box opens. Otherwise they'd peek into
+				     the glow room above the latest row. -->
+				{#each conversation as m, i (i)}
+					{#if m.from === 'user'}
+						<!-- Your messages: right-aligned bubbles in the accent colour. Not in the design system yet. -->
+						<div
+							class={[
+								'dock-fade max-w-4/5 self-end rounded-lg bg-primary px-4 py-2 text-body-lg text-primary-foreground',
+								i > 0 && 'mt-5',
+								mode !== 'expanded' && 'opacity-0'
+							]}
+						>
+							{@render formatted(m.text)}
+						</div>
+					{:else if i === liveIndex}
+						<!-- At least orb height, centred: one line sits level with the orb; longer replies start at its top. -->
+						<div class="flex min-h-10 items-center pl-16 text-body-lg">
+							{@render reveal(m.text)}
+						</div>
+					{:else}
+						<div class={['dock-fade pl-16 text-body-lg', mode !== 'expanded' && 'opacity-0']}>
+							{@render formatted(m.text)}
+						</div>
+					{/if}
+				{/each}
+				{#if status}
+					<div class="flex min-h-10 items-center pl-16 text-body-lg">{@render message()}</div>
+				{/if}
 			</div>
 		</div>
-		{@render prompt()}
+
+		{#if mode === 'compact' && error && !thinking}
+			<p
+				bind:this={compactError}
+				transition:slide={{ duration: 200 }}
+				class="px-3 pt-2 pb-3 text-body text-destructive"
+			>
+				{error}
+			</p>
+		{/if}
+
+		<!-- Compact moves the input right to make room for the orb beside it (12px + 40px orb). -->
+		<div
+			bind:this={promptBox}
+			class="dock-size"
+			style:margin-left="{mode === 'compact' ? 52 : 0}px"
+		>
+			{@render prompt()}
+		</div>
+
+		<!-- The one orb: beside the latest row, or beside the input when compact (16px or 12px from the dock's edges, as
+		     far as from its top). -->
+		<div
+			class="dock-move pointer-events-none absolute"
+			class:opacity-0={scrolledBack}
+			style:left="{mode === 'compact' ? 12 : 16}px"
+			style:bottom="{orbBottom}px"
+		>
+			<div class="pointer-events-auto">
+				<Orb
+					size={40}
+					state={orbState}
+					pulse={shown}
+					variant={orbVariant.current}
+					transitionName="iris-avatar"
+					label="Lumi"
+				/>
+			</div>
+		</div>
 	</div>
 {/if}
 
@@ -324,6 +632,9 @@
 		animation: reveal 420ms cubic-bezier(0.2, 0, 0, 1) both;
 		animation-delay: calc(var(--index) * 40ms);
 	}
+	.no-reveal .reveal-word {
+		animation: none;
+	}
 	.thinking {
 		animation: thinking 1.6s ease-in-out infinite;
 	}
@@ -331,6 +642,42 @@
 		50% {
 			opacity: 0.45;
 		}
+	}
+	/* Squeezed or stretched by the pull tab: follows the pointer while dragging, springs back (slight overshoot) on
+	   release. Scaled from the bottom edge so the dock stays planted. */
+	[data-dock] {
+		transform-origin: bottom center;
+	}
+	.pull-release {
+		transition: scale 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+	/* Changing size: every value that differs between sizes eases over --dock-duration (set from how far the height
+	   changes), responding at once and settling softly. Off until the dock has been measured, so it doesn't animate
+	   into place on load. */
+	.dock-animate {
+		--dock-ease: cubic-bezier(0.3, 0, 0, 1);
+		transition: padding-top var(--dock-duration) var(--dock-ease);
+	}
+	.dock-animate.pull-release {
+		transition:
+			padding-top var(--dock-duration) var(--dock-ease),
+			scale 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+	.dock-animate .dock-size {
+		transition-property: height, margin;
+		transition-duration: var(--dock-duration);
+		transition-timing-function: var(--dock-ease);
+	}
+	.dock-animate .dock-fade {
+		transition: opacity var(--dock-duration) var(--dock-ease);
+	}
+	.fade-top {
+		mask-image: linear-gradient(to bottom, transparent, black 16px);
+	}
+	.dock-animate .dock-move {
+		transition-property: top, left, bottom, opacity;
+		transition-duration: var(--dock-duration);
+		transition-timing-function: var(--dock-ease);
 	}
 	/* Focusing the input: a subtle pop of the whole box. Uses `scale`, not `transform`, so it doesn't fight the
 	   translate that positions the dock. Added from script, hence :global. */
@@ -350,11 +697,26 @@
 		:global([data-dock].dock-pop) {
 			animation: none;
 		}
+		.dock-animate,
+		.dock-animate .dock-size,
+		.dock-animate .dock-move,
+		.dock-animate .dock-fade {
+			transition: none;
+		}
 	}
 	:global(::view-transition-group(iris-dock)),
 	:global(::view-transition-group(iris-avatar)),
 	:global(::view-transition-group(iris-prompt)) {
 		animation-duration: 450ms;
 		animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+	}
+	/* The orb moves rather than cross-fades: the default fade blends old and new with plus-lighter, and two bright
+	   orbs on top of each other add up to a white flash. Only the new, live orb is shown, travelling from the old
+	   one's place. */
+	:global(::view-transition-old(iris-avatar)) {
+		display: none;
+	}
+	:global(::view-transition-new(iris-avatar)) {
+		animation: none;
 	}
 </style>
