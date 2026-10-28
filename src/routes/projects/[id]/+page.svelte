@@ -4,7 +4,10 @@
 	import { replaceState } from '$app/navigation';
 	import AiDock, { timeOfDayGreeting, type DockMode } from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
+	import BirdsEyeIcon from '#lib/components/BirdsEyeIcon.svelte';
 	import CardPagination from '#lib/components/CardPagination.svelte';
+	import Tooltip from '#lib/components/Tooltip.svelte';
+	import TooltipGroup from '#lib/components/TooltipGroup.svelte';
 	import { cardComponent, cardSize } from '#lib/cards/registry.js';
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 	import { takePendingVideo } from '#lib/new-project.js';
@@ -272,7 +275,7 @@
 
 	let frame = 0;
 	function onscroll() {
-		if (autoScrolling || frame) return;
+		if (autoScrolling || frame || birdsEye) return;
 		frame = requestAnimationFrame(() => {
 			frame = 0;
 			const id = mostVisible();
@@ -283,9 +286,79 @@
 	function onscrollend() {
 		// The app's own scroll keeps the card it chose, even if it landed short (e.g. clamped at the end).
 		if (autoScrolling) return void (autoScrolling = false);
+		if (birdsEye) return;
 		// The last scroll frame (or the browser's snap) may not have been processed yet.
 		const id = mostVisible();
 		if (id) project.focusedId = id;
+	}
+
+	// ── Bird's eye view ────────────────────────────────────────────────────────────────────────────────
+	// Every card shrinks by one shared scale (so they keep their relative sizes, like the map) and wraps into a grid,
+	// at the largest scale that fits the whole set on screen when it can. A card keeps rendering at its full size
+	// inside and is only scaled visually, so its contents don't reflow; its measured size (bound on that inner box)
+	// stays the list size. Cards fly between their place in the list and in the grid (FLIP: measure before and after
+	// the switch, then animate the difference away). Click a card, or press Escape, to go back to it.
+
+	let birdsEye = $state(false);
+	let birdScale = $state(0.3);
+	/** While cards fly back to the list: the list's "out of focus" shrink waits, so they land exactly. */
+	let flying = $state(false);
+	const BIRD_GAP = 24;
+
+	/** The largest scale (0.4 down to 0.12) at which the wrapped grid fits the space between header and dock. */
+	function fitScale() {
+		const sides = window.matchMedia('(min-width: 640px)').matches ? 160 : 32;
+		const width = scroller.clientWidth - sides;
+		const height = snapArea - 2 * BIRD_GAP;
+		const sizes = project.cards.map((c) => [cardWidths[c.id] ?? 0, cardHeights[c.id] ?? 0]);
+		for (let scale = 0.4; scale > 0.12; scale -= 0.02) {
+			let rowWidth = 0;
+			let rowHeight = 0;
+			let total = 0;
+			for (const [w, h] of sizes) {
+				if (rowWidth && rowWidth + BIRD_GAP + w * scale > width) {
+					total += rowHeight + BIRD_GAP;
+					rowWidth = rowHeight = 0;
+				}
+				rowWidth += (rowWidth ? BIRD_GAP : 0) + w * scale;
+				rowHeight = Math.max(rowHeight, h * scale);
+			}
+			if (total + rowHeight <= height) return scale;
+		}
+		return 0.12;
+	}
+
+	async function setBirdsEye(on: boolean, focusId = project.focusedId) {
+		if (on === birdsEye || !project.cards.length) return;
+		const first = new Map(project.cards.map((c) => [c.id, cardEl(c.id)?.getBoundingClientRect()]));
+		if (on) birdScale = fitScale();
+		else flying = true;
+		birdsEye = on;
+		project.focusedId = focusId;
+		await tick();
+		if (on) scroller.scrollTop = 0;
+		else if (focusId) position(focusId, 'instant');
+		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const flights = project.cards.map((c) => {
+			const el = cardEl(c.id);
+			const from = first.get(c.id);
+			if (!el || !from || reduce) return;
+			const to = el.getBoundingClientRect();
+			if (!to.width) return;
+			const dx = from.left - to.left;
+			const dy = from.top - to.top;
+			const k = from.width / to.width;
+			return el.animate(
+				[{ transform: `translate(${dx}px, ${dy}px) scale(${k})` }, { transform: 'none' }],
+				{ duration: 500, easing: 'cubic-bezier(0.3, 0, 0, 1)' }
+			).finished;
+		});
+		await Promise.allSettled(flights);
+		flying = false;
+	}
+
+	function onkeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape' && birdsEye && !e.defaultPrevented) setBirdsEye(false);
 	}
 
 	async function send(message: string) {
@@ -318,6 +391,8 @@
 
 <svelte:head><title>{project.name} · Iris</title></svelte:head>
 
+<svelte:window {onkeydown} />
+
 <div
 	class="relative flex h-dvh flex-col bg-background"
 	role="region"
@@ -341,7 +416,7 @@
 	<main
 		bind:this={scroller}
 		bind:clientHeight={viewHeight}
-		class="flex-1 snap-y snap-proximity overflow-y-auto"
+		class={['flex-1 overflow-y-auto', !birdsEye && 'snap-y snap-proximity']}
 		style:scroll-padding-top="{HEADER}px"
 		style:scroll-padding-bottom="{dockHeight + DOCK_GAP}px"
 		{onscroll}
@@ -354,42 +429,75 @@
 			crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]}
 		/>
 		{#if project.cards.length > 0}
-			<!-- sm:px-20: an 80px safe zone each side that cards never enter; the left one holds the pagination. -->
+			<!-- sm:px-20: an 80px safe zone each side that cards never enter; the left one holds the pagination. In bird's
+			     eye view the cards wrap into rows from the top left, below the header. -->
 			<div
-				class="flex flex-col gap-5 px-4 sm:px-20"
-				style:padding-top="{padTop}px"
-				style:padding-bottom="{padBottom}px"
+				class={[
+					'flex px-4 sm:px-20',
+					birdsEye ? 'flex-wrap content-start items-start justify-start' : 'flex-col gap-5'
+				]}
+				style:gap={birdsEye ? `${BIRD_GAP}px` : undefined}
+				style:padding-top="{birdsEye ? HEADER + BIRD_GAP : padTop}px"
+				style:padding-bottom="{birdsEye ? dockHeight + DOCK_GAP + BIRD_GAP : padBottom}px"
 				style:--card-height="{fullHeight}px"
 			>
 				{#each project.cards as card (card.id)}
 					{@const CardView = cardComponent(card.type)}
-					<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+					<!-- One element in both views, so cards keep their state (players, selections) across the switch. In
+					     bird's eye view it's the card's scaled-down footprint and opens the card in the list; its contents
+					     stay full size inside (inert, so nothing in them can be clicked or focused) and are scaled to fit. -->
+					<!-- The role and tabindex only apply together (bird's eye), which the checker can't see. -->
+					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 					<div
 						id="card-{card.id}"
-						bind:offsetHeight={cardHeights[card.id]}
-						bind:offsetWidth={cardWidths[card.id]}
-						class={[
-							'mx-auto w-full transition-[opacity,scale] duration-300',
-							{ normal: 'max-w-3xl', wide: 'max-w-5xl', full: '' }[cardSize(card)],
-							cardSize(card) === 'full'
-								? 'snap-start scroll-mt-4'
-								: (cardHeights[card.id] ?? 0) <= snapArea && 'snap-center',
-							card.id !== project.focusedId && 'scale-90 opacity-60 hover:opacity-100'
-						]}
+						role={birdsEye ? 'button' : undefined}
+						tabindex={birdsEye ? 0 : undefined}
+						aria-label={birdsEye ? `Open ${card.title}` : undefined}
+						class={birdsEye
+							? 'shrink-0 cursor-pointer outline-offset-4 outline-ring/50 transition-[outline-color] hover:outline-2 focus-visible:outline-3'
+							: [
+									'mx-auto w-full transition-[opacity,scale] duration-300',
+									{ normal: 'max-w-3xl', wide: 'max-w-5xl', full: '' }[cardSize(card)],
+									cardSize(card) === 'full'
+										? 'snap-start scroll-mt-4'
+										: (cardHeights[card.id] ?? 0) <= snapArea && 'snap-center',
+									card.id !== project.focusedId &&
+										(flying ? 'opacity-60' : 'scale-90 opacity-60 hover:opacity-100')
+								]}
+						style:width={birdsEye ? `${(cardWidths[card.id] ?? 0) * birdScale}px` : undefined}
+						style:height={birdsEye ? `${(cardHeights[card.id] ?? 0) * birdScale}px` : undefined}
+						style:border-radius={birdsEye ? `calc(var(--radius-xl) * ${birdScale})` : undefined}
 						onclick={() => {
+							if (birdsEye) return void setBirdsEye(false, card.id);
 							// Clicking a dimmed card brings it into focus; clicks inside the focused card (sections,
 							// players) leave the scroll position alone.
 							if (card.id !== project.focusedId) focus(card.id);
 						}}
+						onkeydown={(e) => {
+							if (!birdsEye || (e.key !== 'Enter' && e.key !== ' ')) return;
+							e.preventDefault();
+							setBirdsEye(false, card.id);
+						}}
 					>
-						<CardView {card} />
+						<!-- Measured here, inside, so the sizes stay the card's own: bird's eye keeps this box at the list
+						     width and only scales it. -->
+						<div
+							bind:offsetHeight={cardHeights[card.id]}
+							bind:offsetWidth={cardWidths[card.id]}
+							inert={birdsEye}
+							class:origin-top-left={birdsEye}
+							style:width={birdsEye ? `${cardWidths[card.id] ?? 0}px` : undefined}
+							style:scale={birdsEye ? birdScale : undefined}
+						>
+							<CardView {card} />
+						</div>
 					</div>
 				{/each}
 			</div>
 		{/if}
 	</main>
 
-	{#if project.cards.length > 1}
+	{#if project.cards.length > 1 && !birdsEye}
 		<!-- A map of the cards, centred in the left safe zone, between the header and Lumi's dock. -->
 		<div
 			bind:clientHeight={mapHeight}
@@ -409,6 +517,33 @@
 				maxHeight={mapHeight - 32}
 				onselect={(id) => focus(id)}
 			/>
+		</div>
+	{/if}
+
+	{#if project.cards.length > 1}
+		<!-- Bird's eye toggle: bottom of the left safe zone, level with the bottom of Lumi's dock. -->
+		<div class="absolute left-0 hidden w-20 justify-center sm:flex" style:bottom="{DOCK_GAP}px">
+			<TooltipGroup>
+				<Tooltip text={birdsEye ? 'Back to cards' : "Bird's eye"} side="right" describes={false}>
+					{#snippet children({ props })}
+						<!-- Just the icon, no button surface: faint at rest, full strength on hover, focus or while the view is
+						     on. -->
+						<button
+							{...props}
+							type="button"
+							class={[
+								'flex rounded-sm transition-colors outline-none hover:text-foreground focus-visible:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50',
+								birdsEye ? 'text-foreground' : 'text-foreground/40'
+							]}
+							aria-label="Bird's eye"
+							aria-pressed={birdsEye}
+							onclick={() => setBirdsEye(!birdsEye)}
+						>
+							<BirdsEyeIcon class="size-8" />
+						</button>
+					{/snippet}
+				</Tooltip>
+			</TooltipGroup>
 		</div>
 	{/if}
 

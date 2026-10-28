@@ -11,6 +11,10 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 - Cards keep an 80px safe zone on each side (on screens wider than a phone). The left one holds a little map of the
   project's cards: each card as a block with its real proportions, scaled down and lined up on the left, the one in
   focus solid. Click a block to bring its card into focus; hover or focus one to see the card's title in a tooltip.
+- **Bird's eye** (the grid button at the bottom of the left safe zone, in a project with more than one card): every
+  card shrinks by the same amount, keeping their relative sizes, and the cards wrap into rows from the top left, as
+  large as still fits the screen. Cards fly between the list and the grid; click one (or press Escape) to go back
+  with it in focus. Cards keep their state across the switch.
 - New Tooltip component (with TooltipGroup, so neighbouring tooltips open straight away once one has), built on
   bits-ui like the design system's Popover. A candidate for the design system.
 
