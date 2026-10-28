@@ -33,6 +33,7 @@ const config: StorybookConfig = {
 			{ find: /^\$app\/navigation$/, replacement: mock('navigation') },
 			{ find: /^\$app\/forms$/, replacement: mock('forms') },
 			{ find: /^\$app\/env$/, replacement: mock('env') },
+			{ find: /^\$app\/paths$/, replacement: mock('paths') },
 			...(Array.isArray(existing)
 				? existing
 				: Object.entries(existing).map(([find, replacement]) => ({ find, replacement })))

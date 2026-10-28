@@ -1,4 +1,6 @@
 import { error } from '@sveltejs/kit';
+import type { ProjectAsset } from '#lib/assets.js';
+import { assets, thumbnail } from '#lib/server/assets.js';
 import { refreshCardData } from '#lib/server/card-data.js';
 import { projects } from '#lib/server/projects.js';
 import type { Project } from '#lib/projects.js';
@@ -17,12 +19,27 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			createdAt: now,
 			updatedAt: now
 		};
-		return { project: draft, transcript: [] };
+		return { project: draft, transcript: [], assets: [] as ProjectAsset[] };
 	}
 	const project = await projects.get(params.id);
 	if (!project) error(404, 'Project not found');
 	const { history: _, ...rest } = project;
 
-	await refreshCardData(rest.cards);
-	return { project: rest, transcript: transcript(project.history) };
+	// The project's videos, for the right safe zone: what Iris knows about each, and a thumbnail.
+	const [, projectAssets] = await Promise.all([
+		refreshCardData(rest.cards),
+		Promise.all(
+			project.videoIds.map(async (id): Promise<ProjectAsset> => {
+				const stored = await assets.get(id);
+				return {
+					id,
+					name: stored?.name ?? id,
+					duration: stored?.duration,
+					status: stored?.status ?? 'not-analysed',
+					thumbnail: await thumbnail(id)
+				};
+			})
+		)
+	]);
+	return { project: rest, transcript: transcript(project.history), assets: projectAssets };
 };

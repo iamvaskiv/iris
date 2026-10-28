@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
+	import { fade } from 'svelte/transition';
+	import { ChevronLeft, Icon } from '@latitudelabs/design-system/icons';
 	import { page } from '$app/state';
 	import { replaceState } from '$app/navigation';
 	import AiDock, { timeOfDayGreeting, type DockMode } from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import BirdsEyeIcon from '#lib/components/BirdsEyeIcon.svelte';
 	import CardPagination from '#lib/components/CardPagination.svelte';
+	import AssetsSidebar from '#lib/components/AssetsSidebar.svelte';
+	import { cardUses } from '#lib/assets.js';
 	import Tooltip from '#lib/components/Tooltip.svelte';
 	import TooltipGroup from '#lib/components/TooltipGroup.svelte';
 	import { cardComponent, cardSize } from '#lib/cards/registry.js';
@@ -358,7 +362,46 @@
 	}
 
 	function onkeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape' && birdsEye && !e.defaultPrevented) setBirdsEye(false);
+		if (e.key !== 'Escape' || e.defaultPrevented) return;
+		if (assetsOpen) closeAssets();
+		else if (birdsEye) setBirdsEye(false);
+	}
+
+	// ── Assets pane ────────────────────────────────────────────────────────────────────────────────────
+	// The vertical "Assets" tab in the right safe zone opens a pane of the project's videos, sliding in over the page
+	// from the right. While it's open a click anywhere outside closes it, without also landing on whatever is
+	// underneath; so does Escape. The page's scrollbar turns transparent meanwhile (keeping its width, so nothing
+	// shifts).
+
+	const ASSETS_WIDTH = 400;
+	/** Dims the page behind the open pane, like the design system's dialog overlay (there's no role for it). */
+	const SCRIM = 'bg-black/30 supports-backdrop-filter:backdrop-blur-xs dark:bg-black/60'; // audit-ignore: the design system's own dialog overlay colours
+	/** The page's scrollbar width: the closed pane's tab rests just left of it rather than on top of it. */
+	let scrollerWidth = $state(0);
+	let scrollerInnerWidth = $state(0);
+	const scrollbarWidth = $derived(Math.max(0, scrollerWidth - scrollerInnerWidth));
+	let assetsOpen = $state(false);
+	let assetsPane = $state<HTMLElement | null>(null);
+	let assetsTab = $state<HTMLElement | null>(null);
+	/** Videos the focused card shows: marked current in the pane. */
+	const focusedAssets = $derived.by(() => {
+		const focused = project.cards.find((c) => c.id === project.focusedId);
+		return focused ? data.assets.filter((a) => cardUses(focused, a.id)).map((a) => a.id) : [];
+	});
+	/** How many cards show each of the project's videos. */
+	const assetUsage = $derived(
+		Object.fromEntries(
+			data.assets.map((a) => [a.id, project.cards.filter((c) => cardUses(c, a.id)).length])
+		)
+	);
+	async function openAssets() {
+		assetsOpen = true;
+		await tick();
+		assetsPane?.focus({ preventScroll: true });
+	}
+	function closeAssets() {
+		assetsOpen = false;
+		assetsTab?.focus({ preventScroll: true });
 	}
 
 	async function send(message: string) {
@@ -416,7 +459,10 @@
 	<main
 		bind:this={scroller}
 		bind:clientHeight={viewHeight}
+		bind:offsetWidth={scrollerWidth}
+		bind:clientWidth={scrollerInnerWidth}
 		class={['flex-1 overflow-y-auto', !birdsEye && 'snap-y snap-proximity']}
+		style:scrollbar-color={assetsOpen ? 'transparent transparent' : undefined}
 		style:scroll-padding-top="{HEADER}px"
 		style:scroll-padding-bottom="{dockHeight + DOCK_GAP}px"
 		{onscroll}
@@ -520,6 +566,17 @@
 		</div>
 	{/if}
 
+	{#if assetsOpen}
+		<!-- Dims the page behind the pane (the design system's dialog overlay) and catches the click outside it: closes
+		     the pane without reaching the card or control underneath. -->
+		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+		<div
+			transition:fade={{ duration: 300 }}
+			class="absolute inset-0 z-40 {SCRIM}"
+			onclick={closeAssets}
+		></div>
+	{/if}
+
 	{#if project.cards.length > 1}
 		<!-- Bird's eye toggle: bottom of the left safe zone, level with the bottom of Lumi's dock. -->
 		<div class="absolute left-0 hidden w-20 justify-center sm:flex" style:bottom="{DOCK_GAP}px">
@@ -563,3 +620,105 @@
 		onsubmit={send}
 	/>
 </div>
+
+<!-- The assets pane, over the page, sliding in from the right edge: flush with the top, right and bottom,
+     square-cornered. Its pull tab rides on its left edge, so it sits on the window's edge while the pane is closed and
+     stays attached as it opens. -->
+<div
+	class="assets-slide fixed top-0 right-0 z-50 h-dvh"
+	style:width="{ASSETS_WIDTH}px"
+	style:translate={assetsOpen ? undefined : '100% 0'}
+>
+	{#if !birdsEye && project.cards.length}
+		<!-- The pull tab, vertically centred between the header and the dock, its label reading bottom to top. Closed, it
+		     rests against the page's scrollbar (not over it); open, against the pane, above its edge (so the pane's
+		     shadow doesn't cut between them) and in the same surface, so the two read as one. 8px of it tuck behind that
+		     edge, clipped there (the shadow may spill on the other sides); on hover or focus it slides out by those 8px,
+		     as if to be pulled. -->
+		<div
+			class="assets-slide pointer-events-none absolute z-20 hidden items-center sm:flex"
+			style:right={assetsOpen ? '100%' : `calc(100% + ${scrollbarWidth}px)`}
+			style:top="{HEADER}px"
+			style:bottom="{dockHeight + DOCK_GAP}px"
+			style:clip-path="inset(-24px 0 -24px -24px)"
+		>
+			<button
+				bind:this={assetsTab}
+				type="button"
+				class={[
+					'pointer-events-auto relative flex translate-x-2 flex-col items-center gap-2 rounded-l-md bg-card py-4 pr-4 pl-2 text-body shadow-raised transition-[translate,color] duration-200 ease-out outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+					// Open, it's part of the pane: it stays put and lit, no pull-out on hover.
+					assetsOpen
+						? 'text-foreground'
+						: 'text-muted-foreground hover:translate-x-0 hover:text-foreground focus-visible:translate-x-0 focus-visible:text-foreground'
+				]}
+				aria-expanded={assetsOpen}
+				aria-controls="assets-sidebar"
+				onclick={() => (assetsOpen ? closeAssets() : openAssets())}
+			>
+				<!-- Arrows either side of the label point the way the pane comes from; open, they turn to point back. -->
+				{#snippet arrow()}
+					<Icon
+						icon={ChevronLeft}
+						size="sm"
+						class="transition-[rotate] duration-300 ease-out {assetsOpen ? 'rotate-180' : ''}"
+					/>
+				{/snippet}
+				{@render arrow()}
+				<span class="rotate-180" style:writing-mode="vertical-rl">Assets</span>
+				{@render arrow()}
+				<!-- Open: the inner corners where the tab meets the pane curve into its edge (12px, like the tab's own
+				     corners). Each is a square of the card colour with a quarter circle cut out, 8px in from the button's
+				     right side, where the pane's edge is (the rest is tucked under it). -->
+				<span aria-hidden="true" class={['fillet fillet-top', assetsOpen && 'fillet-on']}></span>
+				<span aria-hidden="true" class={['fillet fillet-bottom', assetsOpen && 'fillet-on']}></span>
+			</button>
+		</div>
+	{/if}
+	<!-- Inert while closed. -->
+	<div id="assets-sidebar" class="relative z-10 flex h-full" inert={!assetsOpen}>
+		<AssetsSidebar
+			bind:ref={assetsPane}
+			class="w-full"
+			assets={data.assets}
+			usage={assetUsage}
+			current={focusedAssets}
+			onselect={(id) => focus(project.cards.find((c) => cardUses(c, id))?.id)}
+			onclose={closeAssets}
+		/>
+	</div>
+</div>
+
+<style>
+	/* The tab's inner corners, against the pane's edge (see the tab). */
+	.fillet {
+		position: absolute;
+		right: 0.5rem;
+		width: 12px;
+		height: 12px;
+		opacity: 0;
+		transition: opacity 300ms ease-out;
+	}
+	.fillet-on {
+		opacity: 1;
+	}
+	.fillet-top {
+		bottom: 100%;
+		background: radial-gradient(circle at top left, transparent 12px, var(--color-card) 12.5px);
+	}
+	.fillet-bottom {
+		top: 100%;
+		background: radial-gradient(circle at bottom left, transparent 12px, var(--color-card) 12.5px);
+	}
+	/* The assets pane slides in and out (and its tab steps on or off the scrollbar's edge with it). */
+	.assets-slide {
+		transition:
+			translate 300ms cubic-bezier(0.3, 0, 0, 1),
+			right 300ms cubic-bezier(0.3, 0, 0, 1);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.assets-slide {
+			transition: none;
+		}
+	}
+</style>
