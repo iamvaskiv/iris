@@ -1,9 +1,6 @@
 import { error } from '@sveltejs/kit';
-import { comparisonData } from '#lib/server/comparison.js';
-import { insights } from '#lib/server/insights.js';
-import { videoCardData } from '#lib/server/video-card.js';
+import { refreshCardData } from '#lib/server/card-data.js';
 import { projects } from '#lib/server/projects.js';
-import type { ComparisonData } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
 import { transcript } from '#lib/transcript.js';
 import type { PageServerLoad } from './$types';
@@ -26,15 +23,6 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	if (!project) error(404, 'Project not found');
 	const { history: _, ...rest } = project;
 
-	// Signed media URLs expire after a couple of hours, so refresh video cards on every visit; insights come from
-	// their cache and are refreshed when it expires.
-	await Promise.all(
-		rest.cards.map(async (c) => {
-			const id = c.data?.videoId as string | undefined;
-			if (c.type === 'video' && id) c.data = await videoCardData(id);
-			if (c.type === 'insights' && id) c.data = (await insights.get(id).catch(() => null)) ?? c.data;
-			if (c.type === 'comparison' && c.data?.videoIds) c.data = await comparisonData(c.data.videoIds as string[], c.data.focus as ComparisonData['focus']);
-		})
-	);
+	await refreshCardData(rest.cards);
 	return { project: rest, transcript: transcript(project.history) };
 };

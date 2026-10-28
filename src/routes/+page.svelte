@@ -4,6 +4,7 @@
 	import { ChartColumn, Plus, Users, Video } from '@latitudelabs/design-system/icons';
 	import AiDock from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
+	import CardPreview from '#lib/components/CardPreview.svelte';
 	import { workspaceChat, type WorkspaceResponse } from '#lib/workspace-chat.svelte.js';
 	import { draftProjectUrl, newProject, newProjectWithVideo } from '#lib/new-project.js';
 	import type { PageProps } from './$types';
@@ -109,7 +110,7 @@
 				{#each data.projects as project (project.id)}
 					<a
 						href="/projects/{project.id}"
-						class="rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+						class="group rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
 					>
 						<Card.Root class="relative h-72 overflow-hidden transition-shadow hover:shadow-raised">
 							<Card.Header>
@@ -119,6 +120,23 @@
 									<Card.Action><Badge variant="secondary">{project.status}</Badge></Card.Action>
 								{/if}
 							</Card.Header>
+							<!-- The latest cards peek out of the bottom, fanned like the thumbnails (the newest on top); on hover
+							     (or focus) they lift a little and fan out further. A project without cards shows its video
+							     thumbnails. -->
+							{#each project.cards as card, i (card.id)}
+								<CardPreview
+									{card}
+									class={[
+										'absolute top-40 shadow-raised transition-[translate,rotate] duration-300 ease-out motion-safe:group-hover:-translate-y-2 motion-safe:group-focus-visible:-translate-y-2',
+										project.cards.length === 1 &&
+											'left-1/2 -translate-x-1/2 rotate-3 motion-safe:group-hover:rotate-5 motion-safe:group-focus-visible:rotate-5',
+										project.cards.length === 2 &&
+											(i === 0
+												? 'left-1/6 -rotate-6 motion-safe:group-hover:-rotate-9 motion-safe:group-focus-visible:-rotate-9'
+												: 'left-2/5 rotate-3 motion-safe:group-hover:rotate-5 motion-safe:group-focus-visible:rotate-5')
+									]}
+								/>
+							{/each}
 							{#each project.thumbnails as src, i (src)}
 								<img
 									{src}

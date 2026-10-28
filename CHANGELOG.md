@@ -15,6 +15,8 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   card shrinks by the same amount, keeping their relative sizes, and the cards wrap into rows from the top left, as
   large as still fits the screen. Cards fly between the list and the grid; click one (or press Escape) to go back
   with it in focus. Cards keep their state across the switch.
+- Project tiles on the projects page show the project's two latest cards in miniature (as they look in the project,
+  with fresh video and chart data) instead of video thumbnails. A project with no cards yet still shows its videos.
 - New Tooltip component (with TooltipGroup, so neighbouring tooltips open straight away once one has), built on
   bits-ui like the design system's Popover. A candidate for the design system.
 
