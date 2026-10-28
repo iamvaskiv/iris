@@ -65,6 +65,28 @@ typed. Messages sent here are only logged.`
 <Story name="Docked, error" args={{ error: "Couldn't start the upload (500)." }} template={page} />
 
 <Story
+	name="Compact"
+	args={{
+		mode: 'compact',
+		reply:
+			'The clip has two themes, and they are on the new card. Coping with Change shows in the reaction shot.'
+	}}
+	template={page}
+/>
+
+<Story name="Compact, thinking" args={{ mode: 'compact', thinking: true }} template={page} />
+
+<Story
+	name="Compact, choices"
+	args={{
+		mode: 'compact',
+		reply: 'Which one should I compare?',
+		choices: ['Use the 14s clip', 'Use the full trailer']
+	}}
+	template={page}
+/>
+
+<Story
 	name="Centred, inline (projects page)"
 	args={{
 		centered: true,
@@ -74,6 +96,47 @@ typed. Messages sent here are only logged.`
 			{ label: 'Analyse and understand video content', icon: Video },
 			{ label: 'Get opinion from viewers', icon: Users },
 			{ label: 'Compare videos', icon: ChartColumn }
+		]
+	}}
+	template={page}
+/>
+
+<Story
+	name="Expanded"
+	args={{
+		mode: 'expanded',
+		reply:
+			'Coping with Change shows in the reaction shot, and Growing Up runs through the whole clip.',
+		messages: [
+			{ from: 'user', text: 'What is this clip about?' },
+			{
+				from: 'assistant',
+				text: 'A 14-second **Inside Out 2** clip: Riley meets her new emotions. I put the details on a card.'
+			},
+			{ from: 'user', text: 'Which themes come through?' },
+			{
+				from: 'assistant',
+				text: 'Two themes:\n\n- Coping with Change\n- Growing Up\n\nBoth are on the new card.'
+			},
+			{ from: 'user', text: 'Where does each one show?' },
+			{
+				from: 'assistant',
+				text: 'Coping with Change shows in the reaction shot, and Growing Up runs through the whole clip.'
+			}
+		]
+	}}
+	template={page}
+/>
+
+<Story
+	name="Expanded, thinking"
+	args={{
+		mode: 'expanded',
+		thinking: true,
+		messages: [
+			{ from: 'user', text: 'What is this clip about?' },
+			{ from: 'assistant', text: 'A 14-second Inside Out 2 clip: Riley meets her new emotions.' },
+			{ from: 'user', text: 'Compare it with the trailer' }
 		]
 	}}
 	template={page}

@@ -5,6 +5,7 @@ import { videoCardData } from '#lib/server/video-card.js';
 import { projects } from '#lib/server/projects.js';
 import type { ComparisonData } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
+import { transcript } from '#lib/transcript.js';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, url }) => {
@@ -19,7 +20,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			createdAt: now,
 			updatedAt: now
 		};
-		return { project: draft };
+		return { project: draft, transcript: [] };
 	}
 	const project = await projects.get(params.id);
 	if (!project) error(404, 'Project not found');
@@ -35,5 +36,5 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			if (c.type === 'comparison' && c.data?.videoIds) c.data = await comparisonData(c.data.videoIds as string[], c.data.focus as ComparisonData['focus']);
 		})
 	);
-	return { project: rest };
+	return { project: rest, transcript: transcript(project.history) };
 };

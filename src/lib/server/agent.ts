@@ -10,6 +10,7 @@ import { cleanQuestions, nameVideos } from './study.js';
 import { flatSteps, timecode } from '#lib/cards/study/question-types.js';
 import type { Card, CardOp, ChatResponse, ComparisonData, StudyData } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
+import { REPLY_NUDGE } from '#lib/transcript.js';
 import { claude, MODEL } from './llm.js';
 const MAX_STEPS = 8;
 
@@ -483,7 +484,7 @@ export async function runLoop(opts: {
 			if (!text && !nudged && last) {
 				nudged = true;
 				messages.pop();
-				const nudge = { type: 'text' as const, text: 'Now write your reply to the user.' };
+				const nudge = { type: 'text' as const, text: REPLY_NUDGE };
 				last.content = typeof last.content === 'string' ? [{ type: 'text', text: last.content }, nudge] : [...last.content, nudge];
 				continue;
 			}
