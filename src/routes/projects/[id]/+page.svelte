@@ -4,6 +4,7 @@
 	import { replaceState } from '$app/navigation';
 	import AiDock, { timeOfDayGreeting, type DockMode } from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
+	import CardPagination from '#lib/components/CardPagination.svelte';
 	import { cardComponent, cardSize } from '#lib/cards/registry.js';
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 	import { takePendingVideo } from '#lib/new-project.js';
@@ -172,6 +173,9 @@
 	let viewHeight = $state(0);
 	let dockHeight = $state(0);
 	let cardHeights = $state<Record<string, number>>({});
+	/** Card widths, for the map of cards in the left safe zone. */
+	let cardWidths = $state<Record<string, number>>({});
+	let mapHeight = $state(0);
 	const snapArea = $derived(viewHeight - HEADER - dockHeight - DOCK_GAP);
 
 	// Full-size cards (studies) start a little below the header and run behind Lumi's dock down to its input, so they
@@ -350,8 +354,9 @@
 			crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]}
 		/>
 		{#if project.cards.length > 0}
+			<!-- sm:px-20: an 80px safe zone each side that cards never enter; the left one holds the pagination. -->
 			<div
-				class="flex flex-col gap-5 px-4"
+				class="flex flex-col gap-5 px-4 sm:px-20"
 				style:padding-top="{padTop}px"
 				style:padding-bottom="{padBottom}px"
 				style:--card-height="{fullHeight}px"
@@ -362,6 +367,7 @@
 					<div
 						id="card-{card.id}"
 						bind:offsetHeight={cardHeights[card.id]}
+						bind:offsetWidth={cardWidths[card.id]}
 						class={[
 							'mx-auto w-full transition-[opacity,scale] duration-300',
 							{ normal: 'max-w-3xl', wide: 'max-w-5xl', full: '' }[cardSize(card)],
@@ -382,6 +388,29 @@
 			</div>
 		{/if}
 	</main>
+
+	{#if project.cards.length > 1}
+		<!-- A map of the cards, centred in the left safe zone, between the header and Lumi's dock. -->
+		<div
+			bind:clientHeight={mapHeight}
+			class="pointer-events-none absolute left-0 hidden w-20 items-center justify-center py-4 sm:flex"
+			style:top="{HEADER}px"
+			style:bottom="{dockHeight + DOCK_GAP}px"
+		>
+			<CardPagination
+				class="pointer-events-auto"
+				cards={project.cards.map((c) => ({
+					id: c.id,
+					title: c.title,
+					width: cardWidths[c.id] ?? 0,
+					height: cardHeights[c.id] ?? 0
+				}))}
+				current={project.focusedId}
+				maxHeight={mapHeight - 32}
+				onselect={(id) => focus(id)}
+			/>
+		</div>
+	{/if}
 
 	<AiDock
 		{centered}

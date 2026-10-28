@@ -6,6 +6,14 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 ## 2026-10-28
 
+**Projects**
+
+- Cards keep an 80px safe zone on each side (on screens wider than a phone). The left one holds a little map of the
+  project's cards: each card as a block with its real proportions, scaled down and lined up on the left, the one in
+  focus solid. Click a block to bring its card into focus; hover or focus one to see the card's title in a tooltip.
+- New Tooltip component (with TooltipGroup, so neighbouring tooltips open straight away once one has), built on
+  bits-ui like the design system's Popover. A candidate for the design system.
+
 **Lumi**
 
 - Lumi's dock comes in three sizes. **Compact**: the avatar sits to the left of the input and the latest reply is
