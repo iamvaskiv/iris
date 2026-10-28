@@ -1,3 +1,10 @@
+# A single-package repo. pnpm 9 (which Cloudflare Workers Builds installs with) refuses a
+# workspace file without `packages`, so the root is listed as the one package.
+packages:
+  - '.'
+
+# pnpm 10+ only runs dependencies' install scripts when approved, and fails the install otherwise: esbuild (Vite's
+# bundler) and workerd (the Workers runtime, for wrangler) need theirs to fetch their binaries.
 allowBuilds:
   esbuild: true
   workerd: true
