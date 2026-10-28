@@ -6,6 +6,27 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 ## 2026-10-28
 
+**Projects**
+
+- Cards keep an 80px safe zone on each side (on screens wider than a phone). The left one holds a little map of the
+  project's cards: each card as a block with its real proportions, scaled down and lined up on the left, the one in
+  focus solid. Click a block to bring its card into focus; hover or focus one to see the card's title in a tooltip.
+- **Bird's eye** (the grid button at the bottom of the left safe zone, in a project with more than one card): every
+  card shrinks by the same amount, keeping their relative sizes, and the cards wrap into rows from the top left, as
+  large as still fits the screen. Cards fly between the list and the grid; click one (or press Escape) to go back
+  with it in focus. Cards keep their state across the switch.
+- Project tiles on the projects page show the project's two latest cards in miniature (as they look in the project,
+  with fresh video and chart data) instead of video thumbnails. A project with no cards yet still shows its videos.
+- A quiz with fake responses switched on shows a green **Fielding in progress** badge beside Share, so it reads as
+  live, and so does its project's tile on the projects page.
+- **Assets** pane: an "Assets" pull tab on the window's right edge (arrows either side point the way the pane comes
+  from, and turn back once it's open; it slides out a little on hover) opens the project's videos in an "Assets used
+  in this project" pane that slides in over the page from the right, the tab staying attached to its edge (click it
+  again to close). Each row shows the thumbnail, name, length, analysis status and how many cards show it; click one
+  to bring its card into focus. The page behind dims, like behind a dialog; a click outside (or Escape) closes it.
+- New Tooltip component (with TooltipGroup, so neighbouring tooltips open straight away once one has), built on
+  bits-ui like the design system's Popover. A candidate for the design system.
+
 **Lumi**
 
 - Lumi's dock comes in three sizes. **Compact**: the avatar sits to the left of the input and the latest reply is

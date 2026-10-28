@@ -2,18 +2,12 @@
 	import { Badge, Card, Separator } from '@latitudelabs/design-system';
 	import { Icon, Video } from '@latitudelabs/design-system/icons';
 	import AppHeader from '#lib/components/AppHeader.svelte';
+	import { assetStatusLabel as statusLabel } from '#lib/assets.js';
 	import { timecode } from '#lib/cards/format.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	const statusLabel = {
-		uploading: 'Uploading…',
-		analysing: 'Analysing…',
-		analysed: 'Analysed',
-		'not-analysed': 'Not analysed',
-		failed: 'Failed'
-	} as const;
 	const date = (iso?: string) =>
 		iso
 			? new Date(iso).toLocaleDateString(undefined, {

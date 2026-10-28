@@ -1,3 +1,4 @@
+import type { AssetStatus } from '#lib/assets.js';
 import { lumiere } from './lumiere.js';
 import { projects } from './projects.js';
 import { store } from './store.js';
@@ -7,7 +8,7 @@ import { store } from './store.js';
  * Videos are analysed by Lumiere and use the Lumiere video id as their id; future kinds (text documents) will live
  * entirely in Iris and get their own ids.
  */
-export type AssetStatus = 'uploading' | 'analysing' | 'analysed' | 'not-analysed' | 'failed';
+export type { AssetStatus };
 
 export type StoredAsset = {
 	id: string;

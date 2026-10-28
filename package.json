@@ -24,6 +24,7 @@
 	"dependencies": {
 		"@anthropic-ai/sdk": "^0.133.0",
 		"@latitudelabs/design-system": "file:.latitude/latitudelabs-design-system-0.0.1.tgz",
+		"bits-ui": "^2.20.2",
 		"dialkit": "^2.0.2",
 		"mode-watcher": "^1.1.0"
 	},
