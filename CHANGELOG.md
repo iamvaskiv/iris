@@ -14,10 +14,13 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   right-aligned bubbles in the accent colour, Lumi's answers as plain text (not her tool calls). Her avatar sits
   beside her latest answer, exactly where it is in the default dock, so expanding just adds the earlier messages
   above. A pull tab on top of the dock (just above it when compact, so the compact box has even padding) changes
-  size: drag it down for smaller, up for larger, or click it (arrow keys work too). The size changes as soon as the
-  drag goes far enough, while you're still holding. Each drag moves one size (compact to expanded takes two), and
-  dragging back undoes it. While you drag, the whole dock squeezes or stretches under your pointer, then morphs to
-  the new size and springs back when you let go.
+  size: drag it down for smaller, up for larger, or click it (arrow keys work too). The size changes while you're
+  still holding, at set distances from where you pressed (one size at 60px, two at 200px), so you can go through all
+  three in one drag and back; a quick flick doesn't skip the middle size. Changing size opens or closes the box like
+  a drawer, quicker for small changes (compact ↔ default) and slower for big ones (up to 0.56s for a long
+  conversation), with Lumi's latest message staying in place instead of re-revealing, and her avatar no longer
+  flashes white. While you drag, the whole dock squeezes or stretches under your pointer, then morphs to the new
+  size and springs back when you let go.
 
 ## 2026-10-26
 
