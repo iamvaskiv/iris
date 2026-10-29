@@ -11,6 +11,13 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 - The Assets pull tab's label sits in the middle of the tab: centred on its lowercase letters rather than on its
   line box, which left it about a pixel towards the window's edge.
 
+**Studies**
+
+- A question's settings (its type, its time inside a video, and delete) move out of the preview's corner into a
+  **question settings** sidebar on the right, opened and closed with the gear at the preview's top right. It grows
+  in from the card's edge as the preview narrows (and shrinks back), stays open or closed as you move between
+  questions, and remembers that on your device.
+
 ## 2026-10-28
 
 **Projects**

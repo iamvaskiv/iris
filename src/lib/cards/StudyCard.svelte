@@ -5,6 +5,7 @@
 		Button,
 		buttonVariants,
 		Card,
+		Input,
 		Kbd,
 		Label,
 		Popover,
@@ -14,8 +15,9 @@
 		Steps,
 		Switch
 	} from '@latitudelabs/design-system';
-	import { Icon, Plus, Share, Trash, X } from '@latitudelabs/design-system/icons';
+	import { Icon, Plus, Settings, Share, Trash, X } from '@latitudelabs/design-system/icons';
 	import { tick, untrack } from 'svelte';
+	import { cubicOut } from 'svelte/easing';
 	import StudyResults from './study/StudyResults.svelte';
 	import VideoMoment from './study/VideoMoment.svelte';
 	import VideoStepPreview from './study/VideoStepPreview.svelte';
@@ -33,7 +35,8 @@
 	} from './study/question-types';
 	import type { Card as CardData, Question, StudyData } from './types';
 
-	let { card }: { card: CardData } = $props();
+	/** `settings` opens (or closes) the question settings sidebar to begin with, instead of what was remembered. */
+	let { card, settings }: { card: CardData; settings?: boolean } = $props();
 
 	/** Edited here and saved in the background; replaced when the card itself changes (Lumi edited it). */
 	let questions = $state<Question[]>([]);
@@ -79,6 +82,39 @@
 				body: JSON.stringify({ questions: $state.snapshot(questions) })
 			}).catch((e) => console.error('Saving the study failed', e));
 		}, 400);
+	}
+
+	/**
+	 * The question settings sidebar on the right: open or closed for every question (it doesn't follow the
+	 * selection), and remembered on this device.
+	 */
+	const SETTINGS_KEY = 'iris.study.settings-open';
+	let settingsOpen = $state(false);
+	$effect.pre(() => {
+		if (settings !== undefined) return void (settingsOpen = settings);
+		try {
+			settingsOpen = localStorage.getItem(SETTINGS_KEY) === 'true';
+		} catch {}
+	});
+	/**
+	 * Opens the sidebar by growing it from nothing at the card's right edge, so the preview narrows (and its question
+	 * glides left) as it comes in, and widens again as it goes. Includes the gap before it, which would otherwise jump.
+	 */
+	function sidebar(node: HTMLElement) {
+		const width = node.offsetWidth;
+		const gap = parseFloat(getComputedStyle(node.parentElement!).columnGap) || 0;
+		const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		return {
+			duration: reduce ? 0 : 280,
+			easing: cubicOut,
+			css: (t: number) => `width: ${t * width}px; margin-left: ${(t - 1) * gap}px; opacity: ${t};`
+		};
+	}
+	function toggleSettings() {
+		settingsOpen = !settingsOpen;
+		try {
+			localStorage.setItem(SETTINGS_KEY, String(settingsOpen));
+		} catch {}
 	}
 
 	let questionField = $state<HTMLTextAreaElement | null>(null);
@@ -338,37 +374,18 @@
 			>
 				<p class="absolute top-4 left-4 text-caption text-muted-foreground">Preview</p>
 				{#if question}
-					<div class="absolute top-2 right-2 flex items-center gap-1">
-						{#if parent}
-							<!-- When it pops up in the video: type a new time to move it. -->
-							<input
-								value={timecode(question.time ?? 0)}
-								onchange={(e) => setTime(e.currentTarget.value)}
-								aria-label="Pops up in the video at (m:ss)"
-								title="Pops up in the video at"
-								class="h-8 w-14 rounded-sm bg-secondary text-center text-body font-medium text-secondary-foreground outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
-							/>
-						{/if}
-						<Select.Root type="single" value={question.type} onValueChange={setType}>
-							<Select.Trigger size="sm" aria-label="Question type">
-								{typeLabel(question.type)}
-							</Select.Trigger>
-							<Select.Content align="end">
-								<!-- Questions inside a video can't be videos themselves. -->
-								{#each QUESTION_TYPES.filter((t) => !parent || t.value !== 'video') as t (t.value)}
-									<Select.Item value={t.value} label={t.label} />
-								{/each}
-							</Select.Content>
-						</Select.Root>
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							aria-label="Delete question"
-							onclick={removeQuestion}
-						>
-							<Trash />
-						</Button>
-					</div>
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						aria-label="Question settings"
+						aria-pressed={settingsOpen}
+						aria-controls="study-settings-{card.id}"
+						title={settingsOpen ? 'Hide question settings' : 'Show question settings'}
+						class={['absolute top-2 right-2', settingsOpen && 'bg-accent']}
+						onclick={toggleSettings}
+					>
+						<Settings />
+					</Button>
 
 					<!-- The preview is also where the question is written: edit it as people will see it. -->
 					<div class="m-auto flex w-full max-w-xl flex-col gap-4">
@@ -502,6 +519,51 @@
 					<p class="m-auto text-body text-muted-foreground">Add a question to see it here.</p>
 				{/if}
 			</section>
+			{#if question && settingsOpen}
+				<!-- The selected question's settings; stays open (or closed) as you move between questions. -->
+				<!-- Clips its fixed-width content while it grows or shrinks, so nothing rewraps on the way. -->
+				<aside
+					id="study-settings-{card.id}"
+					aria-label="Question settings"
+					class="shrink-0 overflow-hidden"
+					transition:sidebar
+				>
+					<div class="flex h-full w-62 flex-col gap-5 overflow-y-auto">
+						<div class="flex flex-col gap-2">
+							<Label for="study-type-{card.id}">Type</Label>
+							<Select.Root type="single" value={question.type} onValueChange={setType}>
+								<Select.Trigger id="study-type-{card.id}" class="w-full">
+									{typeLabel(question.type)}
+								</Select.Trigger>
+								<Select.Content align="end">
+									<!-- Questions inside a video can't be videos themselves. -->
+									{#each QUESTION_TYPES.filter((t) => !parent || t.value !== 'video') as t (t.value)}
+										<Select.Item value={t.value} label={t.label} />
+									{/each}
+								</Select.Content>
+							</Select.Root>
+						</div>
+						{#if parent}
+							<!-- When it pops up in the video: type a new time to move it. -->
+							<div class="flex flex-col gap-2">
+								<Label for="study-time-{card.id}">Pops up in the video at</Label>
+								{#key question.id}
+									<Input
+										id="study-time-{card.id}"
+										value={timecode(question.time ?? 0)}
+										onchange={(e: Event & { currentTarget: HTMLInputElement }) =>
+											setTime(e.currentTarget.value)}
+										placeholder="m:ss"
+									/>
+								{/key}
+							</div>
+						{/if}
+						<Button variant="outline" class="self-start text-destructive" onclick={removeQuestion}>
+							<Trash data-icon="inline-start" />Delete question
+						</Button>
+					</div>
+				</aside>
+			{/if}
 		</Card.Content>
 	{/if}
 </Card.Root>
