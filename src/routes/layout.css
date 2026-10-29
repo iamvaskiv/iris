@@ -1,2 +1,15 @@
 /* Latitude design system: Tailwind, Inter, tokens and component styles. Import nothing else for theming. */
 @import '@latitudelabs/design-system/theme.css';
+
+/* A fourth category colour, for channels in a study's step lists: the design system has three (green, orange,
+   magenta), all taken by other step types. A candidate for the design system. Unlike those it changes with the
+   theme: the deep blue is about 2:1 on dark cards, so dark themes get a lighter one of the same hue (about 6:1). */
+:root {
+	--category-blue: #003cbd; /* audit-ignore: channel blue, not in the design system yet */
+}
+.dark {
+	--category-blue: #6b97ff; /* audit-ignore: channel blue for dark themes */
+}
+@theme inline {
+	--color-category-blue: var(--category-blue);
+}

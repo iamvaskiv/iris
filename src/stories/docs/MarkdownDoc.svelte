@@ -42,6 +42,8 @@
 		mermaid.initialize({
 			startOnLoad: false,
 			theme,
+			// Flat boxes and lines: no drop shadows or glow (the newer "neo" look adds them).
+			look: 'classic',
 			fontFamily: 'Inter, sans-serif',
 			flowchart: { useMaxWidth: false },
 			sequence: { useMaxWidth: false }

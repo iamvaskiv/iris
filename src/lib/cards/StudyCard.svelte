@@ -5,35 +5,72 @@
 		Button,
 		buttonVariants,
 		Card,
+		Dialog,
 		Kbd,
 		Label,
 		Popover,
 		PromptInput,
 		Slider,
-		Select,
 		Steps,
 		Switch
 	} from '@latitudelabs/design-system';
-	import { Icon, Plus, Share, Trash, X } from '@latitudelabs/design-system/icons';
+	import {
+		ChevronDown,
+		ChevronUp,
+		Icon,
+		Plus,
+		Settings,
+		Share,
+		X
+	} from '@latitudelabs/design-system/icons';
 	import { tick, untrack } from 'svelte';
+	import { cubicOut } from 'svelte/easing';
+	import { SvelteSet } from 'svelte/reactivity';
+	import { readLocal, writeLocal } from '#lib/local.js';
+	import ChannelGrid from './study/ChannelGrid.svelte';
+	import ChannelPlayer from './study/ChannelPlayer.svelte';
+	import ResizeHandle from './study/ResizeHandle.svelte';
+	import StudySettings from './study/StudySettings.svelte';
 	import StudyResults from './study/StudyResults.svelte';
 	import VideoMoment from './study/VideoMoment.svelte';
 	import VideoStepPreview from './study/VideoStepPreview.svelte';
+	import type { VideoAsset } from './study/VideoPicker.svelte';
+	import { feedSlide } from './study/slide';
 	import {
-		QUESTION_TYPES,
 		SCALE_MAX,
 		SCALE_MIN,
+		childrenOf,
 		flatSteps,
+		extendSteps,
+		inside,
+		isEmpty,
 		parseTime,
+		popsUp,
 		stepDescription,
 		stepTitle,
-		timecode,
 		typeColor,
 		typeLabel
 	} from './study/question-types';
 	import type { Card as CardData, Question, StudyData } from './types';
 
-	let { card }: { card: CardData } = $props();
+	/**
+	 * For Storybook, how it starts: `settings` opens (or closes) the settings sidebar instead of what was remembered,
+	 * `select` selects that step, `watch` plays that video of the selected channel full screen, and `media` stands in
+	 * for the videos' links and posters (Storybook has no server to ask).
+	 */
+	let {
+		card,
+		settings,
+		select,
+		watch,
+		media: givenMedia
+	}: {
+		card: CardData;
+		settings?: boolean;
+		select?: string;
+		watch?: number;
+		media?: Record<string, { streamUrl: string | null; poster: string | null }>;
+	} = $props();
 
 	/** Edited here and saved in the background; replaced when the card itself changes (Lumi edited it). */
 	let questions = $state<Question[]>([]);
@@ -56,6 +93,13 @@
 	const question = $derived(steps[selected]?.q);
 	/** The video a selected question pops up in, if it's inside one. */
 	const parent = $derived(steps[selected]?.parent);
+	/** Whether the selected question pops up in a video (rather than being a channel's video, or a step of its own). */
+	const inVideo = $derived(popsUp(steps[selected]));
+	$effect.pre(() => {
+		if (!select) return;
+		const at = untrack(() => steps.findIndex((s) => s.q.id === select));
+		if (at >= 0) untrack(() => (selected = at));
+	});
 	const selectId = async (id: string) => {
 		await tick();
 		selected = Math.max(
@@ -81,6 +125,45 @@
 		}, 400);
 	}
 
+	/**
+	 * The question settings sidebar on the right: open or closed for every question (it doesn't follow the
+	 * selection), and remembered on this device.
+	 */
+	const SETTINGS_KEY = 'iris.study.settings-open';
+	let settingsOpen = $derived(settings ?? readLocal(SETTINGS_KEY) === 'true');
+	/**
+	 * Opens the sidebar by growing it from nothing at the card's right edge, so the preview narrows (and its question
+	 * glides left) as it comes in, and widens again as it goes. Includes the gap before it, which would otherwise jump.
+	 */
+	function sidebar(node: HTMLElement) {
+		const width = node.offsetWidth;
+		const gap = parseFloat(getComputedStyle(node.parentElement!).columnGap) || 0;
+		const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		return {
+			duration: reduce ? 0 : 280,
+			easing: cubicOut,
+			css: (t: number) => `width: ${t * width}px; margin-left: ${(t - 1) * gap}px; opacity: ${t};`
+		};
+	}
+	function toggleSettings() {
+		settingsOpen = !settingsOpen;
+		writeLocal(SETTINGS_KEY, String(settingsOpen));
+	}
+
+	/**
+	 * The question list's width: drag the edge between it and the preview (ResizeHandle), between LIST_MIN and
+	 * LIST_MAX, and at most a third of the card; remembered on this device. Starts at the default (w-62).
+	 */
+	const LIST_KEY = 'iris.study.list-width';
+	const LIST_MIN = 200;
+	const LIST_MAX = 480;
+	const LIST_DEFAULT = 248;
+	let listWidth = $state(LIST_DEFAULT);
+	$effect.pre(() => {
+		const saved = Number(readLocal(LIST_KEY));
+		if (saved) listWidth = Math.min(LIST_MAX, Math.max(LIST_MIN, saved));
+	});
+
 	let questionField = $state<HTMLTextAreaElement | null>(null);
 	let list = $state<HTMLElement | null>(null);
 	async function addQuestion() {
@@ -102,95 +185,201 @@
 		questionField?.focus({ preventScroll: true });
 	}
 
+	/**
+	 * Destructive changes ask first, in a dialog naming what goes (`confirming`); a step with nothing in it yet
+	 * goes without asking.
+	 */
+	let confirming = $state<{ title: string; body: string; action: string; run: () => void } | null>(
+		null
+	);
+	let confirmOpen = $state(false);
+	function ask(c: NonNullable<typeof confirming>) {
+		confirming = c;
+		confirmOpen = true;
+	}
+
+	/** Deletes the selected step, with what's inside it; the step it was in (if any) is selected after. */
 	function removeQuestion() {
-		const from = parent ? parent.questions! : questions;
-		from.splice(from.indexOf(question), 1);
-		selected = Math.max(0, Math.min(selected - (parent ? 1 : 0), flatSteps(questions).length - 1));
-		save();
+		const q = question;
+		const from = parent;
+		const remove = () => {
+			const list = from ? childrenOf(from) : questions;
+			list.splice(list.indexOf(q), 1);
+			const at = from ? flatSteps(questions).findIndex((s) => s.q.id === from.id) : selected;
+			selected = Math.max(0, Math.min(at, flatSteps(questions).length - 1));
+			save();
+		};
+		const what = inside(q);
+		// A channel's video without questions loses nothing (the video stays in the assets), as from its tile.
+		if (isEmpty(q) || (from?.type === 'channel' && !what)) return remove();
+		ask(
+			from?.type === 'channel'
+				? {
+						title: `Remove “${stepTitle(q)}” from the channel?`,
+						body: `Its ${what} will be deleted too.`,
+						action: 'Remove video',
+						run: remove
+					}
+				: {
+						title: `Delete “${stepTitle(q)}”?`,
+						body: what
+							? `Its ${what} will be deleted too.`
+							: 'This deletes the step from the study.',
+						action: q.type === 'channel' ? 'Delete channel' : 'Delete',
+						run: remove
+					}
+		);
 	}
 
 	/** Moves a question inside a video to another time ("1:05" or seconds), keeping time order. */
 	function setTime(text: string) {
 		const time = parseTime(text);
-		if (time === null || !parent) return;
+		if (time === null || !inVideo || !parent) return;
 		question.time = time;
 		parent.questions!.sort((a, b) => (a.time ?? 0) - (b.time ?? 0));
 		save();
 		selectId(question.id);
 	}
 
-	function setType(type: string) {
-		question.type = type as Question['type'];
-		if (question.type === 'choice' && !question.options?.length) question.options = ['', ''];
-		save();
+	/** Changes the selected step's type; leaving a channel or a video drops what's inside it, so that asks first. */
+	function setType(type: Question['type']) {
+		const q = question;
+		if (type === q.type) return;
+		const change = () => {
+			q.type = type;
+			if (type === 'choice' && !q.options?.length) q.options = ['', ''];
+			if (type === 'channel') q.videos ??= [];
+			if (type !== 'channel') delete q.videos;
+			if (type !== 'video') delete q.questions;
+			save();
+		};
+		const what = inside(q);
+		if (!what) return change();
+		ask({
+			title: `Change “${stepTitle(q)}” to ${typeLabel(type).toLowerCase()}?`,
+			body: `Its ${what} will be deleted: only a ${typeLabel(q.type).toLowerCase()} can hold them.`,
+			action: 'Change type',
+			run: change
+		});
 	}
 
 	// Video steps: the user's videos to pick from, and each picked video's playable link (signed, fetched on demand;
 	// Storybook has no server, so it shows only the names saved on the step).
-	type VideoAsset = { id: string; name: string; thumbnail?: string };
 	let videos = $state<VideoAsset[] | null>(null);
 	let media = $state<Record<string, { streamUrl: string | null; poster: string | null }>>({});
-	$effect(() => {
-		// A video step, or a question inside one (shown with the video's moment above it).
-		const id = question?.type === 'video' ? question.videoId : parent?.videoId;
-		if (!id || !page.params.id) return;
-		if (!videos)
-			fetch('/api/assets')
-				.then((r) => r.json())
-				.then((list: VideoAsset[]) => (videos = list))
-				.catch(() => (videos = []));
-		if (!media[id])
-			fetch(`/api/assets/${id}/media`)
-				.then((r) => r.json())
-				.then((m) => (media[id] = m))
-				.catch(() => {});
+	$effect.pre(() => {
+		if (givenMedia) untrack(() => Object.assign(media, givenMedia));
 	});
+	let videosLoading = false;
+	const mediaLoading = new SvelteSet<string>();
+	function loadVideos() {
+		if (videos || videosLoading || !page.params.id) return;
+		videosLoading = true;
+		fetch('/api/assets')
+			.then((r) => r.json())
+			.then((list: VideoAsset[]) => (videos = list))
+			.catch(() => (videos = []));
+	}
+	function loadMedia(id: string) {
+		if (media[id] || mediaLoading.has(id) || !page.params.id) return;
+		mediaLoading.add(id);
+		fetch(`/api/assets/${id}/media`)
+			.then((r) => r.json())
+			.then((m) => (media[id] = m))
+			.catch(() => mediaLoading.delete(id));
+	}
+	$effect(() => {
+		if (!question) return;
+		// A video step, a question inside one (shown with the video's moment above it), or a channel (all its videos,
+		// so moving between them full screen doesn't wait).
+		const ids =
+			question.type === 'channel'
+				? (question.videos ?? []).map((v) => v.videoId)
+				: [question.type === 'video' ? question.videoId : inVideo ? parent?.videoId : undefined];
+		if (question.type === 'video' || question.type === 'channel') loadVideos();
+		for (const id of ids) if (id) loadMedia(id);
+	});
+
+	/** Where the selected video step's preview is playing (the settings add questions there). */
+	let videoTime = $state(0);
+
+	/** In a channel with vertical sliding, a video's up and down arrows go to the channel's previous and next videos. */
+	function feed(video: Question) {
+		if (parent?.type !== 'channel' || !parent.vertical) return undefined;
+		const list = parent.videos ?? [];
+		const k = list.indexOf(video);
+		const go = (to: Question | undefined, by: number) =>
+			to
+				? () => {
+						slideBy = by;
+						selectId(to.id);
+					}
+				: undefined;
+		return { previous: go(list[k - 1], -1), next: go(list[k + 1], 1) };
+	}
+	/**
+	 * Going along the feed with those arrows slides the videos through the preview's edges (feedSlide): the next comes
+	 * up from the bottom as the current one leaves through the top. Other ways of moving switch at once.
+	 */
+	let slideBy = $state(0);
+	let preview = $state<HTMLElement | null>(null);
+
+	// Channels: their videos as a grid; ▶ on one plays it full screen in the preview (`playing`: which channel and
+	// video, so it can't turn up on another step).
+	let playing = $state<{ channel: string; index: number } | null>(null);
+	$effect.pre(() => {
+		if (watch === undefined) return;
+		const id = untrack(() => question?.id);
+		if (id) untrack(() => (playing = { channel: id, index: watch }));
+	});
+	const thumbnail = (v: Question) =>
+		videos?.find((a) => a.id === v.videoId)?.thumbnail ??
+		(v.videoId ? media[v.videoId]?.poster : undefined);
+	function addToChannel(id: string) {
+		(question.videos ??= []).push({
+			id: crypto.randomUUID().slice(0, 8),
+			type: 'video',
+			text: '',
+			videoId: id,
+			videoName: videos?.find((v) => v.id === id)?.name
+		});
+		save();
+	}
+	/** Removes the channel's `k`th video, with its questions (asking first if it has any); the channel stays selected. */
+	function removeFromChannel(k: number) {
+		const channel = question;
+		const v = channel.videos?.[k];
+		if (!v) return;
+		const remove = () => {
+			channel.videos?.splice(channel.videos.indexOf(v), 1);
+			save();
+		};
+		const what = inside(v);
+		if (!what) return remove();
+		ask({
+			title: `Remove “${stepTitle(v)}” from the channel?`,
+			body: `Its ${what} will be deleted too.`,
+			action: 'Remove video',
+			run: remove
+		});
+	}
+	function setVertical(on: boolean) {
+		question.vertical = on || undefined;
+		save();
+	}
 
 	// Playing a video step hands over to each of its questions as the video reaches it; the question's moment plays
 	// on from there. `resume` tells the video step where to carry on.
 	let resume = $state<{ stepId: string; time: number } | null>(null);
 	function reach(q: Question) {
-		morph(() => {
-			resume = null;
-			return selectId(q.id);
-		});
+		resume = null;
+		selectId(q.id);
 	}
 	function carryOn() {
-		if (!parent) return;
-		const time = question.time ?? 0;
-		const stepId = parent.id;
-		morph(() => {
-			resume = { stepId, time };
-			return selectId(stepId);
-		});
+		if (!inVideo || !parent) return;
+		resume = { stepId: parent.id, time: question.time ?? 0 };
+		selectId(parent.id);
 	}
-
-	// Moving between a video step and its questions morphs the big player into the question's small video and
-	// back (a view transition: both carry the same view-transition-name); the rest cross-fades. It waits for the
-	// incoming video to show its frame (briefly) so the morph doesn't land on a blank one.
-	let preview = $state<HTMLElement | null>(null);
-	const videoName = $derived(`study-video-${card.id}`);
-	function frameShown() {
-		const v = preview?.querySelector<HTMLVideoElement>('[data-study-video]');
-		if (!v || (v.readyState >= 2 && !v.seeking)) return;
-		return new Promise<void>((done) => {
-			v.addEventListener('seeked', () => done(), { once: true });
-			v.addEventListener('loadeddata', () => done(), { once: true });
-			setTimeout(done, 500);
-		});
-	}
-	async function morph(update: () => unknown) {
-		const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-		if (!document.startViewTransition || reduce) return update();
-		document.startViewTransition(async () => {
-			await update();
-			await tick();
-			await frameShown();
-		});
-	}
-	/** Whether going from the selected step to step `i` passes between a video and its questions. */
-	const aboutVideo = (i: number) =>
-		[steps[selected], steps[i]].some((s) => s && (s.parent || s.q.type === 'video'));
 
 	function setVideo(id: string) {
 		question.videoId = id;
@@ -302,10 +491,21 @@
 		</Card.Content>
 	{:else}
 		<Card.Content class="flex min-h-0 flex-1 flex-row gap-4">
-			<div class="flex w-62 shrink-0 flex-col gap-1">
-				<div bind:this={list} class="min-h-0 overflow-y-auto">
+			<!-- At most a third of the card, so a narrow window keeps room for the preview. -->
+			<div class="relative flex max-w-1/3 shrink-0 flex-col gap-1" style:width="{listWidth}px">
+				<ResizeHandle
+					bind:value={listWidth}
+					min={LIST_MIN}
+					max={LIST_MAX}
+					initial={LIST_DEFAULT}
+					label="Resize the question list"
+					controls="study-list-{card.id}"
+					onchange={(width) => writeLocal(LIST_KEY, String(width))}
+				/>
+				<div bind:this={list} id="study-list-{card.id}" class="min-h-0 overflow-y-auto">
 					<Steps
 						aria-label="Questions"
+						{@attach extendSteps(steps)}
 						steps={steps.map((s) => ({
 							title: stepTitle(s.q),
 							description: stepDescription(s),
@@ -315,9 +515,9 @@
 						}))}
 						current={selected}
 						onselect={(i: number) => {
-							const go = () => ((resume = null), (selected = i));
-							if (aboutVideo(i)) morph(go);
-							else go();
+							resume = null;
+							playing = null;
+							selected = i;
 						}}
 					/>
 				</div>
@@ -330,191 +530,263 @@
 				</Button>
 			</div>
 
-			<!-- Room at the bottom (pb-32) keeps the preview's content clear of Lumi's dock, which covers the card's foot. -->
-			<section
-				bind:this={preview}
-				aria-label="Preview"
-				class="relative flex flex-1 flex-col overflow-y-auto rounded-sm bg-background px-8 pt-16 pb-32"
-			>
-				<p class="absolute top-4 left-4 text-caption text-muted-foreground">Preview</p>
-				{#if question}
-					<div class="absolute top-2 right-2 flex items-center gap-1">
-						{#if parent}
-							<!-- When it pops up in the video: type a new time to move it. -->
-							<input
-								value={timecode(question.time ?? 0)}
-								onchange={(e) => setTime(e.currentTarget.value)}
-								aria-label="Pops up in the video at (m:ss)"
-								title="Pops up in the video at"
-								class="h-8 w-14 rounded-sm bg-secondary text-center text-body font-medium text-secondary-foreground outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
-							/>
-						{/if}
-						<Select.Root type="single" value={question.type} onValueChange={setType}>
-							<Select.Trigger size="sm" aria-label="Question type">
-								{typeLabel(question.type)}
-							</Select.Trigger>
-							<Select.Content align="end">
-								<!-- Questions inside a video can't be videos themselves. -->
-								{#each QUESTION_TYPES.filter((t) => !parent || t.value !== 'video') as t (t.value)}
-									<Select.Item value={t.value} label={t.label} />
-								{/each}
-							</Select.Content>
-						</Select.Root>
+			<!-- Room at the bottom (pb-32) keeps the preview's content clear of Lumi's dock, which covers the card's foot.
+			     Wrapped so a channel's full-screen video can cover it whatever it's scrolled to; isolated, so the video stays
+			     above the preview but under Lumi's dock. -->
+			<div class="relative isolate flex min-w-0 flex-1">
+				<section
+					bind:this={preview}
+					aria-label="Preview"
+					class={[
+						'relative flex flex-1 flex-col rounded-sm bg-background px-8 pt-16 pb-32',
+						// Clipped while videos slide past its edges along a channel's feed, so no scrollbar flashes up.
+						slideBy ? 'overflow-hidden' : 'overflow-y-auto'
+					]}
+				>
+					<p class="absolute top-4 left-4 text-caption text-muted-foreground">Preview</p>
+					{#if question}
 						<Button
 							variant="ghost"
 							size="icon-sm"
-							aria-label="Delete question"
-							onclick={removeQuestion}
+							aria-label="Question settings"
+							aria-pressed={settingsOpen}
+							aria-controls="study-settings-{card.id}"
+							title={settingsOpen ? 'Hide question settings' : 'Show question settings'}
+							class={['absolute top-2 right-2', settingsOpen && 'bg-accent']}
+							onclick={toggleSettings}
 						>
-							<Trash />
+							<Settings />
 						</Button>
-					</div>
 
-					<!-- The preview is also where the question is written: edit it as people will see it. -->
-					<div class="m-auto flex w-full max-w-xl flex-col gap-4">
-						{#if parent}
-							{@const m = parent.videoId ? media[parent.videoId] : undefined}
-							<!-- The moment it pops up at; play to carry on watching from there. -->
-							<VideoMoment
-								streamUrl={m?.streamUrl}
-								poster={m?.poster}
-								time={question.time ?? 0}
-								transitionName={videoName}
-								oncontinue={carryOn}
-							/>
-						{/if}
-						<textarea
-							bind:this={questionField}
-							bind:value={question.text}
-							oninput={save}
-							rows="1"
-							aria-label="Question"
-							placeholder={question.type === 'video'
-								? 'Say something before the video (optional)'
-								: 'Type your question'}
-							class="field-sizing-content resize-none bg-transparent text-heading outline-none placeholder:text-placeholder"
-						></textarea>
-						{#if question.type === 'open'}
-							<PromptInput
-								bind:value={answer}
-								placeholder={question.placeholder || 'Type your answer…'}
-								label="Answer (preview)"
-								onsubmit={() => (answer = '')}
-							/>
-						{:else if question.type === 'video'}
-							{#snippet picker()}
-								<Select.Root type="single" value={question.videoId ?? ''} onValueChange={setVideo}>
-									<Select.Trigger aria-label="Video" class="max-w-full min-w-0">
-										<span class="truncate">{question.videoName ?? 'Choose a video'}</span>
-									</Select.Trigger>
-									<Select.Content>
-										{#each videos ?? [] as v (v.id)}
-											<Select.Item value={v.id} label={v.name} />
-										{:else}
-											<p class="px-3 py-2 text-caption text-muted-foreground">
-												{videos ? 'No videos yet. Drop one on the page to upload it.' : 'Loading…'}
-											</p>
-										{/each}
-									</Select.Content>
-								</Select.Root>
-							{/snippet}
-							{#if question.videoId}
-								{@const m = media[question.videoId]}
-								{#key question.videoId}
-									<VideoStepPreview
-										step={question}
-										streamUrl={m?.streamUrl}
-										poster={m?.poster}
-										{picker}
-										resumeAt={resume?.stepId === question.id ? resume.time : null}
-										transitionName={videoName}
-										onadd={addQuestionAt}
-										onreach={reach}
-									/>
-								{/key}
-							{:else}
-								<div class="self-start">{@render picker()}</div>
-								<div
-									class="flex aspect-video w-full items-center justify-center rounded-lg bg-muted text-body text-muted-foreground"
-								>
-									Pick one of your videos to show here.
-								</div>
-							{/if}
-						{:else if question.type === 'scale'}
-							<!-- Try it: the number picked shows on the right; the ends are labelled below. -->
-							<div class="flex items-center gap-4">
-								<Slider
-									type="single"
-									bind:value={scaleValue}
-									min={SCALE_MIN}
-									max={SCALE_MAX}
-									step={1}
-									aria-label="Answer (preview)"
-									class="flex-1"
+						<!-- The preview is also where the question is written: edit it as people will see it. -->
+						<div class="m-auto flex w-full max-w-xl flex-col gap-4">
+							{#if parent && inVideo}
+								{@const m = parent.videoId ? media[parent.videoId] : undefined}
+								<!-- The moment it pops up at; play to carry on watching from there. -->
+								<VideoMoment
+									streamUrl={m?.streamUrl}
+									poster={m?.poster}
+									time={question.time ?? 0}
+									oncontinue={carryOn}
 								/>
-								<span class="w-8 text-right text-body-lg font-medium">{scaleValue}</span>
-							</div>
-							<div class="-mt-2 flex justify-between pr-12 text-caption text-muted-foreground">
-								<span>{SCALE_MIN}</span>
-								<span>{SCALE_MAX}</span>
-							</div>
-						{:else}
-							<ol bind:this={optionsList} class="flex flex-col gap-1" aria-label="Options">
-								{#each question.options ?? [] as _, i (i)}
-									<li
-										class="flex h-12 items-center gap-6 rounded-lg bg-secondary pr-1 pl-2 text-body-lg"
+							{/if}
+							<!-- A video step has no text of its own on screen: the video is the step (picked in the settings). -->
+							{#if question.type !== 'video'}
+								<textarea
+									bind:this={questionField}
+									bind:value={question.text}
+									oninput={save}
+									rows="1"
+									aria-label="Question"
+									placeholder={question.type === 'channel'
+										? 'Name the channel'
+										: 'Type your question'}
+									class="field-sizing-content resize-none bg-transparent text-heading outline-none placeholder:text-placeholder"
+								></textarea>
+							{/if}
+							{#if question.type === 'open'}
+								<PromptInput
+									bind:value={answer}
+									placeholder={question.placeholder || 'Type your answer…'}
+									label="Answer (preview)"
+									onsubmit={() => (answer = '')}
+								/>
+							{:else if question.type === 'video'}
+								{#if question.videoId}
+									{@const m = media[question.videoId]}
+									{@const along = feed(question)}
+									<!-- One cell, so the leaving and arriving videos overlap while they slide (the preview clips them). -->
+									<div class="relative grid">
+										{#key question.id + question.videoId}
+											<div
+												class="col-start-1 row-start-1"
+												in:feedSlide={{ dir: slideBy, within: preview }}
+												out:feedSlide={{ dir: -slideBy, within: preview }}
+												onintroend={() => (slideBy = 0)}
+											>
+												<VideoStepPreview
+													step={question}
+													streamUrl={m?.streamUrl}
+													poster={m?.poster}
+													resumeAt={resume?.stepId === question.id ? resume.time : null}
+													bind:time={videoTime}
+													onreach={reach}
+												/>
+											</div>
+										{/key}
+										{#if along}
+											<!-- Vertical sliding: up to the channel's previous video, down to its next. Over the video, staying put
+											     while the videos slide under them (the layer matches the video's own box). -->
+											<div class="pointer-events-none absolute inset-x-0 top-0 aspect-video">
+												<div
+													class="pointer-events-auto absolute top-1/2 right-4 flex -translate-y-1/2 flex-col gap-2"
+												>
+													<Button
+														variant="secondary"
+														size="icon-sm"
+														aria-label="Previous video in the channel"
+														disabled={!along.previous}
+														onclick={along.previous}><ChevronUp /></Button
+													>
+													<Button
+														variant="secondary"
+														size="icon-sm"
+														aria-label="Next video in the channel"
+														disabled={!along.next}
+														onclick={along.next}><ChevronDown /></Button
+													>
+												</div>
+											</div>
+										{/if}
+									</div>
+								{:else}
+									<div
+										class="flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-lg bg-muted text-body text-muted-foreground"
 									>
-										<Kbd aria-hidden="true">{i + 1}</Kbd>
-										<input
-											bind:value={question.options![i]}
-											oninput={save}
-											onkeydown={(e) => {
-												if (e.key === 'Enter' && !e.isComposing) {
-													e.preventDefault();
-													addOption(i + 1);
-												}
-											}}
-											aria-label="Option {i + 1}"
-											placeholder="Option {i + 1}"
-											class="min-w-0 flex-1 bg-transparent outline-none placeholder:text-placeholder"
-										/>
-										<Button
-											variant="ghost"
-											size="icon-sm"
-											aria-label="Remove option {i + 1}"
-											onclick={() => removeOption(i)}
+										Pick one of your videos in the settings.
+										{#if !settingsOpen}
+											<Button variant="secondary" size="sm" onclick={toggleSettings}
+												>Choose a video</Button
+											>
+										{/if}
+									</div>
+								{/if}
+							{:else if question.type === 'channel'}
+								<ChannelGrid
+									channel={question}
+									{videos}
+									{thumbnail}
+									onopen={(v) => selectId(v.id)}
+									onwatch={(index) => (playing = { channel: question.id, index })}
+									onremove={removeFromChannel}
+									onadd={addToChannel}
+								/>
+							{:else if question.type === 'scale'}
+								<!-- Try it: the number picked shows on the right; the ends are labelled below. -->
+								<div class="flex items-center gap-4">
+									<Slider
+										type="single"
+										bind:value={scaleValue}
+										min={SCALE_MIN}
+										max={SCALE_MAX}
+										step={1}
+										aria-label="Answer (preview)"
+										class="flex-1"
+									/>
+									<span class="w-8 text-right text-body-lg font-medium">{scaleValue}</span>
+								</div>
+								<div class="-mt-2 flex justify-between pr-12 text-caption text-muted-foreground">
+									<span>{SCALE_MIN}</span>
+									<span>{SCALE_MAX}</span>
+								</div>
+							{:else}
+								<ol bind:this={optionsList} class="flex flex-col gap-1" aria-label="Options">
+									{#each question.options ?? [] as _, i (i)}
+										<li
+											class="flex h-12 items-center gap-6 rounded-lg bg-secondary pr-1 pl-2 text-body-lg"
 										>
-											<X />
-										</Button>
-									</li>
-								{/each}
-							</ol>
-							<Button
-								variant="ghost"
-								class="self-start text-muted-foreground"
-								onclick={() => addOption()}
-							>
-								<Plus data-icon="inline-start" />Add option
-							</Button>
-						{/if}
-					</div>
-				{:else}
-					<p class="m-auto text-body text-muted-foreground">Add a question to see it here.</p>
+											<Kbd aria-hidden="true">{i + 1}</Kbd>
+											<input
+												bind:value={question.options![i]}
+												oninput={save}
+												onkeydown={(e) => {
+													if (e.key === 'Enter' && !e.isComposing) {
+														e.preventDefault();
+														addOption(i + 1);
+													}
+												}}
+												aria-label="Option {i + 1}"
+												placeholder="Option {i + 1}"
+												class="min-w-0 flex-1 bg-transparent outline-none placeholder:text-placeholder"
+											/>
+											<Button
+												variant="ghost"
+												size="icon-sm"
+												aria-label="Remove option {i + 1}"
+												onclick={() => removeOption(i)}
+											>
+												<X />
+											</Button>
+										</li>
+									{/each}
+								</ol>
+								<Button
+									variant="ghost"
+									class="self-start text-muted-foreground"
+									onclick={() => addOption()}
+								>
+									<Plus data-icon="inline-start" />Add option
+								</Button>
+							{/if}
+						</div>
+					{:else}
+						<p class="m-auto text-body text-muted-foreground">Add a question to see it here.</p>
+					{/if}
+				</section>
+				{#if playing && question?.type === 'channel' && playing.channel === question.id}
+					<ChannelPlayer
+						channel={question}
+						bind:index={playing.index}
+						{media}
+						onclose={() => (playing = null)}
+						onreach={(q) => {
+							playing = null;
+							selectId(q.id);
+						}}
+					/>
 				{/if}
-			</section>
+			</div>
+			{#if question && settingsOpen}
+				<!-- The selected question's settings; stays open (or closed) as you move between questions. -->
+				<!-- Clips its fixed-width content while it grows or shrinks, so nothing rewraps on the way. -->
+				<aside
+					id="study-settings-{card.id}"
+					aria-label="Question settings"
+					class="shrink-0 overflow-hidden"
+					transition:sidebar
+				>
+					<div
+						class="relative flex h-full w-62 flex-col gap-5 overflow-y-auto rounded-sm bg-background p-4 pt-12"
+					>
+						<StudySettings
+							id={card.id}
+							{question}
+							{parent}
+							{inVideo}
+							{videos}
+							{videoTime}
+							onsettype={setType}
+							onsetvideo={setVideo}
+							onaddquestion={addQuestionAt}
+							onsetvertical={setVertical}
+							onsettime={setTime}
+							onremove={removeQuestion}
+						/>
+					</div>
+				</aside>
+			{/if}
 		</Card.Content>
 	{/if}
 </Card.Root>
 
-<style>
-	/* The video morphing between a video step's player and a question's small video. */
-	:global(::view-transition-group(*.study-video)) {
-		animation-duration: 450ms;
-		animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
-	}
-	:global(::view-transition-old(*.study-video)),
-	:global(::view-transition-new(*.study-video)) {
-		height: 100%;
-		object-fit: cover;
-	}
-</style>
+<!-- Asks before a change that loses work (deleting a step, or changing its type), naming what goes. -->
+<Dialog.Root bind:open={confirmOpen}>
+	<Dialog.Content>
+		{#if confirming}
+			<Dialog.Header>
+				<Dialog.Title>{confirming.title}</Dialog.Title>
+				<Dialog.Description>{confirming.body}</Dialog.Description>
+			</Dialog.Header>
+			<Dialog.Footer>
+				<Dialog.Close class={buttonVariants({ variant: 'secondary' })}>Cancel</Dialog.Close>
+				<Button
+					variant="destructive"
+					onclick={() => {
+						confirming?.run();
+						confirmOpen = false;
+					}}>{confirming.action}</Button
+				>
+			</Dialog.Footer>
+		{/if}
+	</Dialog.Content>
+</Dialog.Root>

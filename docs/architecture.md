@@ -5,6 +5,10 @@ Iris is a SvelteKit app deployed on Cloudflare Workers (`iris.<account>.workers.
 ## Overview
 
 ```mermaid
+---
+config:
+  look: classic
+---
 flowchart TB
     user(["Teammate"])
 
@@ -41,6 +45,19 @@ flowchart TB
     cards -. "play, show images" .-> media
     pages -. "upload the file" .-> media
     lumiere -. "signs URLs" .-> media
+
+    classDef person stroke:#918b98,fill:#918b9833
+    classDef ui stroke:#4c7dff,fill:#4c7dff33
+    classDef server stroke:#00bd32,fill:#00bd3233
+    classDef ai stroke:#f424ff,fill:#f424ff33
+    classDef external stroke:#f79205,fill:#f7920533
+    classDef storage stroke:#918b98,fill:#918b9833
+    class user person
+    class browser,pages,cards ui
+    class worker,gate,routes,services,store server
+    class lumi,claude ai
+    class lumiere,media external
+    class data,d1,files storage
 ```
 
 | Part          | Where                                                          | What it does                                                                                                                   |
@@ -55,13 +72,25 @@ flowchart TB
 ## How a question flows
 
 ```mermaid
+---
+config:
+  look: classic
+---
 sequenceDiagram
-    participant P as Project page
-    participant C as /api/chat
-    participant A as Lumi (agent.ts)
-    participant Cl as Claude
-    participant L as Lumiere
-    participant S as store.ts
+    box rgba(76,125,255,0.15) Browser
+        participant P as Project page
+    end
+    box rgba(0,189,50,0.15) SvelteKit server
+        participant C as /api/chat
+        participant S as store.ts
+    end
+    box rgba(244,36,255,0.15) AI
+        participant A as Lumi (agent.ts)
+        participant Cl as Claude
+    end
+    box rgba(247,146,5,0.15) External
+        participant L as Lumiere
+    end
     P->>C: message
     C->>S: load project
     C->>A: message + project (cards, history)
@@ -82,18 +111,49 @@ Signed media URLs expire, so page loads rebuild video and comparison card data; 
 
 ## Editing a study
 
-A study's steps are questions (open, multiple choice, slider) and videos; a video step holds its own questions, each
-with a time, that pop up while it plays (`flatSteps` lists them right after it as "2.1", "2.2").
+A study's steps are questions (open, multiple choice, slider), videos and channels. A video step holds its own
+questions, each with a time, that pop up while it plays. A channel holds videos, which people browse as a grid and
+open full screen; each is a video step, with its own pop-up questions. `flatSteps` lists the steps inside a step
+right after it: "2.1", "2.2" for a video's questions or a channel's videos, "5.1.1" for a question in a channel's video.
+
+```mermaid
+---
+config:
+  look: classic
+---
+flowchart LR
+    study["Study: questions[]"] -->|step| q["Open / multiple choice / slider"]
+    study -->|step| video["Video step: videoId"]
+    study -->|step| channel["Channel: name, videos[], vertical sliding"]
+    channel -->|"videos[] (grid, full screen)"| cvideo["Video step: videoId"]
+    video -->|"questions[] (each at a time)"| popup["Pop-up question: open / choice / slider"]
+    cvideo -->|"questions[] (each at a time)"| popup
+
+    classDef neutral stroke:#918b98,fill:#918b9833
+    classDef video stroke:#00bd32,fill:#00bd3233
+    classDef channel stroke:#4c7dff,fill:#4c7dff33
+    class study,q,popup neutral
+    class video,cvideo video
+    class channel channel
+```
 
 Lumi drafts a study's questions (`show_card` / `update_card` with `questions`); edits made on the card save straight to
 the project, without a chat turn. Lumi sees the saved questions on its next turn.
 
 ```mermaid
+---
+config:
+  look: classic
+---
 sequenceDiagram
     participant U as User
-    participant SC as Study card
-    participant API as PUT /api/projects/[id]/cards/[cardId]
-    participant S as store.ts
+    box rgba(76,125,255,0.15) Browser
+        participant SC as Study card
+    end
+    box rgba(0,189,50,0.15) SvelteKit server
+        participant API as PUT /api/projects/[id]/cards/[cardId]
+        participant S as store.ts
+    end
     U->>SC: add, select, edit, retype or delete a question
     SC->>SC: update the preview right away
     SC->>API: questions (400 ms after the last edit)
@@ -107,11 +167,21 @@ of respondents per question, and the card shows them as **Sample data**. They're
 kept on the card and written again only when the questions change.
 
 ```mermaid
+---
+config:
+  look: classic
+---
 sequenceDiagram
-    participant SC as Study card
-    participant API as POST …/cards/[cardId]/sample
-    participant Cl as Claude (Lumi)
-    participant S as store.ts
+    box rgba(76,125,255,0.15) Browser
+        participant SC as Study card
+    end
+    box rgba(0,189,50,0.15) SvelteKit server
+        participant API as POST …/cards/[cardId]/sample
+        participant S as store.ts
+    end
+    box rgba(244,36,255,0.15) AI
+        participant Cl as Claude (Lumi)
+    end
     SC->>API: enabled: true
     alt no results yet, questions changed, or last time was generic filler
         API->>Cl: questions + JSON schema (summary, insights, quote, shares, answers)
@@ -126,11 +196,21 @@ sequenceDiagram
 ## How an upload flows
 
 ```mermaid
+---
+config:
+  look: classic
+---
 sequenceDiagram
-    participant P as Project page
-    participant A as /api/projects/[id]/upload
-    participant L as Lumiere
-    participant G as Google Cloud Storage
+    box rgba(76,125,255,0.15) Browser
+        participant P as Project page
+    end
+    box rgba(0,189,50,0.15) SvelteKit server
+        participant A as /api/projects/[id]/upload
+    end
+    box rgba(247,146,5,0.15) External
+        participant L as Lumiere
+        participant G as Google Cloud Storage
+    end
     P->>A: POST fileName, fileSize
     A->>L: create ingestion
     L-->>A: ingestionId, signed uploadUrl, videoId

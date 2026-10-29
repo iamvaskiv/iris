@@ -4,6 +4,7 @@
 		SCALE_MAX,
 		SCALE_MIN,
 		flatSteps,
+		extendSteps,
 		stepDescription,
 		stepTitle,
 		typeColor
@@ -32,6 +33,17 @@
 	/** Questions inside a video are listed right after it, indented. */
 	const steps = $derived(flatSteps(questions));
 	const percent = (n: number, total: number) => (total ? (n / total) * 100 : 0);
+	/**
+	 * How many answered, or watched; a channel's video adds the share of the channel's visitors who opened it (people
+	 * open several, so these don't add up to 100%).
+	 */
+	function meta({ q, parent }: (typeof steps)[number]) {
+		const n = results.questions[q.id]?.responses ?? 0;
+		if (q.type !== 'video' && q.type !== 'channel') return `${n} answers`;
+		const reached =
+			parent?.type === 'channel' ? results.questions[parent.id]?.responses : undefined;
+		return reached ? `${n} views · ${Math.round(percent(n, reached))}% opened it` : `${n} views`;
+	}
 	const optionLabel = (q: Question, k: number) => q.options?.[k] || `Option ${k + 1}`;
 	/** A slider's average from its counts per value. */
 	const average = (counts: number[] = []) => {
@@ -42,6 +54,7 @@
 
 <Steps
 	aria-label="Answers per question"
+	{@attach extendSteps(steps)}
 	class="gap-4"
 	current={steps.findIndex((s) => s.q.id === focused)}
 	onselect={(i: number) => onpick(steps[i].q.id)}
@@ -51,7 +64,7 @@
 		color: typeColor(s.q.type),
 		indent: !!s.parent,
 		number: s.number,
-		meta: `${results.questions[s.q.id]?.responses ?? 0} ${s.q.type === 'video' ? 'views' : 'answers'}`
+		meta: meta(s)
 	}))}
 >
 	{#snippet after(_: unknown, i: number)}

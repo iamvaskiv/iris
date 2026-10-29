@@ -117,16 +117,18 @@ function describeSample(data: StudyData | undefined) {
 	if (!r) return '';
 	const perQuestion = flatSteps(data.questions ?? []).map(({ q, number, parent }) => {
 		const a = r.questions[q.id];
-		const label = `${number}${parent ? ` (in the video, at ${timecode(q.time ?? 0)})` : ''}`;
+		const label = `${number}${parent?.type === 'video' ? ` (in the video, at ${timecode(q.time ?? 0)})` : parent ? ' (in the channel)' : ''}`;
 		if (!a) return `${label} no results`;
-		const detail = q.type === 'video' && a.counts
+		const detail = q.type === 'channel'
+			? `a channel; opened (people can open several): ${(q.videos ?? []).map((v, k) => `${v.videoName ?? v.videoId}: ${a.counts?.[k] ?? 0}`).join(', ')}`
+			: q.type === 'video' && a.counts
 			? `watched by ${a.responses}; reactions ${a.counts.join('/')} positive/neutral/negative: ${(a.people ?? []).slice(0, 4).map((r) => `"${r.text}"`).join(' ')}`
 			: q.type === 'scale' && a.counts
 			? `average ${average(a.counts).toFixed(1)} / 10`
 			: a.counts
 			? (q.options ?? []).map((o, k) => `${o}: ${a.counts![k] ?? 0}`).join(', ')
 			: (a.people ?? []).slice(0, 5).map((r) => `"${r.text}"`).join(' ');
-		return `${label} ${a.responses} answers; ${detail}`;
+		return `${label} ${a.responses} ${q.type === 'channel' || q.type === 'video' ? 'views' : 'answers'}; ${detail}`;
 	});
 	return ` | SHOWING SAMPLE RESULTS (made up, not real answers): ${r.views} views, ${r.completion}% completion, rating ${r.rating}%, sentiment ${r.sentiment.positive}/${r.sentiment.neutral}/${r.sentiment.negative}% positive/neutral/negative; summary: ${r.summary}; ${perQuestion.join('; ')}`;
 }
@@ -139,10 +141,14 @@ const tableSchema = {
 	rows: { type: 'array', items: { type: 'array', items: { type: ['string', 'number'] } } }
 };
 
+/** Every step's id: kept when editing a study, so steps (and what refers to them) stay the same ones. */
+const stepId = { type: 'string', description: 'The step\'s id, as in the card\'s questions: keep it when you keep or edit a step; leave it out for a new one.' };
+
 /** A question that pops up while a video step plays. */
 const popUpSchema = {
 	type: 'object',
 	properties: {
+		id: stepId,
 		type: { type: 'string', enum: ['open', 'choice', 'scale'] },
 		time: { type: 'number', description: 'Seconds into the video when it pops up (the video pauses until it is answered). Time it to the moment it asks about; get_chapters and get_moments give the timings.' },
 		text: { type: 'string' },
@@ -152,14 +158,28 @@ const popUpSchema = {
 	required: ['type', 'time', 'text']
 };
 
+/** A video in a channel: one of the user's videos, with questions that pop up while it plays. */
+const channelVideoSchema = {
+	type: 'object',
+	properties: {
+		id: stepId,
+		videoId: { type: 'string', description: 'The id of one of the user\'s videos (assets).' },
+		questions: { type: 'array', items: popUpSchema, description: 'Questions that pop up while it plays, each at a time.' }
+	},
+	required: ['videoId']
+};
+
 const questionsSchema = {
 	type: 'array',
 	description: 'Study cards: the questions, in order.',
 	items: {
 		type: 'object',
 		properties: {
+			id: stepId,
 			questions: { type: 'array', items: popUpSchema, description: 'Video steps: questions that pop up while it plays, each at a time. Ask about a moment right after it happens.' },
-			type: { type: 'string', enum: ['open', 'choice', 'scale', 'video'], description: 'open: free-text answer; choice: pick one of options; scale: a slider from 0 to 10 (for how much, how likely, how strongly); video: show one of the user\'s videos (set videoId; text is an optional line before it), usually followed by questions about it.' },
+			type: { type: 'string', enum: ['open', 'choice', 'scale', 'video', 'channel'], description: 'open: free-text answer; choice: pick one of options; scale: a slider from 0 to 10 (for how much, how likely, how strongly); video: show one of the user\'s videos (set videoId; leave text empty, the video is the step), usually with questions that pop up in it; channel: a collection of the user\'s videos that people browse as a grid and open full screen, picking what to watch (set videos; text is the channel\'s name). Use a channel when people should choose between several videos, rather than watch each in turn.' },
+			videos: { type: 'array', items: channelVideoSchema, description: 'Channels: their videos, in grid order.' },
+			vertical: { type: 'boolean', description: 'Channels: in full screen, people slide up and down between videos, like a short-video feed. Without it they pick each video from the grid.' },
 			videoId: { type: 'string', description: 'Video steps: the id of one of the user\'s videos (assets).' },
 			text: { type: 'string' },
 			placeholder: { type: 'string', description: 'Open questions: hint in the empty answer field, e.g. "My name is…".' },

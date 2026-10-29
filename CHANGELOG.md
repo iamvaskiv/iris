@@ -4,6 +4,51 @@ What changed in Iris, newest first. Add a line under today's date with every cha
 notable behind-the-scenes ones); the app Storybook shows this file as its **Changelog** page. The deployed app
 (`iris.<account>.workers.dev`) runs whatever was last released with `pnpm run deploy`.
 
+## 2026-10-29
+
+**Projects**
+
+- The Assets pull tab's label sits in the middle of the tab: centred on its lowercase letters rather than on its
+  line box, which left it about a pixel towards the window's edge.
+
+**Studies**
+
+- The question list can be resized: drag the edge between it and the preview (200 to 480px), or focus it and use
+  the arrow keys; double-click it to go back to the default width. It remembers the width on your device.
+- A question's settings (its type, its time inside a video, and delete) move out of the preview's corner into a
+  **question settings** sidebar on the right, opened and closed with the gear at the preview's top right. It grows
+  in from the card's edge as the preview narrows (and shrinks back), stays open or closed as you move between
+  questions, and remembers that on your device.
+- New step type: **Channel**, a collection of videos. In the preview the channel's name sits above a grid of its
+  videos (add more with **Add video**). Click a video to open it, as from the list; on hover its tile also offers ▶
+  to watch it full screen, as people will, and × to remove it. With **Vertical sliding** on in its settings, full
+  screen works like a short-video feed: slide up and down to the next or previous video (buttons, arrow keys or the
+  scroll wheel); off, people go back to the grid to pick another. Its videos are listed under it ("5.1", "5.2") and
+  work like video steps: add questions at moments in them ("5.1.1"), and playing full screen stops at each one. Lumi
+  can draft channels. Channels are marked in blue in step lists (#003CBD, lighter in dark themes), the app's own
+  fourth category colour until the design system has one.
+- Sample results for a channel show how many people reached it, and each of its videos the share of them who opened
+  it ("69 views · 58% opened it"; people can open several). Each video's views and reactions, and the answers to
+  questions inside it, follow from how many opened it, and Lumi sees those picks when you ask about the results.
+- Deleting a step, removing a video from a channel, or changing a channel or video into another type asks first when
+  it would lose something, naming what goes ("Its 2 videos and 1 question in them will be deleted too."). Empty steps,
+  and channel videos without questions, still go at once.
+- After deleting a step inside another (a channel's video, a question in a video), the step it was in is selected.
+- Lumi keeps each step's id when she edits a study, so its steps (and their sample results) stay the same ones.
+- Channels are a lighter blue in dark themes, so they read on dark cards; #003CBD stays for light.
+- Arrow keys typed into a field (Lumi's prompt, say) no longer move a full-screen channel along. The question list
+  stays within a third of the card on narrow windows.
+- A video step is just its video in the preview: no line of text above it. Picking the video and **Add question at
+  m:ss** (at the preview's playhead) move into the settings sidebar; with no video picked yet, the preview points
+  there. In a channel with **Vertical sliding** on, its videos show up and down arrows on the video that go to the
+  channel's previous and next videos, sliding them like a short-video feed (the next comes up from the preview's
+  bottom edge, the current one leaving through the top).
+- Step lists indent a level for each step inside a step, so a question in a channel's video ("5.1.1") sits further
+  in than the video ("5.1"), in the setup and in sample results.
+- Picking a step in the question list, or a video reaching one of its questions, switches at once. The animation
+  that morphed a video into its questions' small video (and back) is gone: it was slow, waiting up to half a second
+  for the video's first frame.
+
 ## 2026-10-28
 
 **Projects**
