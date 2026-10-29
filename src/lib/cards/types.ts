@@ -120,8 +120,9 @@ export type SampleResults = {
 	insights: { title: string; body: string }[];
 	quote: { text: string; who: string };
 	/**
-	 * By question id: how many answered (or, for a video, watched), votes per option (multiple choice), per value 0–10
-	 * (slider) or per sentiment (video: positive, neutral, negative), and some individual responses (a sample of
+	 * By question id: how many answered (or, for a video, watched; for a channel, reached it), votes per option (multiple
+	 * choice), per value 0–10 (slider), per sentiment (video: positive, neutral, negative) or how many opened each of
+	 * its videos (channel, in order; people open several, so these add up to more), and some individual responses (a sample of
 	 * everyone who answered, newest first; for a video, their reactions).
 	 */
 	questions: Record<string, { responses: number; counts?: number[]; people?: SampleResponse[] }>;
@@ -150,9 +151,10 @@ export type Question = {
 	id: string;
 	/**
 	 * `open`: a free-text answer. `choice`: one of `options`. `scale`: a slider from 0 to 10. `video`: one of the
-	 * user's videos (assets), shown to people; `text` is an optional line before it.
+	 * user's videos (assets), shown to people; `text` isn't shown (older steps may have a line in it). `channel`: a collection of
+	 * `videos` people browse as a grid and open full screen; `text` is the channel's name.
 	 */
-	type: 'open' | 'choice' | 'scale' | 'video';
+	type: 'open' | 'choice' | 'scale' | 'video' | 'channel';
 	text: string;
 	/** Open questions: hint in the empty answer field, e.g. "My name is…". */
 	placeholder?: string;
@@ -165,6 +167,10 @@ export type Question = {
 	questions?: Question[];
 	/** Questions inside a video: when they pop up, in seconds from the start. */
 	time?: number;
+	/** Channels: their videos, in grid order; each a video step (with its own questions). */
+	videos?: Question[];
+	/** Channels: in full screen, people move between videos by sliding up and down (else left and right). */
+	vertical?: boolean;
 };
 
 /** What the assistant did to the cards this turn, in order. */

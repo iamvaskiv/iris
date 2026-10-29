@@ -82,8 +82,20 @@ Signed media URLs expire, so page loads rebuild video and comparison card data; 
 
 ## Editing a study
 
-A study's steps are questions (open, multiple choice, slider) and videos; a video step holds its own questions, each
-with a time, that pop up while it plays (`flatSteps` lists them right after it as "2.1", "2.2").
+A study's steps are questions (open, multiple choice, slider), videos and channels. A video step holds its own
+questions, each with a time, that pop up while it plays. A channel holds videos, which people browse as a grid and
+open full screen; each is a video step, with its own pop-up questions. `flatSteps` lists the steps inside a step
+right after it: "2.1", "2.2" for a video's questions or a channel's videos, "5.1.1" for a question in a channel's video.
+
+```mermaid
+flowchart LR
+    study["Study: questions[]"] -->|step| q["Open / multiple choice / slider"]
+    study -->|step| video["Video step: videoId"]
+    study -->|step| channel["Channel: name, videos[], vertical sliding"]
+    channel -->|"videos[] (grid, full screen)"| cvideo["Video step: videoId"]
+    video -->|"questions[] (each at a time)"| popup["Pop-up question: open / choice / slider"]
+    cvideo -->|"questions[] (each at a time)"| popup
+```
 
 Lumi drafts a study's questions (`show_card` / `update_card` with `questions`); edits made on the card save straight to
 the project, without a chat turn. Lumi sees the saved questions on its next turn.

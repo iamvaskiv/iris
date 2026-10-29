@@ -1,44 +1,39 @@
 <script lang="ts">
 	import { Button } from '@latitudelabs/design-system';
-	import { Pause, Play, Plus } from '@latitudelabs/design-system/icons';
-	import { onMount, type Snippet } from 'svelte';
-	import { stepTitle, timecode, typeColor } from './question-types';
+	import { Pause, Play } from '@latitudelabs/design-system/icons';
+	import { onMount } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
+	import { dotClass, dueQuestion, stepTitle, timecode } from './question-types';
 	import type { Question } from '../types';
 
 	/**
 	 * A video step as people will see it. Playing it pauses at each of its questions' times and hands over with
-	 * `onreach` (the setup then shows that question). `resumeAt` carries on playing from a question's time.
-	 * "Add question at m:ss" adds one at the playhead.
+	 * `onreach` (the setup then shows that question). `resumeAt` carries on playing from a question's time. `time` is
+	 * the playhead (the settings add questions there).
 	 */
 	let {
 		step,
 		streamUrl,
 		poster,
-		picker,
+		time: currentTime = $bindable(0),
 		resumeAt = null,
-		transitionName,
-		onadd,
 		onreach
 	}: {
 		step: Question;
 		streamUrl?: string | null;
 		poster?: string | null;
-		/** The video picker, shown above the video next to "Add question at…". */
-		picker?: Snippet;
+		/** Where the video is, in seconds. */
+		time?: number;
 		/** Start playing from here (seconds), past any question at or before it. */
 		resumeAt?: number | null;
-		/** Shared with the question view's small video, so switching between them morphs one into the other. */
-		transitionName?: string;
-		onadd: (time: number) => void;
 		onreach: (question: Question, time: number) => void;
 	} = $props();
 
 	let video = $state<HTMLVideoElement | null>(null);
-	let currentTime = $state(0);
 	let duration = $state(0);
 	let paused = $state(true);
 	/** Questions already reached in this viewing (so carrying on doesn't stop at the same one again). */
-	let reached = new Set<string>();
+	const reached = new SvelteSet<string>();
 
 	onMount(() => {
 		if (resumeAt === null || !video) return;
@@ -53,10 +48,7 @@
 
 	function ontimeupdate() {
 		if (!video || video.paused) return;
-		const t = video.currentTime;
-		const due = (step.questions ?? []).find(
-			(q) => !reached.has(q.id) && (q.time ?? 0) <= t && t - (q.time ?? 0) < 1
-		);
+		const due = dueQuestion(step.questions, reached, video.currentTime);
 		if (due) {
 			video.pause();
 			reached.add(due.id);
@@ -106,32 +98,24 @@
 	}
 </script>
 
-<!-- Above the video, so they stay in reach when the video is tall. -->
-<div class="flex items-center justify-between gap-4">
-	<div class="min-w-0">{@render picker?.()}</div>
-	<Button variant="outline" size="sm" onclick={() => onadd(Math.floor(currentTime))}>
-		<Plus data-icon="inline-start" />Add question at {timecode(currentTime)}
-	</Button>
-</div>
 <!-- Our own controls rather than the browser's, so the timeline can mark where questions pop up. -->
 <div class="overflow-hidden rounded-lg bg-muted">
-	<!-- svelte-ignore a11y_media_has_caption, a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
-	<video
-		bind:this={video}
-		data-study-video
-		style:view-transition-name={transitionName}
-		style:view-transition-class="study-video"
-		bind:currentTime
-		bind:duration
-		bind:paused
-		class="aspect-video w-full object-contain"
-		src={streamUrl ?? undefined}
-		poster={poster ?? undefined}
-		preload="metadata"
-		onclick={toggle}
-		{ontimeupdate}
-		{onseeked}
-	></video>
+	<div class="relative">
+		<!-- svelte-ignore a11y_media_has_caption -->
+		<video
+			bind:this={video}
+			bind:currentTime
+			bind:duration
+			bind:paused
+			class="aspect-video w-full object-contain"
+			src={streamUrl ?? undefined}
+			poster={poster ?? undefined}
+			preload="metadata"
+			onclick={toggle}
+			{ontimeupdate}
+			{onseeked}
+		></video>
+	</div>
 	<div class="flex items-center gap-3 px-2 py-2">
 		<Button variant="ghost" size="icon-sm" aria-label={paused ? 'Play' : 'Pause'} onclick={toggle}>
 			{#if paused}<Play />{:else}<Pause />{/if}
@@ -164,16 +148,11 @@
 				></div>
 			</div>
 			{#each step.questions ?? [] as q (q.id)}
-				{@const color = typeColor(q.type)}
 				<button
 					type="button"
 					class={[
 						'absolute top-1/2 size-3 -translate-1/2 rounded-full ring-2 ring-muted outline-none hover:scale-125 focus-visible:ring-ring',
-						color === 'orange'
-							? 'bg-category-orange'
-							: color === 'magenta'
-								? 'bg-category-magenta'
-								: 'bg-muted-foreground'
+						dotClass(q.type)
 					]}
 					style:left="{percent(q.time ?? 0)}%"
 					title="{timecode(q.time ?? 0)} · {stepTitle(q)}"

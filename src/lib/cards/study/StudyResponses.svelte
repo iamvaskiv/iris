@@ -31,12 +31,19 @@
 <div class="flex items-start justify-between gap-4">
 	<div class="flex flex-col">
 		<h3 class="text-body-lg font-medium">{stepTitle(question)}</h3>
-		<p class="text-caption text-muted-foreground">
-			Showing {people.length} of {filter === null
-				? answers.responses
-				: (answers.counts?.[filter] ?? 0)}
-			{question.type === 'video' ? 'reactions' : 'responses'}
-		</p>
+		{#if question.type === 'channel'}
+			<!-- A channel has no answers of its own: what people did there is which videos they opened. -->
+			<p class="text-caption text-muted-foreground">
+				{answers.responses} views. Pick a video under it to read its reactions.
+			</p>
+		{:else}
+			<p class="text-caption text-muted-foreground">
+				Showing {people.length} of {filter === null
+					? answers.responses
+					: (answers.counts?.[filter] ?? 0)}
+				{question.type === 'video' ? 'reactions' : 'responses'}
+			</p>
+		{/if}
 	</div>
 	{#if filter !== null}
 		<Button variant="secondary" size="sm" onclick={onclearfilter}>
