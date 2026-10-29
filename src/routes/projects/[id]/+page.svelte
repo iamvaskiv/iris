@@ -665,7 +665,13 @@
 					/>
 				{/snippet}
 				{@render arrow()}
-				<span class="rotate-180" style:writing-mode="vertical-rl">Assets</span>
+				<!-- Its box trimmed to the lowercase letters (baseline to x-height), so it's those that centre between the
+				     arrows, not the line box with its unused room for descenders. -->
+				<span
+					class="rotate-180"
+					style:writing-mode="vertical-rl"
+					style:text-box="trim-both ex alphabetic">Assets</span
+				>
 				{@render arrow()}
 				<!-- Open: the inner corners where the tab meets the pane curve into its edge (12px, like the tab's own
 				     corners). Each is a square of the card colour with a quarter circle cut out, 8px in from the button's

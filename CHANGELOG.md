@@ -4,6 +4,13 @@ What changed in Iris, newest first. Add a line under today's date with every cha
 notable behind-the-scenes ones); the app Storybook shows this file as its **Changelog** page. The deployed app
 (`iris.<account>.workers.dev`) runs whatever was last released with `pnpm run deploy`.
 
+## 2026-10-29
+
+**Projects**
+
+- The Assets pull tab's label sits in the middle of the tab: centred on its lowercase letters rather than on its
+  line box, which left it about a pixel towards the window's edge.
+
 ## 2026-10-28
 
 **Projects**
