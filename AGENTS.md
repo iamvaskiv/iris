@@ -23,7 +23,15 @@ This app uses the Latitude design system (`@latitudelabs/design-system`, Svelte 
   explain: how components or services connect, how data and control flow, a protocol or request sequence, state
   transitions, processing stages. Pick the diagram type that explains it best (flowchart, sequence, state, ER…), label
   every participant, connection and step, and keep the diagram in step with the prose around it: when the design or
-  change evolves, update the diagram too. In Iris that usually means the browser ↔ SvelteKit server ↔ Lumi (Claude) ↔
+  change evolves, update the diagram too. Start each one with `---` / `config:` / `  look: classic` / `---`: GitHub
+  otherwise draws Mermaid's newer look, with a glow around every box.
+- **Diagram colours.** Colour-code what things are, the same way in every diagram: in flowcharts with `classDef`
+  (outline in the colour, fill at 20%, e.g. `classDef server stroke:#00bd32,fill:#00bd3233`; subgraphs too), in
+  sequence diagrams by grouping participants in `box rgba(…, 0.15) Name`. Never set the text colour, so diagrams
+  read in light and dark. Parts of the system: browser and UI `#4c7dff`, SvelteKit server `#00bd32`, Lumi and Claude
+  `#f424ff`, Lumiere and other outside services `#f79205`, storage and people `#918b98`. Study steps use their type
+  colours: video `#00bd32`, multiple choice `#f79205`, slider `#f424ff`, channel `#4c7dff`, open question
+  `#918b98`. In Iris that usually means the browser ↔ SvelteKit server ↔ Lumi (Claude) ↔
   Lumiere flow, the card operations a chat turn produces, upload and ingestion states, and storage (`store.ts`: JSON
   files in dev, D1 when deployed).
 - **Changelog.** Add a line under today's date in `CHANGELOG.md` for every change people would notice (and the
