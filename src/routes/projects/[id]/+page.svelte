@@ -428,7 +428,16 @@
 	}
 
 	function stepLane(by: number) {
-		const at = laneList.indexOf(laneOf(focusedSlot)!);
+		// From the lane under the header, unless the app is still moving to the focused one (steps in quick succession).
+		const from = autoScrolling
+			? laneOf(focusedSlot)
+			: nearest(
+					laneList,
+					(l) => laneEls[l.key],
+					'top',
+					scroller.getBoundingClientRect().top + HEADER
+				);
+		const at = from ? laneList.indexOf(from) : -1;
 		const lane = laneList[at < 0 ? 0 : at + by];
 		if (lane) go(currentOf(lane).key);
 	}
@@ -459,15 +468,45 @@
 		return false;
 	}
 
-	let gesture = { at: -Infinity, sum: 0, spent: false, sideways: false };
+	/**
+	 * One wheel gesture: a turn of the wheel or a swipe, and after a swipe on a trackpad its momentum, which keeps
+	 * sending ever smaller deltas for a second or two. A new swipe during that momentum is a new gesture: its deltas grow
+	 * again once they've fallen well below their peak (`fell`), or it goes the other way. A mouse wheel's deltas don't
+	 * fall off, so only a pause or a change of direction starts its next gesture.
+	 */
+	const freshGesture = (sideways: boolean, dir: number) => ({
+		at: -Infinity,
+		sum: 0,
+		spent: false,
+		sideways,
+		dir,
+		peak: 0,
+		fell: false,
+		recent: [] as number[]
+	});
+	let gesture = freshGesture(false, 0);
+	function isNewGesture(e: WheelEvent, sideways: boolean, delta: number) {
+		if (e.timeStamp - gesture.at > GESTURE_GAP || sideways !== gesture.sideways) return true;
+		if (delta && Math.sign(delta) !== gesture.dir) return true;
+		const r = gesture.recent;
+		if (!gesture.fell || r.length < 5) return false;
+		// Growing again: the last three deltas (this one included) well above the three before them.
+		const now = (r[r.length - 2] + r[r.length - 1] + Math.abs(delta)) / 3;
+		const before = (r[r.length - 5] + r[r.length - 4] + r[r.length - 3]) / 3;
+		return now >= 4 && now > before * 1.5;
+	}
+
 	function onwheel(e: WheelEvent) {
 		if (!lanesOn || birdsEye || e.ctrlKey) return; // ctrl: pinch to zoom
 		const sideways = e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY);
 		const unit = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? viewHeight : 1; // lines, pages
 		const delta = (Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY) * unit;
-		if (e.timeStamp - gesture.at > GESTURE_GAP || sideways !== gesture.sideways)
-			gesture = { at: 0, sum: 0, spent: false, sideways };
+		if (isNewGesture(e, sideways, delta)) gesture = freshGesture(sideways, Math.sign(delta));
 		gesture.at = e.timeStamp;
+		const size = Math.abs(delta);
+		gesture.recent = [...gesture.recent.slice(-5), size];
+		gesture.peak = Math.max(gesture.peak, size);
+		if (size < gesture.peak / 2) gesture.fell = true;
 		// Scrolling inside a card takes the whole gesture: reaching its end doesn't carry on to the next lane.
 		if (scrollsInside(e.target as Element, sideways, delta)) return void (gesture.spent = true);
 		e.preventDefault();
