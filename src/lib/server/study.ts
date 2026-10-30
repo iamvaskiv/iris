@@ -83,7 +83,7 @@ export async function nameVideos(questions: Question[]) {
 }
 
 /** Bumped when sample results gain something new, so older ones are written again. */
-const SAMPLE_VERSION = 5;
+const SAMPLE_VERSION = 6;
 
 /** What sample results depend on: when this changes, they're written again. */
 export const basisOf = (questions: Question[]) =>
@@ -98,7 +98,14 @@ export const basisOf = (questions: Question[]) =>
 		])
 	]);
 
-type WrittenAnswer = { text: string; sentiment: 'positive' | 'neutral' | 'negative'; age: string };
+type WrittenAnswer = {
+	text: string;
+	sentiment: 'positive' | 'neutral' | 'negative';
+	age: string;
+	/** Videos: when in it the comment was left, and the viewer's star rating (null otherwise). */
+	time: number | null;
+	rating: number | null;
+};
 
 /** What Lumi writes; the app turns it into counts that add up (see sampleResults). */
 type Written = {
@@ -161,18 +168,39 @@ const writtenSchema = obj({
 			answers: {
 				type: 'array',
 				description:
-					"Open questions: 15 to 20 individual answers in the respondents' own words, varied in length, tone and opinion, in line with the sentiment split. Videos: 15 to 20 short reactions to the video, in line with its shares. Empty for multiple choice, sliders and channels.",
+					"Open questions: 15 to 20 individual answers in the respondents' own words, varied in length, tone and opinion, in line with the sentiment split. Videos: 15 to 20 short comments viewers left while watching, each at a moment in the video (spread along it, about what happens there, as people react to scenes) and with the star rating that viewer gave the video, in line with its shares. Empty for multiple choice, sliders and channels.",
 				items: obj({
 					text: { type: 'string' },
 					sentiment: { type: 'string', enum: ['positive', 'neutral', 'negative'] },
-					age: { type: 'string', enum: AGES }
+					age: { type: 'string', enum: AGES },
+					time: {
+						type: ['number', 'null'],
+						description:
+							'Videos: seconds into the video when this comment was left, within its length. Null otherwise.'
+					},
+					rating: {
+						type: ['integer', 'null'],
+						description:
+							'Videos: the star rating this viewer gave the video, 1 to 5, in line with their comment. Null otherwise.'
+					}
 				})
 			}
 		})
 	}
 });
 
-async function write(title: string, questions: Question[]): Promise<Written> {
+/** How long each video in the study is (seconds), for placing comments along it. */
+async function videoLengths(questions: Question[]) {
+	const ids = [...new Set(everyQuestion(questions).flatMap((q) => (q.videoId ? [q.videoId] : [])))];
+	const lengths = await Promise.all(ids.map(async (id) => (await assets.get(id))?.duration));
+	return new Map(ids.map((id, k) => [id, lengths[k]]));
+}
+
+async function write(
+	title: string,
+	questions: Question[],
+	lengths: Map<string, number | undefined>
+): Promise<Written> {
 	// Numbered in list order, a channel's videos and a video's questions right after it (and marked as such).
 	const steps = flatSteps(questions);
 	const where = (step: FlatStep) =>
@@ -187,7 +215,7 @@ async function write(title: string, questions: Question[]): Promise<Written> {
 			: q.type === 'scale'
 				? ' [slider, 0 to 10]'
 				: q.type === 'video'
-					? ` [video "${q.videoName ?? q.videoId}": people watch it and react]`
+					? ` [video "${q.videoName ?? q.videoId}"${lengths.get(q.videoId ?? '') ? `, ${timecode(lengths.get(q.videoId ?? '')!)} long` : ''}: people watch it, comment at moments and rate it 1 to 5 stars]`
 					: q.type === 'channel'
 						? ` [channel: a grid of videos people browse and pick from: ${(q.videos ?? []).map((v) => `"${v.videoName ?? v.videoId}"`).join(', ')}]`
 						: ' [open answer]';
@@ -212,7 +240,7 @@ async function write(title: string, questions: Question[]): Promise<Written> {
 }
 
 /** Generic results when Lumi can't be reached, so the toggle still works. */
-const filler = (questions: Question[]): Written => ({
+const filler = (questions: Question[], lengths: Map<string, number | undefined>): Written => ({
 	summary: 'Most people responded well, with a clear minority who were unconvinced.',
 	insights: [
 		{ title: 'Strong first impression', body: 'Early answers were the most positive.' },
@@ -232,16 +260,24 @@ const filler = (questions: Question[]): Written => ({
 					: {
 							...(q.type === 'video' ? { shares: [60, 25, 15] } : {}),
 							index: i + 1,
-							answers: [
-								{ text: 'I liked it.', sentiment: 'positive', age: '24–32' },
-								{ text: 'Hard to say.', sentiment: 'neutral', age: '33–44' },
-								{ text: 'It was fine, nothing special.', sentiment: 'neutral', age: '18–23' },
-								{
-									text: "Not for me, it didn't hold my attention.",
-									sentiment: 'negative',
-									age: '45+'
-								}
-							]
+							answers: (
+								[
+									['I liked it.', 'positive', '24–32', 5],
+									['Hard to say.', 'neutral', '33–44', 3],
+									['It was fine, nothing special.', 'neutral', '18–23', 3],
+									["Not for me, it didn't hold my attention.", 'negative', '45+', 2]
+								] as const
+							).map(([text, sentiment, age, stars], k) => {
+								// Videos: spread along it, each with a star rating.
+								const length = q.type === 'video' ? lengths.get(q.videoId ?? '') : undefined;
+								return {
+									text,
+									sentiment,
+									age,
+									time: length ? ((k + 1) / 5) * length : null,
+									rating: q.type === 'video' ? stars : null
+								};
+							})
 						}
 	)
 });
@@ -268,12 +304,13 @@ function split(total: number, weights: number[]) {
 export async function sampleResults(title: string, questions: Question[]): Promise<SampleResults> {
 	let written: Written;
 	let by: SampleResults['by'] = 'lumi';
+	const lengths = await videoLengths(questions);
 	try {
 		if (!env.ANTHROPIC_API_KEY) throw new Error('No Anthropic key');
-		written = await write(title, questions);
+		written = await write(title, questions, lengths);
 	} catch (e) {
 		console.error('[study] Lumi could not write sample results, using filler:', e);
-		written = filler(questions);
+		written = filler(questions, lengths);
 		by = 'filler';
 	}
 
@@ -370,7 +407,14 @@ export async function sampleResults(title: string, questions: Question[]): Promi
 						text: String(a.text),
 						sentiment: (['positive', 'neutral', 'negative'] as const).includes(a.sentiment)
 							? a.sentiment
-							: 'neutral'
+							: 'neutral',
+						// Videos: where in it they commented (within its length), and the stars they gave it.
+						...(q.type === 'video' && typeof a.time === 'number'
+							? { time: clamp(a.time, 0, lengths.get(q.videoId ?? '') ?? a.time, 0) }
+							: {}),
+						...(q.type === 'video' && typeof a.rating === 'number'
+							? { rating: Math.round(clamp(a.rating, 1, 5, 3)) }
+							: {})
 					}))
 				)
 			};

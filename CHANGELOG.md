@@ -4,6 +4,44 @@ What changed in Iris, newest first. Add a line under today's date with every cha
 notable behind-the-scenes ones); the app Storybook shows this file as its **Changelog** page. The deployed app
 (`iris.<account>.workers.dev`) runs whatever was last released with `pnpm run deploy`.
 
+## 2026-10-30
+
+**Cards**
+
+- Video card: a timeline under the video shows its scenes side by side and where the video is; click or drag it to
+  go to a moment (arrow keys work too). Pick a character, theme or brand to see where it's on screen, marked on the
+  timeline ("Marisol · on screen 1:25, 3 times"), and watch from its first appearance; pick it again, or use the
+  arrows beside it, for the next one (× stops showing it). While the video plays, its current scene is outlined.
+  Timings come from Lumiere's moments, about ten seconds each.
+- Video cards open with every section showing (Themes and Brands no longer start closed), in Timeline view too.
+- Video cards are wide (like comparisons of three or more videos): the video across the card, then its title,
+  summary and sections. In Timeline view a video card goes full size, like a study (as tall as the page allows), with
+  the title, length and summary at the top left beside a smaller video and the lanes scrolling below them.
+- Video cards include viewer data when the video was shown to an audience: views, responses, rating and comment
+  sentiment under the summary; a **Comments** section with each comment at its moment (click to play from there), with
+  its emotions and a sentiment dot; a dot per comment on the timeline under the video, in its sentiment's colour; and
+  in Timeline view a **Sentiment** group with positive, neutral and negative lanes of comments (click one to go to it).
+- Sample results (Share → Fake responses) treat a video like Lumiere's viewers do: each viewer's comment is left at a
+  moment in the video (about what happens there) and comes with the star rating they gave it, 1 to 5. Their responses
+  show both ("at 0:27 · 5 / 5 stars"), and on the video card, with the study as its source, they fill the timeline,
+  Comments, the Sentiment curve and the Rating curve. Studies with fake responses on write them again the next time
+  they're switched on.
+- Video cards switch their viewer data between sources with **Source** (beside the numbers, when there's more than
+  one): **Lumiere**, the real viewers, and each of the project's studies that shows the video (as a video step, or in
+  a channel) and has sample results, under its card's name. A study shows its views, how many watched, how they
+  reacted, the open answers to questions popping up in the video (as comments at their moments, on the timeline and in
+  Timeline view) and slider answers there (as a rating out of 10, charted where they were given). Its reactions to the
+  whole video appear among the comments, "About the whole video".
+- Timeline view charts viewers along the video: a **Sentiment** curve from the comments (above its midline where they
+  were positive, below where negative, flat where nobody commented), and a **Rating** group with a curve of the
+  average star rating where ratings were given (a rating question at the end shows as one rise there).
+- Video card **Timeline view** (a switch under the summary, for every video card and remembered on your device): the
+  card's sections become lanes along the video, like an editor's timeline. The scenes run across the top; each
+  character, theme and brand gets its own lane with bars where it's on screen and its share of screen time ("53% on
+  screen"), longest first, coloured by kind (characters blue, themes magenta, brands orange). Scene boundaries and the
+  playhead run through every lane. Click a lane to go to that moment, a scene to go to its start, or a name to pick it
+  as before (the other lanes dim). Its groups open and close like the card's sections.
+
 ## 2026-10-29
 
 **Projects**

@@ -13,6 +13,7 @@
 	import Tooltip from '#lib/components/Tooltip.svelte';
 	import TooltipGroup from '#lib/components/TooltipGroup.svelte';
 	import { cardComponent, cardSize } from '#lib/cards/registry.js';
+	import { shareProjectCards } from '#lib/cards/viewer-sources.js';
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 	import { takePendingVideo } from '#lib/new-project.js';
 	import { transcript, type TranscriptMessage } from '#lib/transcript.js';
@@ -23,6 +24,8 @@
 	// Local copy of the project that this page edits as the conversation goes on.
 	// svelte-ignore state_referenced_locally
 	let project = $state(structuredClone(data.project));
+	// A video card finds the project's studies that show its video, to switch its viewer data to their sample results.
+	shareProjectCards(() => project.cards);
 	let thinking = $state(false);
 	let error = $state('');
 	let draft = $state('');

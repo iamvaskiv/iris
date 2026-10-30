@@ -12,22 +12,26 @@
 				{
 					"title": "Introduction to the Colony",
 					"start": 0,
-					"thumb": "/fixtures/548abeb96635.jpg"
+					"thumb": "/fixtures/548abeb96635.jpg",
+					"end": 25
 				},
 				{
 					"title": "A Choice to Make",
 					"start": 25,
-					"thumb": "/fixtures/df6bf339ff5c.jpg"
+					"thumb": "/fixtures/df6bf339ff5c.jpg",
+					"end": 57
 				},
 				{
 					"title": "Rage, Hope, and Liberation",
 					"start": 57,
-					"thumb": "/fixtures/e79432a48c70.jpg"
+					"thumb": "/fixtures/e79432a48c70.jpg",
+					"end": 90
 				},
 				{
 					"title": "Title & Ensemble Credits",
 					"start": 90,
-					"thumb": "/fixtures/1f82b99c371e.jpg"
+					"thumb": "/fixtures/1f82b99c371e.jpg",
+					"end": 102
 				}
 			],
 			"characters": [
@@ -35,73 +39,191 @@
 					"name": "Ona Friesen",
 					"role": "Hero",
 					"actor": "Rooney Mara",
-					"image": "/fixtures/347dd2d023ec.jpg"
+					"image": "/fixtures/347dd2d023ec.jpg",
+					"appearances": [
+						{
+							"start": 0,
+							"end": 10
+						},
+						{
+							"start": 25,
+							"end": 57
+						},
+						{
+							"start": 77,
+							"end": 90
+						}
+					]
 				},
 				{
 					"name": "Salome Friesen",
 					"role": "Hero",
 					"actor": "Claire Foy",
-					"image": "/fixtures/05d30a35a9d5.jpg"
+					"image": "/fixtures/05d30a35a9d5.jpg",
+					"appearances": [
+						{
+							"start": 36,
+							"end": 77
+						}
+					]
 				},
 				{
 					"name": "Autje",
 					"role": "Narrator",
 					"actor": "Kate Hallett",
-					"image": "/fixtures/347dd2d023ec.jpg"
+					"image": "/fixtures/347dd2d023ec.jpg",
+					"appearances": [
+						{
+							"start": 0,
+							"end": 10
+						},
+						{
+							"start": 16,
+							"end": 25
+						}
+					]
 				},
 				{
 					"name": "Mariche Loewen",
 					"role": "Hero",
 					"actor": "Jessie Buckley",
-					"image": "/fixtures/819be7c674bc.jpg"
+					"image": "/fixtures/819be7c674bc.jpg",
+					"appearances": [
+						{
+							"start": 25,
+							"end": 46
+						},
+						{
+							"start": 77,
+							"end": 90
+						}
+					]
 				},
 				{
 					"name": "Agata",
 					"role": "Mentor",
 					"actor": "Judith Ivey",
-					"image": "/fixtures/bd1e9313b0df.jpg"
+					"image": "/fixtures/bd1e9313b0df.jpg",
+					"appearances": [
+						{
+							"start": 68,
+							"end": 77
+						}
+					]
 				},
 				{
 					"name": "Scarface Janz",
 					"role": "Antagonist",
 					"actor": "Frances McDormand",
-					"image": "/fixtures/819be7c674bc.jpg"
+					"image": "/fixtures/819be7c674bc.jpg",
+					"appearances": [
+						{
+							"start": 25,
+							"end": 36
+						},
+						{
+							"start": 77,
+							"end": 90
+						}
+					]
 				}
 			],
 			"themes": [
 				{
 					"name": "Faith and Forgiveness",
-					"description": "The conflict between adherence to strict religious dogma requiring total forgiveness and the moral imperative to protect women and children from ongoing assault."
+					"description": "The conflict between adherence to strict religious dogma requiring total forgiveness and the moral imperative to protect women and children from ongoing assault.",
+					"appearances": [
+						{
+							"start": 25,
+							"end": 36
+						}
+					]
 				},
 				{
 					"name": "Female Solidarity",
-					"description": "The collective bonding, shared grief, and consensus-building among oppressed women deciding their collective fate inside an isolated community."
+					"description": "The collective bonding, shared grief, and consensus-building among oppressed women deciding their collective fate inside an isolated community.",
+					"appearances": [
+						{
+							"start": 25,
+							"end": 36
+						},
+						{
+							"start": 57,
+							"end": 102
+						}
+					]
 				},
 				{
 					"name": "Resistance to Abuse and Oppression",
-					"description": "The psychological and physical revolt against systemic sexual abuse and patriarchal violence within an isolated religious settlement."
+					"description": "The psychological and physical revolt against systemic sexual abuse and patriarchal violence within an isolated religious settlement.",
+					"appearances": [
+						{
+							"start": 0,
+							"end": 10
+						},
+						{
+							"start": 16,
+							"end": 25
+						},
+						{
+							"start": 36,
+							"end": 90
+						}
+					]
 				}
 			],
 			"brands": [
 				{
 					"name": "Orion Pictures",
 					"category": "Theatrical Movies",
-					"time": 10
+					"time": 10,
+					"appearances": [
+						{
+							"start": 10,
+							"end": 16
+						},
+						{
+							"start": 90,
+							"end": 102
+						}
+					]
 				},
 				{
 					"name": "Plan B Entertainment",
 					"category": "Theatrical Movies",
-					"time": 10
+					"time": 10,
+					"appearances": [
+						{
+							"start": 10,
+							"end": 16
+						},
+						{
+							"start": 90,
+							"end": 102
+						}
+					]
 				},
 				{
 					"name": "hear/say",
 					"category": "Theatrical Movies",
-					"time": 90
+					"time": 90,
+					"appearances": [
+						{
+							"start": 90,
+							"end": 102
+						}
+					]
 				},
 				{
 					"name": "United Artists Releasing",
 					"category": "Theatrical Movies",
-					"time": 90
+					"time": 90,
+					"appearances": [
+						{
+							"start": 90,
+							"end": 102
+						}
+					]
 				}
 			]
 		}
@@ -226,12 +348,14 @@
 				{
 					"title": "Introduction of Envy",
 					"start": 0,
-					"thumb": "/fixtures/690303f341c2.jpg"
+					"thumb": "/fixtures/690303f341c2.jpg",
+					"end": 7
 				},
 				{
 					"title": "Reactions of the Original Emotions",
 					"start": 8,
-					"thumb": "/fixtures/865b1f459a8a.jpg"
+					"thumb": "/fixtures/865b1f459a8a.jpg",
+					"end": 13
 				}
 			],
 			"characters": [
@@ -239,58 +363,142 @@
 					"name": "Joy",
 					"role": "Hero",
 					"actor": "Amy Poehler",
-					"image": "/fixtures/865b1f459a8a.jpg"
+					"image": "/fixtures/865b1f459a8a.jpg",
+					"appearances": [
+						{
+							"start": 8,
+							"end": 13
+						}
+					]
 				},
 				{
 					"name": "Anger",
 					"role": "Sidekick",
 					"actor": "Lewis Black",
-					"image": "/fixtures/865b1f459a8a.jpg"
+					"image": "/fixtures/865b1f459a8a.jpg",
+					"appearances": [
+						{
+							"start": 8,
+							"end": 13
+						}
+					]
 				},
 				{
 					"name": "Disgust",
 					"role": "Sidekick",
 					"actor": "Liza Lapira",
-					"image": "/fixtures/865b1f459a8a.jpg"
+					"image": "/fixtures/865b1f459a8a.jpg",
+					"appearances": [
+						{
+							"start": 8,
+							"end": 13
+						}
+					]
 				},
 				{
 					"name": "Envy",
 					"role": "Sidekick",
 					"actor": "Ayo Edebiri",
-					"image": "/fixtures/ca7211ecf9b2.jpg"
+					"image": "/fixtures/ca7211ecf9b2.jpg",
+					"appearances": [
+						{
+							"start": 0,
+							"end": 7
+						}
+					]
 				},
 				{
 					"name": "Fear",
 					"role": "Sidekick",
 					"actor": "Tony Hale",
-					"image": "/fixtures/ca7211ecf9b2.jpg"
+					"image": "/fixtures/ca7211ecf9b2.jpg",
+					"appearances": [
+						{
+							"start": 0,
+							"end": 7
+						},
+						{
+							"start": 8,
+							"end": 13
+						}
+					]
 				}
 			],
 			"themes": [
 				{
 					"name": "Coping with Change",
-					"description": "The theme of coping with change is central to the clip, illustrated by the reactions of the original emotions to a new arrival. The appearance of Envy at the console is an unexpected disruption to their established world. The subsequent shot of Joy, Fear, Anger, and Disgust standing together in shared shock visualizes the struggle and apprehension that comes with adapting to new circumstances, particularly the transition into adolescence."
+					"description": "The theme of coping with change is central to the clip, illustrated by the reactions of the original emotions to a new arrival. The appearance of Envy at the console is an unexpected disruption to their established world. The subsequent shot of Joy, Fear, Anger, and Disgust standing together in shared shock visualizes the struggle and apprehension that comes with adapting to new circumstances, particularly the transition into adolescence.",
+					"appearances": [
+						{
+							"start": 0,
+							"end": 7
+						},
+						{
+							"start": 8,
+							"end": 13
+						}
+					]
 				},
 				{
 					"name": "Emotional Complexity",
-					"description": "This theme is introduced with the arrival of Envy, a new emotion. Unlike the primary emotions of the first film, Envy represents a more nuanced, socially-driven feeling. Her appearance signifies that Riley's inner world is evolving as she gets older, moving beyond basic feelings to more complex ones tied to social comparison and desire. The trailer sets up a narrative about how these new, complicated emotions integrate with—or clash with—the original set."
+					"description": "This theme is introduced with the arrival of Envy, a new emotion. Unlike the primary emotions of the first film, Envy represents a more nuanced, socially-driven feeling. Her appearance signifies that Riley's inner world is evolving as she gets older, moving beyond basic feelings to more complex ones tied to social comparison and desire. The trailer sets up a narrative about how these new, complicated emotions integrate with—or clash with—the original set.",
+					"appearances": [
+						{
+							"start": 0,
+							"end": 7
+						},
+						{
+							"start": 8,
+							"end": 13
+						}
+					]
 				}
 			],
 			"brands": [
 				{
 					"name": "Inside Out",
 					"category": "Theatrical Movies",
-					"time": 0
+					"time": 0,
+					"appearances": [
+						{
+							"start": 0,
+							"end": 7
+						},
+						{
+							"start": 8,
+							"end": 13
+						}
+					]
 				},
 				{
 					"name": "Pixar",
 					"category": "Theatrical Movies",
-					"time": 0
+					"time": 0,
+					"appearances": [
+						{
+							"start": 0,
+							"end": 7
+						},
+						{
+							"start": 8,
+							"end": 13
+						}
+					]
 				},
 				{
 					"name": "Disney",
 					"category": "Theatrical Movies",
-					"time": 0
+					"time": 0,
+					"appearances": [
+						{
+							"start": 0,
+							"end": 7
+						},
+						{
+							"start": 8,
+							"end": 13
+						}
+					]
 				}
 			]
 		}
@@ -475,25 +683,38 @@
 					"text": "Love this guy :D :D :D",
 					"time": 121.5272819,
 					"sentiment": 0.9,
-					"emotions": ["joy", "admiration"]
+					"emotions": [
+						"joy",
+						"admiration"
+					]
 				},
 				{
 					"text": "love it so far! can't wait for a release 🫢",
 					"time": 105.798732,
 					"sentiment": 0.9,
-					"emotions": ["joy", "anticipation", "excitement"]
+					"emotions": [
+						"joy",
+						"anticipation",
+						"excitement"
+					]
 				},
 				{
 					"text": "Wow, cool turn of events",
 					"time": 101.972927,
 					"sentiment": 0.9,
-					"emotions": ["surprise", "excitement"]
+					"emotions": [
+						"surprise",
+						"excitement"
+					]
 				},
 				{
 					"text": "A funny character",
 					"time": 31.995971,
 					"sentiment": 0.9,
-					"emotions": ["joy", "surprise"]
+					"emotions": [
+						"joy",
+						"surprise"
+					]
 				}
 			],
 			"disliked": [
@@ -507,13 +728,18 @@
 					"text": "Don't like spits",
 					"time": 18.57062,
 					"sentiment": -0.8,
-					"emotions": ["disgust", "anger"]
+					"emotions": [
+						"disgust",
+						"anger"
+					]
 				},
 				{
 					"text": "why there is so many orange buttons?",
 					"time": 43.287929,
 					"sentiment": -0.7,
-					"emotions": ["confusion"]
+					"emotions": [
+						"confusion"
+					]
 				},
 				{
 					"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
@@ -563,25 +789,77 @@
 		"type": "table",
 		"title": "Trailer Numbers",
 		"subtitle": "Women Talking trailer vs Inside Out 2 clip",
-		"columns": ["Metric", "Women Talking", "Inside Out 2"],
+		"columns": [
+			"Metric",
+			"Women Talking",
+			"Inside Out 2"
+		],
 		"rows": [
-			["Duration (s)", 102, 14],
-			["Chapters (scenes)", 4, 2],
-			["Main characters", "Ona, Salome, Mariche, Autje", "Envy, Joy, Fear, Anger, Disgust"],
-			["Tone", "Somber, tense, urgent", "Playful, curious, comic shock"],
-			["Pacing", "Slow build, ~25s chapters", "Fast, two ~7s beats"],
+			[
+				"Duration (s)",
+				102,
+				14
+			],
+			[
+				"Chapters (scenes)",
+				4,
+				2
+			],
+			[
+				"Main characters",
+				"Ona, Salome, Mariche, Autje",
+				"Envy, Joy, Fear, Anger, Disgust"
+			],
+			[
+				"Tone",
+				"Somber, tense, urgent",
+				"Playful, curious, comic shock"
+			],
+			[
+				"Pacing",
+				"Slow build, ~25s chapters",
+				"Fast, two ~7s beats"
+			],
 			[
 				"Key themes",
 				"Faith vs. forgiveness, solidarity, resistance to oppression",
 				"Coping with change, emotional complexity"
 			],
-			["Spoken lines", 23, 0],
-			["Speaking characters", 6, 0],
-			["Named characters", 6, 5],
-			["Themes detected", 3, 2],
-			["Key events", 2, 2],
-			["Brands / studios", 4, 3],
-			["Total entities", 19, 12]
+			[
+				"Spoken lines",
+				23,
+				0
+			],
+			[
+				"Speaking characters",
+				6,
+				0
+			],
+			[
+				"Named characters",
+				6,
+				5
+			],
+			[
+				"Themes detected",
+				3,
+				2
+			],
+			[
+				"Key events",
+				2,
+				2
+			],
+			[
+				"Brands / studios",
+				4,
+				3
+			],
+			[
+				"Total entities",
+				19,
+				12
+			]
 		]
 	},
 	"Trailer Comparison · Women Talking vs Inside Out 2 trailer": {
@@ -595,8 +873,16 @@
 				"Full: summary, 4 chapters, entities, transcript",
 				"Not analysed; only 6 scene markers (intro, Hokey, Emotions introduction, Anxiety takeover, Life moments)"
 			],
-			["Audience rating", "No audience data", "4.7/5, trailer rating 4.8"],
-			["Likelihood to see it", "No audience data", "8.4/10"],
+			[
+				"Audience rating",
+				"No audience data",
+				"4.7/5, trailer rating 4.8"
+			],
+			[
+				"Likelihood to see it",
+				"No audience data",
+				"8.4/10"
+			],
 			[
 				"Standout reaction",
 				"No audience data",
@@ -604,7 +890,10 @@
 			]
 		],
 		"data": {
-			"videoIds": ["vk4G86s6uVuW", "vuvIanfCkI8R"],
+			"videoIds": [
+				"vk4G86s6uVuW",
+				"vuvIanfCkI8R"
+			],
 			"videos": [
 				{
 					"videoId": "vk4G86s6uVuW",
@@ -723,25 +1012,38 @@
 								"text": "Love this guy :D :D :D",
 								"time": 121.5272819,
 								"sentiment": 0.9,
-								"emotions": ["joy", "admiration"]
+								"emotions": [
+									"joy",
+									"admiration"
+								]
 							},
 							{
 								"text": "love it so far! can't wait for a release 🫢",
 								"time": 105.798732,
 								"sentiment": 0.9,
-								"emotions": ["joy", "anticipation", "excitement"]
+								"emotions": [
+									"joy",
+									"anticipation",
+									"excitement"
+								]
 							},
 							{
 								"text": "Wow, cool turn of events",
 								"time": 101.972927,
 								"sentiment": 0.9,
-								"emotions": ["surprise", "excitement"]
+								"emotions": [
+									"surprise",
+									"excitement"
+								]
 							},
 							{
 								"text": "A funny character",
 								"time": 31.995971,
 								"sentiment": 0.9,
-								"emotions": ["joy", "surprise"]
+								"emotions": [
+									"joy",
+									"surprise"
+								]
 							}
 						],
 						"disliked": [
@@ -755,13 +1057,18 @@
 								"text": "Don't like spits",
 								"time": 18.57062,
 								"sentiment": -0.8,
-								"emotions": ["disgust", "anger"]
+								"emotions": [
+									"disgust",
+									"anger"
+								]
 							},
 							{
 								"text": "why there is so many orange buttons?",
 								"time": 43.287929,
 								"sentiment": -0.7,
-								"emotions": ["confusion"]
+								"emotions": [
+									"confusion"
+								]
 							},
 							{
 								"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
@@ -782,7 +1089,11 @@
 		"title": "Audience Response Comparison",
 		"body": "The first Inside Out 2 trailer drew by far the most audience response (1,470 views, 174 responses, 4.7/5), while the second Inside Out 2 upload and A Man Called Otto have almost none.",
 		"data": {
-			"videoIds": ["vuvIanfCkI8R", "v5hGg1VcDnhr", "vHgqYPjduiQ9"],
+			"videoIds": [
+				"vuvIanfCkI8R",
+				"v5hGg1VcDnhr",
+				"vHgqYPjduiQ9"
+			],
 			"focus": "audience",
 			"videos": [
 				{
@@ -875,25 +1186,38 @@
 								"text": "Love this guy :D :D :D",
 								"time": 121.5272819,
 								"sentiment": 0.9,
-								"emotions": ["joy", "admiration"]
+								"emotions": [
+									"joy",
+									"admiration"
+								]
 							},
 							{
 								"text": "love it so far! can't wait for a release 🫢",
 								"time": 105.798732,
 								"sentiment": 0.9,
-								"emotions": ["joy", "anticipation", "excitement"]
+								"emotions": [
+									"joy",
+									"anticipation",
+									"excitement"
+								]
 							},
 							{
 								"text": "Wow, cool turn of events",
 								"time": 101.972927,
 								"sentiment": 0.9,
-								"emotions": ["surprise", "excitement"]
+								"emotions": [
+									"surprise",
+									"excitement"
+								]
 							},
 							{
 								"text": "A funny character",
 								"time": 31.995971,
 								"sentiment": 0.9,
-								"emotions": ["joy", "surprise"]
+								"emotions": [
+									"joy",
+									"surprise"
+								]
 							}
 						],
 						"disliked": [
@@ -907,13 +1231,18 @@
 								"text": "Don't like spits",
 								"time": 18.57062,
 								"sentiment": -0.8,
-								"emotions": ["disgust", "anger"]
+								"emotions": [
+									"disgust",
+									"anger"
+								]
 							},
 							{
 								"text": "why there is so many orange buttons?",
 								"time": 43.287929,
 								"sentiment": -0.7,
-								"emotions": ["confusion"]
+								"emotions": [
+									"confusion"
+								]
 							},
 							{
 								"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
@@ -963,13 +1292,21 @@
 								"text": "nice scene!",
 								"time": 27.134968,
 								"sentiment": 0.8,
-								"emotions": ["appreciation", "excitement", "optimism"]
+								"emotions": [
+									"appreciation",
+									"excitement",
+									"optimism"
+								]
 							},
 							{
 								"text": "wow what wonderful moment!",
 								"time": 17.767198,
 								"sentiment": 0.8,
-								"emotions": ["appreciation", "excitement", "optimism"]
+								"emotions": [
+									"appreciation",
+									"excitement",
+									"optimism"
+								]
 							}
 						],
 						"disliked": [],
@@ -997,7 +1334,10 @@
 								"text": "Woooow",
 								"time": 88.48518,
 								"sentiment": 0.3,
-								"emotions": ["excitement", "appreciation"]
+								"emotions": [
+									"excitement",
+									"appreciation"
+								]
 							}
 						],
 						"disliked": [],
@@ -1018,13 +1358,24 @@
 					"id": "817fbb50",
 					"type": "choice",
 					"text": "How would you rate this trailer overall?",
-					"options": ["Excellent", "Good", "Average", "Poor"]
+					"options": [
+						"Excellent",
+						"Good",
+						"Average",
+						"Poor"
+					]
 				},
 				{
 					"id": "2ffb731f",
 					"type": "choice",
 					"text": "How likely are you to watch the full film after seeing this trailer?",
-					"options": ["Definitely", "Probably", "Not sure", "Probably not", "Definitely not"]
+					"options": [
+						"Definitely",
+						"Probably",
+						"Not sure",
+						"Probably not",
+						"Definitely not"
+					]
 				},
 				{
 					"id": "83e23b37",
@@ -1047,13 +1398,22 @@
 					"id": "c6c8cc0e",
 					"type": "choice",
 					"text": "Did the trailer give you a clear idea of what the film is about?",
-					"options": ["Very clear", "Somewhat clear", "Not very clear", "Not clear at all"]
+					"options": [
+						"Very clear",
+						"Somewhat clear",
+						"Not very clear",
+						"Not clear at all"
+					]
 				},
 				{
 					"id": "e386fb21",
 					"type": "choice",
 					"text": "How did you find the tone and intensity of the trailer?",
-					"options": ["Too heavy", "Just right", "Not intense enough"]
+					"options": [
+						"Too heavy",
+						"Just right",
+						"Not intense enough"
+					]
 				},
 				{
 					"id": "6b6fffdb",
@@ -1092,7 +1452,12 @@
 					"id": "5a389eba",
 					"type": "choice",
 					"text": "How interested are you in seeing this film?",
-					"options": ["Very interested", "Somewhat interested", "Neutral", "Not interested"]
+					"options": [
+						"Very interested",
+						"Somewhat interested",
+						"Neutral",
+						"Not interested"
+					]
 				},
 				{
 					"id": "cde6ca46",
@@ -1138,7 +1503,12 @@
 					"id": "7e89dc59",
 					"type": "choice",
 					"text": "How likely are you to recommend this trailer to a friend?",
-					"options": ["Very likely", "Likely", "Unlikely", "Very unlikely"]
+					"options": [
+						"Very likely",
+						"Likely",
+						"Unlikely",
+						"Very unlikely"
+					]
 				}
 			],
 			"sample": {
@@ -1302,7 +1672,12 @@
 						},
 						"5a389eba": {
 							"responses": 93,
-							"counts": [35, 32, 16, 10],
+							"counts": [
+								35,
+								32,
+								16,
+								10
+							],
 							"people": [
 								{
 									"respondent": 78,
@@ -1416,7 +1791,13 @@
 						},
 						"cde6ca46": {
 							"responses": 91,
-							"counts": [37, 20, 11, 17, 6],
+							"counts": [
+								37,
+								20,
+								11,
+								17,
+								6
+							],
 							"people": [
 								{
 									"respondent": 78,
@@ -1530,7 +1911,12 @@
 						},
 						"fb6136e6": {
 							"responses": 89,
-							"counts": [29, 37, 16, 7],
+							"counts": [
+								29,
+								37,
+								16,
+								7
+							],
 							"people": [
 								{
 									"respondent": 73,
@@ -1644,7 +2030,12 @@
 						},
 						"1e496a9d": {
 							"responses": 87,
-							"counts": [45, 24, 8, 10],
+							"counts": [
+								45,
+								24,
+								8,
+								10
+							],
 							"people": [
 								{
 									"respondent": 62,
@@ -1889,7 +2280,12 @@
 						},
 						"7e89dc59": {
 							"responses": 82,
-							"counts": [18, 32, 22, 10],
+							"counts": [
+								18,
+								32,
+								22,
+								10
+							],
 							"people": [
 								{
 									"respondent": 55,
@@ -1998,6 +2394,2013 @@
 									"age": "18–23",
 									"when": "13 days ago",
 									"option": 2
+								}
+							]
+						}
+					},
+					"by": "lumi"
+				}
+			}
+		}
+	},
+	"Inside Out 2 Reception · Inside Out 2 trailer: viewer data": {
+		"id": "d1ad3336",
+		"type": "insights",
+		"title": "Inside Out 2 trailer: viewer data",
+		"body": "Viewers loved it (4.7/5, mostly positive comments), with a few nitpicks about visuals.",
+		"data": {
+			"videoId": "vuvIanfCkI8R",
+			"views": 0,
+			"responses": 174,
+			"rating": {
+				"average": 4.7,
+				"max": 5,
+				"count": 21
+			},
+			"sentiment": {
+				"positive": 23,
+				"neutral": 10,
+				"negative": 7
+			},
+			"questions": [
+				{
+					"question": "Choose a character whose emotions you would like to see the most",
+					"type": "hotspot",
+					"responses": 39,
+					"options": [
+						{
+							"label": "Little girl",
+							"count": 23
+						},
+						{
+							"label": "Dad",
+							"count": 9
+						},
+						{
+							"label": "Mom",
+							"count": 4
+						}
+					]
+				},
+				{
+					"question": "How do you feel about new emotions?",
+					"type": "slider",
+					"responses": 28,
+					"average": 8.1,
+					"max": 10
+				},
+				{
+					"question": "Which new emotion is the most interesting for you?",
+					"type": "choice",
+					"responses": 21,
+					"options": [
+						{
+							"label": "Embarrassment",
+							"count": 8
+						},
+						{
+							"label": "Anxiety",
+							"count": 7
+						},
+						{
+							"label": "Envy",
+							"count": 3
+						},
+						{
+							"label": "Ennui",
+							"count": 3
+						}
+					]
+				},
+				{
+					"question": "Rate this trailer!",
+					"type": "rating",
+					"responses": 20,
+					"average": 4.8,
+					"max": 5
+				},
+				{
+					"question": "How likely are you to see this movie when it comes out?",
+					"type": "slider",
+					"responses": 17,
+					"average": 8.4,
+					"max": 10
+				}
+			],
+			"liked": [
+				{
+					"text": "Love this guy :D :D :D",
+					"time": 121.5272819,
+					"sentiment": 0.9,
+					"emotions": [
+						"joy",
+						"admiration"
+					]
+				},
+				{
+					"text": "love it so far! can't wait for a release 🫢",
+					"time": 105.798732,
+					"sentiment": 0.9,
+					"emotions": [
+						"joy",
+						"anticipation",
+						"excitement"
+					]
+				},
+				{
+					"text": "Wow, cool turn of events",
+					"time": 101.972927,
+					"sentiment": 0.9,
+					"emotions": [
+						"surprise",
+						"excitement"
+					]
+				},
+				{
+					"text": "A funny character",
+					"time": 31.995971,
+					"sentiment": 0.9,
+					"emotions": [
+						"joy",
+						"surprise"
+					]
+				}
+			],
+			"disliked": [
+				{
+					"text": "hair looks a bit noisy",
+					"time": 17.6437823,
+					"sentiment": -0.8,
+					"emotions": []
+				},
+				{
+					"text": "Don't like spits",
+					"time": 18.57062,
+					"sentiment": -0.8,
+					"emotions": [
+						"disgust",
+						"anger"
+					]
+				},
+				{
+					"text": "why there is so many orange buttons?",
+					"time": 43.287929,
+					"sentiment": -0.7,
+					"emotions": [
+						"confusion"
+					]
+				},
+				{
+					"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
+					"time": 103.05962,
+					"sentiment": -0.5,
+					"emotions": []
+				}
+			],
+			"comments": [
+				{
+					"text": "Love her",
+					"time": 1.126748,
+					"sentiment": 0.8,
+					"emotions": [
+						"appreciation",
+						"enjoyment"
+					]
+				},
+				{
+					"text": "wooow",
+					"time": 1.698128,
+					"sentiment": 0.3,
+					"emotions": [
+						"surprise"
+					]
+				},
+				{
+					"text": "This scene is good but not great",
+					"time": 2.618375,
+					"sentiment": 0.2,
+					"emotions": [
+						"appreciation",
+						"disappointment"
+					]
+				},
+				{
+					"text": "gg",
+					"time": 3.238196,
+					"sentiment": 0,
+					"emotions": []
+				},
+				{
+					"text": "goood",
+					"time": 3.824154,
+					"sentiment": 0,
+					"emotions": []
+				},
+				{
+					"text": "Love the transition",
+					"time": 3.9243778,
+					"sentiment": 0.9,
+					"emotions": [
+						"admiration",
+						"joy"
+					]
+				},
+				{
+					"text": "I love this scene!",
+					"time": 4.995538,
+					"sentiment": 0.8,
+					"emotions": [
+						"appreciation",
+						"excitement",
+						"optimism"
+					]
+				},
+				{
+					"text": "ok",
+					"time": 6.335371182373457,
+					"sentiment": 0,
+					"emotions": []
+				},
+				{
+					"text": "what a nice moment!",
+					"time": 6.709729,
+					"sentiment": 0.8,
+					"emotions": [
+						"appreciation",
+						"optimism"
+					]
+				},
+				{
+					"text": "WOw what a nice moment!",
+					"time": 8.049049,
+					"sentiment": 0.8,
+					"emotions": [
+						"appreciation",
+						"excitement",
+						"optimism"
+					]
+				},
+				{
+					"text": "gddg",
+					"time": 8.109088,
+					"sentiment": 0,
+					"emotions": []
+				},
+				{
+					"text": "love it",
+					"time": 10.817289707661601,
+					"sentiment": 0.8,
+					"emotions": [
+						"joy"
+					]
+				},
+				{
+					"text": "Like the start of the video",
+					"time": 11.410355,
+					"sentiment": 0.9,
+					"emotions": [
+						"admiration",
+						"joy"
+					]
+				},
+				{
+					"text": "What a dynamic start!",
+					"time": 11.705471,
+					"sentiment": 0.9,
+					"emotions": [
+						"excitement",
+						"admiration"
+					]
+				},
+				{
+					"text": "love this guy!",
+					"time": 12.2378786,
+					"sentiment": 0.9,
+					"emotions": [
+						"joy",
+						"admiration"
+					]
+				},
+				{
+					"text": "That's fire 🔥",
+					"time": 12.456641,
+					"sentiment": 0.5,
+					"emotions": [
+						"joy",
+						"excitement"
+					]
+				},
+				{
+					"text": "anger is the best",
+					"time": 12.9342121,
+					"sentiment": 0,
+					"emotions": [
+						"anger"
+					]
+				},
+				{
+					"text": "great shot",
+					"time": 14.879395,
+					"sentiment": 0.6,
+					"emotions": [
+						"enthusiasm"
+					]
+				},
+				{
+					"text": "love it",
+					"time": 14.988811,
+					"sentiment": 0.8,
+					"emotions": [
+						"appreciation",
+						"enjoyment"
+					]
+				},
+				{
+					"text": "Let's change head position a little bit. Now it feels unnatural",
+					"time": 15.136804,
+					"sentiment": -0.4,
+					"emotions": [
+						"confusion"
+					]
+				},
+				{
+					"text": "wow",
+					"time": 16.321607,
+					"sentiment": 0.9,
+					"emotions": [
+						"surprise"
+					]
+				},
+				{
+					"text": "Unreal usage of natural depth of blur. Looks cool and realistic",
+					"time": 16.52259,
+					"sentiment": 0.5,
+					"emotions": [
+						"admiration",
+						"joy"
+					]
+				},
+				{
+					"text": "hair looks a bit noisy",
+					"time": 17.6437823,
+					"sentiment": -0.8,
+					"emotions": []
+				},
+				{
+					"text": "Don't like spits",
+					"time": 18.57062,
+					"sentiment": -0.8,
+					"emotions": [
+						"disgust",
+						"anger"
+					]
+				},
+				{
+					"text": "Hah, funny awkward moment",
+					"time": 24.6847032,
+					"sentiment": 0.8,
+					"emotions": [
+						"joy",
+						"surprise"
+					]
+				},
+				{
+					"text": "A funny character",
+					"time": 31.995971,
+					"sentiment": 0.9,
+					"emotions": [
+						"joy",
+						"surprise"
+					]
+				},
+				{
+					"text": "Anxiety is weird.",
+					"time": 37.493244,
+					"sentiment": -0.2,
+					"emotions": [
+						"anxiety"
+					]
+				},
+				{
+					"text": "cool",
+					"time": 39.773582,
+					"sentiment": 0.4,
+					"emotions": [
+						"enjoyment"
+					]
+				},
+				{
+					"text": "This character looks out of this world. Maybe it is a good thing, but it is very different from others' styles",
+					"time": 41.8588279,
+					"sentiment": 0.4,
+					"emotions": [
+						"admiration",
+						"surprise"
+					]
+				},
+				{
+					"text": "I love disgust and envy too.",
+					"time": 42.894018,
+					"sentiment": -0.2,
+					"emotions": [
+						"disgust",
+						"envy"
+					]
+				},
+				{
+					"text": "why there is so many orange buttons?",
+					"time": 43.287929,
+					"sentiment": -0.7,
+					"emotions": [
+						"confusion"
+					]
+				},
+				{
+					"text": "Now I see almost all characters have \"noisy\" hair :D",
+					"time": 56.0025873,
+					"sentiment": -0.4,
+					"emotions": [
+						"joy",
+						"surprise"
+					]
+				},
+				{
+					"text": "kj",
+					"time": 67.313903,
+					"sentiment": 0,
+					"emotions": []
+				},
+				{
+					"text": "She's my favorite human character",
+					"time": 70.966361,
+					"sentiment": 0.6,
+					"emotions": [
+						"appreciation",
+						"optimism"
+					]
+				},
+				{
+					"text": "Wow, cool turn of events",
+					"time": 101.972927,
+					"sentiment": 0.9,
+					"emotions": [
+						"surprise",
+						"excitement"
+					]
+				},
+				{
+					"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
+					"time": 103.05962,
+					"sentiment": -0.5,
+					"emotions": []
+				},
+				{
+					"text": "love it so far! can't wait for a release 🫢",
+					"time": 105.798732,
+					"sentiment": 0.9,
+					"emotions": [
+						"joy",
+						"anticipation",
+						"excitement"
+					]
+				},
+				{
+					"text": "Too dramatic girl. Funny scene",
+					"time": 109.661179,
+					"sentiment": 0.1,
+					"emotions": [
+						"joy",
+						"surprise"
+					]
+				},
+				{
+					"text": "Love this guy :D :D :D",
+					"time": 121.5272819,
+					"sentiment": 0.9,
+					"emotions": [
+						"joy",
+						"admiration"
+					]
+				},
+				{
+					"text": "the aerial view has a different background than the ground view",
+					"time": 127.471601,
+					"sentiment": -0.4,
+					"emotions": []
+				}
+			],
+			"ratings": [
+				{
+					"time": 141.296116,
+					"value": 4,
+					"max": 5
+				},
+				{
+					"time": 141.296116,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.296116,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.296116,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.296116,
+					"value": 3,
+					"max": 5
+				},
+				{
+					"time": 141.296116,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.296116,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.296116,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.296116,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.330944,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.330944,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.330944,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.330944,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.330944,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.330944,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.330944,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.330944,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.330944,
+					"value": 5,
+					"max": 5
+				},
+				{
+					"time": 141.3309444,
+					"value": 3,
+					"max": 5
+				},
+				{
+					"time": 141.3309444,
+					"value": 4,
+					"max": 5
+				},
+				{
+					"time": 141.3309444,
+					"value": 5,
+					"max": 5
+				}
+			],
+			"fetchedAt": "2026-10-30T13:34:07.235Z"
+		}
+	},
+	"Inside Out 2 Reception · Inside Out 2 trailer": {
+		"id": "cbb6d101",
+		"type": "video",
+		"title": "Inside Out 2 trailer",
+		"body": "Riley turns thirteen, and new teenage emotions led by Anxiety move into Headquarters. Anxiety bottles up Joy and the original emotions in a glass jar. They then try to get back and protect Riley's identity.",
+		"data": {
+			"videoId": "vuvIanfCkI8R",
+			"poster": "/fixtures/a951dfc989c0.jpg",
+			"duration": 144.561089,
+			"scenes": [
+				{
+					"title": "Riley Turns Thirteen",
+					"start": 0,
+					"end": 29,
+					"thumb": "/fixtures/b97eba42a36d.jpg"
+				},
+				{
+					"title": "Meet the New Emotions",
+					"start": 29,
+					"end": 66,
+					"thumb": "/fixtures/602904ee6dc2.jpg"
+				},
+				{
+					"title": "High School Anxiety & Headquarters Takeover",
+					"start": 66,
+					"end": 100,
+					"thumb": "/fixtures/0e85fb778ce1.jpg"
+				},
+				{
+					"title": "Suppressed Emotions & The Sar-chasm",
+					"start": 100,
+					"end": 145,
+					"thumb": "/fixtures/e9a0d0b2025e.jpg"
+				}
+			],
+			"characters": [
+				{
+					"name": "Anger",
+					"role": "Comic Relief",
+					"actor": "Lewis Black",
+					"image": "/fixtures/7089420d6d91.jpg",
+					"appearances": [
+						{
+							"start": 8,
+							"end": 66
+						},
+						{
+							"start": 85,
+							"end": 145
+						}
+					]
+				},
+				{
+					"name": "Anxiety",
+					"role": "Antagonist",
+					"actor": "Maya Hawke",
+					"image": "/fixtures/86a06427d6f6.jpg",
+					"appearances": [
+						{
+							"start": 29,
+							"end": 116
+						}
+					]
+				},
+				{
+					"name": "Disgust",
+					"role": "Sidekick",
+					"actor": "Liza Lapira",
+					"image": "/fixtures/41c6b121b506.jpg",
+					"appearances": [
+						{
+							"start": 0,
+							"end": 20
+						},
+						{
+							"start": 29,
+							"end": 66
+						},
+						{
+							"start": 85,
+							"end": 145
+						}
+					]
+				},
+				{
+					"name": "Fear",
+					"role": "Comic Relief",
+					"actor": "Tony Hale",
+					"image": "/fixtures/7089420d6d91.jpg",
+					"appearances": [
+						{
+							"start": 8,
+							"end": 52
+						},
+						{
+							"start": 85,
+							"end": 145
+						}
+					]
+				},
+				{
+					"name": "Joy",
+					"role": "Hero",
+					"actor": "Amy Poehler",
+					"image": "/fixtures/41c6b121b506.jpg",
+					"appearances": [
+						{
+							"start": 0,
+							"end": 145
+						}
+					]
+				},
+				{
+					"name": "Riley Andersen",
+					"role": "Hero",
+					"actor": "Kensington Tallman",
+					"image": "/fixtures/41c6b121b506.jpg",
+					"appearances": [
+						{
+							"start": 0,
+							"end": 29
+						},
+						{
+							"start": 66,
+							"end": 116
+						}
+					]
+				}
+			],
+			"themes": [
+				{
+					"name": "Adolescence and Identity",
+					"description": "Exploration of the psychological and social shifts during puberty as new, complex emotions challenge childhood core beliefs.",
+					"appearances": [
+						{
+							"start": 20,
+							"end": 29
+						},
+						{
+							"start": 66,
+							"end": 128
+						}
+					]
+				},
+				{
+					"name": "Peer Acceptance",
+					"description": "The intense desire of teenagers to fit in with admired older peers, frequently resulting in social anxiety and self-doubt.",
+					"appearances": [
+						{
+							"start": 66,
+							"end": 100
+						}
+					]
+				},
+				{
+					"name": "Emotional Suppression",
+					"description": "The conflict created when anxious, new emotional states attempt to bottle up and replace existing fundamental feelings.",
+					"appearances": [
+						{
+							"start": 85,
+							"end": 116
+						}
+					]
+				}
+			],
+			"brands": [
+				{
+					"name": "Disney",
+					"category": "Theatrical Movies",
+					"time": 8,
+					"appearances": [
+						{
+							"start": 8,
+							"end": 20
+						},
+						{
+							"start": 128,
+							"end": 145
+						}
+					]
+				},
+				{
+					"name": "Pixar Animation Studios",
+					"category": "Theatrical Movies",
+					"time": 8,
+					"appearances": [
+						{
+							"start": 8,
+							"end": 20
+						},
+						{
+							"start": 128,
+							"end": 145
+						}
+					]
+				}
+			],
+			"viewers": {
+				"videoId": "vuvIanfCkI8R",
+				"views": 0,
+				"responses": 174,
+				"rating": {
+					"average": 4.7,
+					"max": 5,
+					"count": 21
+				},
+				"sentiment": {
+					"positive": 23,
+					"neutral": 10,
+					"negative": 7
+				},
+				"questions": [
+					{
+						"question": "Choose a character whose emotions you would like to see the most",
+						"type": "hotspot",
+						"responses": 39,
+						"options": [
+							{
+								"label": "Little girl",
+								"count": 23
+							},
+							{
+								"label": "Dad",
+								"count": 9
+							},
+							{
+								"label": "Mom",
+								"count": 4
+							}
+						]
+					},
+					{
+						"question": "How do you feel about new emotions?",
+						"type": "slider",
+						"responses": 28,
+						"average": 8.1,
+						"max": 10
+					},
+					{
+						"question": "Which new emotion is the most interesting for you?",
+						"type": "choice",
+						"responses": 21,
+						"options": [
+							{
+								"label": "Embarrassment",
+								"count": 8
+							},
+							{
+								"label": "Anxiety",
+								"count": 7
+							},
+							{
+								"label": "Envy",
+								"count": 3
+							},
+							{
+								"label": "Ennui",
+								"count": 3
+							}
+						]
+					},
+					{
+						"question": "Rate this trailer!",
+						"type": "rating",
+						"responses": 20,
+						"average": 4.8,
+						"max": 5
+					},
+					{
+						"question": "How likely are you to see this movie when it comes out?",
+						"type": "slider",
+						"responses": 17,
+						"average": 8.4,
+						"max": 10
+					}
+				],
+				"liked": [
+					{
+						"text": "Love this guy :D :D :D",
+						"time": 121.5272819,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"admiration"
+						]
+					},
+					{
+						"text": "love it so far! can't wait for a release 🫢",
+						"time": 105.798732,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"anticipation",
+							"excitement"
+						]
+					},
+					{
+						"text": "Wow, cool turn of events",
+						"time": 101.972927,
+						"sentiment": 0.9,
+						"emotions": [
+							"surprise",
+							"excitement"
+						]
+					},
+					{
+						"text": "A funny character",
+						"time": 31.995971,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"surprise"
+						]
+					}
+				],
+				"disliked": [
+					{
+						"text": "hair looks a bit noisy",
+						"time": 17.6437823,
+						"sentiment": -0.8,
+						"emotions": []
+					},
+					{
+						"text": "Don't like spits",
+						"time": 18.57062,
+						"sentiment": -0.8,
+						"emotions": [
+							"disgust",
+							"anger"
+						]
+					},
+					{
+						"text": "why there is so many orange buttons?",
+						"time": 43.287929,
+						"sentiment": -0.7,
+						"emotions": [
+							"confusion"
+						]
+					},
+					{
+						"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
+						"time": 103.05962,
+						"sentiment": -0.5,
+						"emotions": []
+					}
+				],
+				"comments": [
+					{
+						"text": "Love her",
+						"time": 1.126748,
+						"sentiment": 0.8,
+						"emotions": [
+							"appreciation",
+							"enjoyment"
+						]
+					},
+					{
+						"text": "wooow",
+						"time": 1.698128,
+						"sentiment": 0.3,
+						"emotions": [
+							"surprise"
+						]
+					},
+					{
+						"text": "This scene is good but not great",
+						"time": 2.618375,
+						"sentiment": 0.2,
+						"emotions": [
+							"appreciation",
+							"disappointment"
+						]
+					},
+					{
+						"text": "gg",
+						"time": 3.238196,
+						"sentiment": 0,
+						"emotions": []
+					},
+					{
+						"text": "goood",
+						"time": 3.824154,
+						"sentiment": 0,
+						"emotions": []
+					},
+					{
+						"text": "Love the transition",
+						"time": 3.9243778,
+						"sentiment": 0.9,
+						"emotions": [
+							"admiration",
+							"joy"
+						]
+					},
+					{
+						"text": "I love this scene!",
+						"time": 4.995538,
+						"sentiment": 0.8,
+						"emotions": [
+							"appreciation",
+							"excitement",
+							"optimism"
+						]
+					},
+					{
+						"text": "ok",
+						"time": 6.335371182373457,
+						"sentiment": 0,
+						"emotions": []
+					},
+					{
+						"text": "what a nice moment!",
+						"time": 6.709729,
+						"sentiment": 0.8,
+						"emotions": [
+							"appreciation",
+							"optimism"
+						]
+					},
+					{
+						"text": "WOw what a nice moment!",
+						"time": 8.049049,
+						"sentiment": 0.8,
+						"emotions": [
+							"appreciation",
+							"excitement",
+							"optimism"
+						]
+					},
+					{
+						"text": "gddg",
+						"time": 8.109088,
+						"sentiment": 0,
+						"emotions": []
+					},
+					{
+						"text": "love it",
+						"time": 10.817289707661601,
+						"sentiment": 0.8,
+						"emotions": [
+							"joy"
+						]
+					},
+					{
+						"text": "Like the start of the video",
+						"time": 11.410355,
+						"sentiment": 0.9,
+						"emotions": [
+							"admiration",
+							"joy"
+						]
+					},
+					{
+						"text": "What a dynamic start!",
+						"time": 11.705471,
+						"sentiment": 0.9,
+						"emotions": [
+							"excitement",
+							"admiration"
+						]
+					},
+					{
+						"text": "love this guy!",
+						"time": 12.2378786,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"admiration"
+						]
+					},
+					{
+						"text": "That's fire 🔥",
+						"time": 12.456641,
+						"sentiment": 0.5,
+						"emotions": [
+							"joy",
+							"excitement"
+						]
+					},
+					{
+						"text": "anger is the best",
+						"time": 12.9342121,
+						"sentiment": 0,
+						"emotions": [
+							"anger"
+						]
+					},
+					{
+						"text": "great shot",
+						"time": 14.879395,
+						"sentiment": 0.6,
+						"emotions": [
+							"enthusiasm"
+						]
+					},
+					{
+						"text": "love it",
+						"time": 14.988811,
+						"sentiment": 0.8,
+						"emotions": [
+							"appreciation",
+							"enjoyment"
+						]
+					},
+					{
+						"text": "Let's change head position a little bit. Now it feels unnatural",
+						"time": 15.136804,
+						"sentiment": -0.4,
+						"emotions": [
+							"confusion"
+						]
+					},
+					{
+						"text": "wow",
+						"time": 16.321607,
+						"sentiment": 0.9,
+						"emotions": [
+							"surprise"
+						]
+					},
+					{
+						"text": "Unreal usage of natural depth of blur. Looks cool and realistic",
+						"time": 16.52259,
+						"sentiment": 0.5,
+						"emotions": [
+							"admiration",
+							"joy"
+						]
+					},
+					{
+						"text": "hair looks a bit noisy",
+						"time": 17.6437823,
+						"sentiment": -0.8,
+						"emotions": []
+					},
+					{
+						"text": "Don't like spits",
+						"time": 18.57062,
+						"sentiment": -0.8,
+						"emotions": [
+							"disgust",
+							"anger"
+						]
+					},
+					{
+						"text": "Hah, funny awkward moment",
+						"time": 24.6847032,
+						"sentiment": 0.8,
+						"emotions": [
+							"joy",
+							"surprise"
+						]
+					},
+					{
+						"text": "A funny character",
+						"time": 31.995971,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"surprise"
+						]
+					},
+					{
+						"text": "Anxiety is weird.",
+						"time": 37.493244,
+						"sentiment": -0.2,
+						"emotions": [
+							"anxiety"
+						]
+					},
+					{
+						"text": "cool",
+						"time": 39.773582,
+						"sentiment": 0.4,
+						"emotions": [
+							"enjoyment"
+						]
+					},
+					{
+						"text": "This character looks out of this world. Maybe it is a good thing, but it is very different from others' styles",
+						"time": 41.8588279,
+						"sentiment": 0.4,
+						"emotions": [
+							"admiration",
+							"surprise"
+						]
+					},
+					{
+						"text": "I love disgust and envy too.",
+						"time": 42.894018,
+						"sentiment": -0.2,
+						"emotions": [
+							"disgust",
+							"envy"
+						]
+					},
+					{
+						"text": "why there is so many orange buttons?",
+						"time": 43.287929,
+						"sentiment": -0.7,
+						"emotions": [
+							"confusion"
+						]
+					},
+					{
+						"text": "Now I see almost all characters have \"noisy\" hair :D",
+						"time": 56.0025873,
+						"sentiment": -0.4,
+						"emotions": [
+							"joy",
+							"surprise"
+						]
+					},
+					{
+						"text": "kj",
+						"time": 67.313903,
+						"sentiment": 0,
+						"emotions": []
+					},
+					{
+						"text": "She's my favorite human character",
+						"time": 70.966361,
+						"sentiment": 0.6,
+						"emotions": [
+							"appreciation",
+							"optimism"
+						]
+					},
+					{
+						"text": "Wow, cool turn of events",
+						"time": 101.972927,
+						"sentiment": 0.9,
+						"emotions": [
+							"surprise",
+							"excitement"
+						]
+					},
+					{
+						"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
+						"time": 103.05962,
+						"sentiment": -0.5,
+						"emotions": []
+					},
+					{
+						"text": "love it so far! can't wait for a release 🫢",
+						"time": 105.798732,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"anticipation",
+							"excitement"
+						]
+					},
+					{
+						"text": "Too dramatic girl. Funny scene",
+						"time": 109.661179,
+						"sentiment": 0.1,
+						"emotions": [
+							"joy",
+							"surprise"
+						]
+					},
+					{
+						"text": "Love this guy :D :D :D",
+						"time": 121.5272819,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"admiration"
+						]
+					},
+					{
+						"text": "the aerial view has a different background than the ground view",
+						"time": 127.471601,
+						"sentiment": -0.4,
+						"emotions": []
+					}
+				],
+				"ratings": [
+					{
+						"time": 141.296116,
+						"value": 4,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 3,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.3309444,
+						"value": 3,
+						"max": 5
+					},
+					{
+						"time": 141.3309444,
+						"value": 4,
+						"max": 5
+					},
+					{
+						"time": 141.3309444,
+						"value": 5,
+						"max": 5
+					}
+				],
+				"fetchedAt": "2026-10-30T13:34:07.235Z"
+			}
+		}
+	},
+	"Inside Out 2 Reception · Inside Out 2 trailer study": {
+		"id": "7e83395d",
+		"type": "study",
+		"title": "Inside Out 2 trailer study",
+		"data": {
+			"questions": [
+				{
+					"id": "d63c2a3e",
+					"type": "video",
+					"text": "",
+					"videoId": "vuvIanfCkI8R",
+					"questions": [
+						{
+							"id": "778fe4f1",
+							"type": "scale",
+							"text": "How do you feel about the new emotions?",
+							"time": 66
+						},
+						{
+							"id": "11703c95",
+							"type": "open",
+							"text": "What went through your mind when Anxiety bottled up Joy and the others?",
+							"placeholder": "My first reaction was…",
+							"time": 109
+						}
+					],
+					"videoName": "Inside Out 2 | Trailer 1"
+				},
+				{
+					"id": "f9372da8",
+					"type": "choice",
+					"text": "Which new emotion would you most like to see more of?",
+					"options": [
+						"Anxiety",
+						"Embarrassment",
+						"Envy",
+						"Ennui"
+					]
+				}
+			],
+			"sample": {
+				"enabled": true,
+				"results": {
+					"basis": "[6,[\"video\",null,\"\",\"vuvIanfCkI8R\",null],[\"scale\",66,\"How do you feel about the new emotions?\",null,null],[\"open\",109,\"What went through your mind when Anxiety bottled up Joy and the others?\",null,null],[\"choice\",null,\"Which new emotion would you most like to see more of?\",[\"Anxiety\",\"Embarrassment\",\"Envy\",\"Ennui\"],null]]",
+					"views": 92,
+					"completion": 86,
+					"rating": 77,
+					"sentiment": {
+						"positive": 58,
+						"neutral": 25,
+						"negative": 17
+					},
+					"summary": "Viewers were warm toward the trailer, and many said it made them emotional or nostalgic. Anxiety was the clear standout, seen as the most relatable new character, with Ennui a close second for laughs. The criticism was that Joy seems sidelined, and a few wondered whether a sequel can match the first film.",
+					"insights": [
+						{
+							"title": "Anxiety steals the show",
+							"body": "Anxiety is the favorite new emotion (41%), and many open answers said the bottling-up scene felt uncomfortably true to life. It drew the strongest emotional reactions in the study."
+						},
+						{
+							"title": "Fans fear for Joy",
+							"body": "A vocal minority felt uneasy about Joy being pushed aside, and some worried the sequel would lean too hard on the original formula. Those comments lower the neutral and negative scores without hurting the overall rating."
+						}
+					],
+					"quote": {
+						"text": "I felt my chest tighten watching Joy get shoved into that bottle. That's literally what my brain does at 2am, and I kind of loved and hated how accurate it was.",
+						"who": "Respondent, 24–32"
+					},
+					"questions": {
+						"d63c2a3e": {
+							"responses": 89,
+							"counts": [
+								60,
+								19,
+								10
+							],
+							"people": [
+								{
+									"respondent": 62,
+									"age": "45+",
+									"when": "Today",
+									"text": "Honestly this feels like the first movie with extra characters. Not sure we needed it.",
+									"sentiment": "negative",
+									"time": 96,
+									"rating": 2
+								},
+								{
+									"respondent": 75,
+									"age": "24–32",
+									"when": "Today",
+									"text": "Anxiety taking over the console is a bit stressful to watch, in a good way.",
+									"sentiment": "positive",
+									"time": 121,
+									"rating": 4
+								},
+								{
+									"respondent": 10,
+									"age": "33–44",
+									"when": "Today",
+									"text": "Great trailer. I'll be taking my kids and honestly I'm more excited than they are.",
+									"sentiment": "positive",
+									"time": 142,
+									"rating": 5
+								},
+								{
+									"respondent": 69,
+									"age": "33–44",
+									"when": "Yesterday",
+									"text": "The demolition crew coming in is a funny way to show growing up.",
+									"sentiment": "positive",
+									"time": 38,
+									"rating": 4
+								},
+								{
+									"respondent": 52,
+									"age": "18–23",
+									"when": "Yesterday",
+									"text": "Anxiety's design is perfect. That frazzled hair and those wide eyes!",
+									"sentiment": "positive",
+									"time": 61,
+									"rating": 5
+								},
+								{
+									"respondent": 38,
+									"age": "33–44",
+									"when": "3 days ago",
+									"text": "Riley is a teenager now?? I feel old.",
+									"sentiment": "positive",
+									"time": 14,
+									"rating": 4
+								},
+								{
+									"respondent": 61,
+									"age": "24–32",
+									"when": "3 days ago",
+									"text": "Ennui already made me laugh without doing anything. Ha!",
+									"sentiment": "positive",
+									"time": 72,
+									"rating": 5
+								},
+								{
+									"respondent": 53,
+									"age": "18–23",
+									"when": "4 days ago",
+									"text": "The puberty alarm gag is hilarious. Classic Pixar humor.",
+									"sentiment": "positive",
+									"time": 27,
+									"rating": 5
+								},
+								{
+									"respondent": 71,
+									"age": "18–23",
+									"when": "5 days ago",
+									"text": "Joy in the bottle looks heartbreaking. I'll definitely cry at this.",
+									"sentiment": "positive",
+									"time": 132,
+									"rating": 5
+								},
+								{
+									"respondent": 41,
+									"age": "18–23",
+									"when": "8 days ago",
+									"text": "Embarrassment hiding in his hoodie is so relatable, I'm dying.",
+									"sentiment": "positive",
+									"time": 88,
+									"rating": 4
+								},
+								{
+									"respondent": 47,
+									"age": "33–44",
+									"when": "9 days ago",
+									"text": "A lot of new characters in two minutes. Hope they all get real screen time.",
+									"sentiment": "neutral",
+									"time": 80,
+									"rating": 3
+								},
+								{
+									"respondent": 82,
+									"age": "24–32",
+									"when": "9 days ago",
+									"text": "Wait, they're pushing Joy out of headquarters? That's brutal.",
+									"sentiment": "neutral",
+									"time": 104,
+									"rating": 4
+								},
+								{
+									"respondent": 40,
+									"age": "33–44",
+									"when": "9 days ago",
+									"text": "The music here gives me chills. Pixar knows how to hit the heart.",
+									"sentiment": "positive",
+									"time": 113,
+									"rating": 5
+								},
+								{
+									"respondent": 64,
+									"age": "24–32",
+									"when": "10 days ago",
+									"text": "Okay, the nostalgia of seeing Riley's headquarters again is hitting hard already.",
+									"sentiment": "positive",
+									"time": 6,
+									"rating": 5
+								},
+								{
+									"respondent": 5,
+									"age": "24–32",
+									"when": "11 days ago",
+									"text": "Everything about Riley's new feelings seems so true to being thirteen.",
+									"sentiment": "positive",
+									"time": 84,
+									"rating": 4
+								},
+								{
+									"respondent": 15,
+									"age": "45+",
+									"when": "12 days ago",
+									"text": "Fine so far, but I'm waiting to see what's actually new here.",
+									"sentiment": "neutral",
+									"time": 49,
+									"rating": 3
+								},
+								{
+									"respondent": 18,
+									"age": "33–44",
+									"when": "12 days ago",
+									"text": "It's cute, but the trailer shows too many of the jokes already.",
+									"sentiment": "negative",
+									"time": 138,
+									"rating": 2
+								},
+								{
+									"respondent": 36,
+									"age": "45+",
+									"when": "13 days ago",
+									"text": "Looks good, though I'll wait for reviews before booking tickets.",
+									"sentiment": "neutral",
+									"time": 143,
+									"rating": 3
+								}
+							]
+						},
+						"778fe4f1": {
+							"responses": 86,
+							"counts": [
+								1,
+								1,
+								2,
+								2,
+								2,
+								4,
+								6,
+								14,
+								20,
+								20,
+								14
+							],
+							"people": [
+								{
+									"respondent": 75,
+									"age": "24–32",
+									"when": "Today",
+									"value": 6
+								},
+								{
+									"respondent": 16,
+									"age": "24–32",
+									"when": "Today",
+									"value": 7
+								},
+								{
+									"respondent": 69,
+									"age": "33–44",
+									"when": "Yesterday",
+									"value": 5
+								},
+								{
+									"respondent": 6,
+									"age": "45+",
+									"when": "2 days ago",
+									"value": 0
+								},
+								{
+									"respondent": 61,
+									"age": "24–32",
+									"when": "3 days ago",
+									"value": 10
+								},
+								{
+									"respondent": 38,
+									"age": "33–44",
+									"when": "3 days ago",
+									"value": 9
+								},
+								{
+									"respondent": 54,
+									"age": "45+",
+									"when": "4 days ago",
+									"value": 1
+								},
+								{
+									"respondent": 71,
+									"age": "18–23",
+									"when": "5 days ago",
+									"value": 7
+								},
+								{
+									"respondent": 25,
+									"age": "18–23",
+									"when": "5 days ago",
+									"value": 2
+								},
+								{
+									"respondent": 26,
+									"age": "45+",
+									"when": "6 days ago",
+									"value": 10
+								},
+								{
+									"respondent": 8,
+									"age": "18–23",
+									"when": "7 days ago",
+									"value": 9
+								},
+								{
+									"respondent": 70,
+									"age": "18–23",
+									"when": "7 days ago",
+									"value": 8
+								},
+								{
+									"respondent": 82,
+									"age": "24–32",
+									"when": "9 days ago",
+									"value": 10
+								},
+								{
+									"respondent": 47,
+									"age": "33–44",
+									"when": "9 days ago",
+									"value": 9
+								},
+								{
+									"respondent": 81,
+									"age": "18–23",
+									"when": "10 days ago",
+									"value": 3
+								},
+								{
+									"respondent": 73,
+									"age": "18–23",
+									"when": "11 days ago",
+									"value": 4
+								},
+								{
+									"respondent": 77,
+									"age": "45+",
+									"when": "11 days ago",
+									"value": 8
+								},
+								{
+									"respondent": 5,
+									"age": "24–32",
+									"when": "11 days ago",
+									"value": 8
+								}
+							]
+						},
+						"11703c95": {
+							"responses": 82,
+							"people": [
+								{
+									"respondent": 75,
+									"age": "24–32",
+									"when": "Today",
+									"text": "Honestly, that's me every time I overthink a text message. It hit way too close to home.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 16,
+									"age": "24–32",
+									"when": "Today",
+									"text": "Clever visual metaphor. Bottling emotions is exactly what people do.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 55,
+									"age": "24–32",
+									"when": "Today",
+									"text": "Wondering how much of the movie is Joy trapped versus actually helping Riley.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 10,
+									"age": "33–44",
+									"when": "Today",
+									"text": "Loved it. It's a good reminder that trying to suppress feelings never works.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 69,
+									"age": "33–44",
+									"when": "Yesterday",
+									"text": "It made me think about how anxiety isn't a villain, it's just trying to protect Riley in the wrong way.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 85,
+									"age": "45+",
+									"when": "4 days ago",
+									"text": "Felt a bit manipulative, honestly, but it still worked on me.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 25,
+									"age": "18–23",
+									"when": "5 days ago",
+									"text": "Poor Joy! I wanted to jump in and open the bottle myself.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 57,
+									"age": "45+",
+									"when": "5 days ago",
+									"text": "Not much. It's a cartoon.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 33,
+									"age": "24–32",
+									"when": "5 days ago",
+									"text": "It made me want to hug my younger self.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 8,
+									"age": "18–23",
+									"when": "7 days ago",
+									"text": "Honestly, I thought Anxiety looked like the bad guy and was a bit annoyed.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 39,
+									"age": "45+",
+									"when": "8 days ago",
+									"text": "Reminded me of my teenage years. Total panic, zero control.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 47,
+									"age": "33–44",
+									"when": "9 days ago",
+									"text": "I teared up a little. It's rare to see a kids' movie take mental health seriously.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 40,
+									"age": "33–44",
+									"when": "9 days ago",
+									"text": "Mostly wondered how Joy gets out and whether the ending will be a cop-out.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 5,
+									"age": "24–32",
+									"when": "11 days ago",
+									"text": "My first thought was 'oh no, here comes the meltdown.' Looking forward to how they handle it.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 77,
+									"age": "45+",
+									"when": "11 days ago",
+									"text": "Kind of dark for a trailer. Not sure how younger kids will take it.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 73,
+									"age": "18–23",
+									"when": "11 days ago",
+									"text": "I felt stressed for Riley. The scene is great at making you feel the pressure.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 18,
+									"age": "33–44",
+									"when": "12 days ago",
+									"text": "I worry the sequel will just repeat the first film's 'sadness is okay' lesson in a new form.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 48,
+									"age": "24–32",
+									"when": "13 days ago",
+									"text": "That moment gave me real anxiety, which I assume was the point. Well played, Pixar.",
+									"sentiment": "positive"
+								}
+							]
+						},
+						"f9372da8": {
+							"responses": 79,
+							"counts": [
+								32,
+								13,
+								10,
+								24
+							],
+							"people": [
+								{
+									"respondent": 16,
+									"age": "24–32",
+									"when": "Today",
+									"option": 3
+								},
+								{
+									"respondent": 55,
+									"age": "24–32",
+									"when": "Today",
+									"option": 0
+								},
+								{
+									"respondent": 10,
+									"age": "33–44",
+									"when": "Today",
+									"option": 1
+								},
+								{
+									"respondent": 76,
+									"age": "24–32",
+									"when": "Today",
+									"option": 1
+								},
+								{
+									"respondent": 30,
+									"age": "24–32",
+									"when": "2 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 85,
+									"age": "45+",
+									"when": "4 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 57,
+									"age": "45+",
+									"when": "5 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 33,
+									"age": "24–32",
+									"when": "5 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 80,
+									"age": "18–23",
+									"when": "6 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 39,
+									"age": "45+",
+									"when": "8 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 4,
+									"age": "24–32",
+									"when": "8 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 47,
+									"age": "33–44",
+									"when": "9 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 40,
+									"age": "33–44",
+									"when": "9 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 81,
+									"age": "18–23",
+									"when": "10 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 5,
+									"age": "24–32",
+									"when": "11 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 18,
+									"age": "33–44",
+									"when": "12 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 51,
+									"age": "24–32",
+									"when": "12 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 48,
+									"age": "24–32",
+									"when": "13 days ago",
+									"option": 0
 								}
 							]
 						}
