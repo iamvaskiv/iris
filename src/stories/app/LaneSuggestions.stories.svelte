@@ -10,9 +10,9 @@
 			docs: {
 				description: {
 					component: `Next steps after a lane's last card (experimental topic lanes), written as the user's request:
-clicking one sends it to Lumi. Lumi writes 2–3 for each lane a turn touched (\`suggest_next\`); a lane without any gets
-rule-based ones from its cards (\`src/lib/cards/suggestions.ts\`). Ones already asked aren't offered again. Disabled
-while Lumi is thinking.`
+clicking one sends it to Lumi. Lumi writes them after each message (\`src/lib/server/suggestions.ts\`), for lanes that
+are new, changed, or whose suggestions have all been asked; there are no built-in ones. Ones already asked aren't
+offered again. Disabled while Lumi is thinking.`
 				}
 			}
 		},

@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { chat } from '#lib/server/agent.js';
 import { projects } from '#lib/server/projects.js';
-import { laneKey, topicOf } from '#lib/cards/lanes.js';
+import { nextSuggestions } from '#lib/server/suggestions.js';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -13,6 +13,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		// The agent works on the copy loaded above; the turn can take a while, so its results are merged into
 		// the latest saved copy rather than overwriting it (an upload may have changed cards in the meantime).
 		const res = await chat({ message, project });
+		const suggestions = await nextSuggestions(project, res.ops, res.history);
 		const saved = await projects.update(project.id, (latest) => {
 			for (const op of res.ops) {
 				if (op.op === 'add') latest.cards.push(op.card);
@@ -25,10 +26,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			latest.history = res.history;
 			latest.reply = res.text;
 			latest.choices = res.choices;
-			// A lane whose cards changed drops its old suggestions (back to the rules) unless Lumi wrote new ones.
-			const suggestions = { ...latest.suggestions };
-			for (const op of res.ops) if (op.op !== 'focus') delete suggestions[laneKey(topicOf(op.card, latest.cards))];
-			latest.suggestions = { ...suggestions, ...res.suggestions };
+			latest.suggestions = suggestions;
 		});
 		return json({
 			...res,
@@ -37,6 +35,11 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 	} catch (e) {
 		console.error(e);
-		return json({ text: 'Something went wrong on my side.', ops: [], history: project.history, error: String(e) });
+		return json({
+			text: 'Something went wrong on my side.',
+			ops: [],
+			history: project.history,
+			error: String(e)
+		});
 	}
 };
