@@ -1,4 +1,5 @@
 import { isFielding } from '#lib/cards/study/fielding.js';
+import type { StudyData } from '#lib/cards/types.js';
 import { thumbnail } from '#lib/server/assets.js';
 import { refreshCardData } from '#lib/server/card-data.js';
 import { projects } from '#lib/server/projects.js';
@@ -23,6 +24,10 @@ export const load: PageServerLoad = async () => ({
 				await refreshCardData(latest);
 				return latest;
 			})(),
+			// Its studies with sample results, for previews of video and sources cards to find their viewer data in.
+			studies: p.cards.filter(
+				(c) => c.type === 'study' && (c.data as StudyData | undefined)?.sample?.results
+			),
 			// A project without cards yet shows up to two of its video thumbnails instead.
 			thumbnails: p.cards.length
 				? []

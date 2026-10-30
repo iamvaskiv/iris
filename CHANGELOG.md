@@ -8,6 +8,10 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 **Cards**
 
+- Every card has a small × on its top-right corner (shown on hover or keyboard focus, just over the card's edge) to
+  delete it. It asks first, naming the card; the card next to it takes focus.
+- Project tiles' card previews find the project's studies too, so a sources or video card shows its study sources
+  there as well.
 - Video card: a timeline under the video shows its scenes side by side and where the video is; click or drag it to
   go to a moment (arrow keys work too). Pick a character, theme or brand to see where it's on screen, marked on the
   timeline ("Marisol · on screen 1:25, 3 times"), and watch from its first appearance; pick it again, or use the

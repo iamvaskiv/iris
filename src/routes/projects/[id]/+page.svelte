@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { ChevronLeft, Icon } from '@latitudelabs/design-system/icons';
+	import { Button, Dialog, buttonVariants } from '@latitudelabs/design-system';
+	import { ChevronLeft, Icon, X } from '@latitudelabs/design-system/icons';
 	import { page } from '$app/state';
 	import { replaceState } from '$app/navigation';
 	import AiDock, { timeOfDayGreeting, type DockMode } from '#lib/components/AiDock.svelte';
@@ -257,6 +258,30 @@
 		await tick();
 	}
 
+	// Deleting a card: its × asks first, in a dialog naming it; then it goes (saved on the server), and the card next to
+	// it takes focus.
+	let deleting = $state<Card | null>(null);
+	let deleteOpen = $state(false);
+	let deleteError = $state('');
+	function askDelete(card: Card) {
+		deleting = card;
+		deleteError = '';
+		deleteOpen = true;
+	}
+	async function deleteCard() {
+		const card = deleting;
+		if (!card) return;
+		const res = await fetch(`/api/projects/${project.id}/cards/${card.id}`, {
+			method: 'DELETE'
+		}).catch(() => null);
+		if (!res?.ok) return void (deleteError = "Couldn't delete it. Try again in a moment.");
+		deleteOpen = false;
+		const at = project.cards.findIndex((c) => c.id === card.id);
+		if (at < 0) return;
+		project.cards.splice(at, 1);
+		if (project.focusedId === card.id) focus((project.cards[at] ?? project.cards[at - 1])?.id);
+	}
+
 	async function focus(id: string | undefined, behavior: ScrollBehavior = 'smooth') {
 		project.focusedId = id;
 		if (!id) return;
@@ -505,7 +530,7 @@
 						class={birdsEye
 							? 'shrink-0 cursor-pointer outline-offset-4 outline-ring/50 transition-[outline-color] hover:outline-2 focus-visible:outline-3'
 							: [
-									'mx-auto w-full transition-[opacity,scale] duration-300',
+									'group/card relative mx-auto w-full transition-[opacity,scale] duration-300',
 									{ normal: 'max-w-3xl', wide: 'max-w-5xl', full: '' }[cardSize(card)],
 									cardSize(card) === 'full'
 										? 'snap-start scroll-mt-4'
@@ -540,11 +565,43 @@
 						>
 							<CardView {card} />
 						</div>
+						{#if !birdsEye}
+							<!-- Delete, on the card's corner (over its edge, clear of buttons in its header); shown on hover
+							     or keyboard focus. Asks first. -->
+							<Button
+								variant="secondary"
+								size="icon-xs"
+								aria-label="Delete {card.title}"
+								class="absolute -top-2 -right-2 z-10 rounded-full opacity-0 shadow-raised transition-opacity group-focus-within/card:opacity-100 group-hover/card:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none"
+								onclick={(e: MouseEvent) => {
+									e.stopPropagation();
+									askDelete(card);
+								}}
+							>
+								<X />
+							</Button>
+						{/if}
 					</div>
 				{/each}
 			</div>
 		{/if}
 	</main>
+
+	<Dialog.Root bind:open={deleteOpen}>
+		<Dialog.Content>
+			<Dialog.Header>
+				<Dialog.Title>Delete “{deleting?.title}”?</Dialog.Title>
+				<Dialog.Description>
+					This removes the card from the project. Lumi can make it again if you ask.
+				</Dialog.Description>
+			</Dialog.Header>
+			{#if deleteError}<p class="text-caption text-destructive">{deleteError}</p>{/if}
+			<Dialog.Footer>
+				<Dialog.Close class={buttonVariants({ variant: 'secondary' })}>Cancel</Dialog.Close>
+				<Button variant="destructive" onclick={deleteCard}>Delete card</Button>
+			</Dialog.Footer>
+		</Dialog.Content>
+	</Dialog.Root>
 
 	{#if project.cards.length > 1 && !birdsEye}
 		<!-- A map of the cards, centred in the left safe zone, between the header and Lumi's dock. -->

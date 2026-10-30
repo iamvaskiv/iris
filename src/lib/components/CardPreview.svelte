@@ -1,15 +1,19 @@
 <script lang="ts">
 	import { cardComponent, cardSize } from '#lib/cards/registry.js';
 	import type { Card } from '#lib/cards/types.js';
+	import { shareProjectCards } from '#lib/cards/viewer-sources.js';
 	import type { ClassValue } from 'svelte/elements';
 
 	type Props = {
 		card: Card;
 		/** Width on screen (px): every card is scaled to it, whatever its size on the project page. */
 		width?: number;
+		/** The project's other cards a card may draw on (its studies, for a video or sources card's viewer data). */
+		project?: Card[];
 		class?: ClassValue;
 	};
-	let { card, width: shown = 224, class: className }: Props = $props();
+	let { card, width: shown = 224, project = [], class: className }: Props = $props();
+	shareProjectCards(() => project);
 
 	/** The card's width on the project page, by its size (max-w-3xl, max-w-5xl, or a typical full page). */
 	const WIDTHS = { normal: 768, wide: 1024, full: 1200 };
