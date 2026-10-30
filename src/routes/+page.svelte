@@ -130,6 +130,7 @@
 							{#each project.cards as card, i (card.id)}
 								<CardPreview
 									{card}
+									project={project.studies}
 									class={[
 										'absolute top-40 shadow-raised transition-[translate,rotate] duration-300 ease-out motion-safe:group-hover:-translate-y-2 motion-safe:group-focus-visible:-translate-y-2',
 										project.cards.length === 1 &&

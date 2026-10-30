@@ -1,6 +1,7 @@
 import { lumiere } from './lumiere.js';
 import { store } from './store.js';
 import type { Insights } from '#lib/cards/types.js';
+import { toneOf } from '#lib/cards/viewer.js';
 
 /**
  * Viewer insights (views, ratings, sentiment, answers to on-video questions, comments) for videos that were shown
@@ -125,11 +126,16 @@ async function build(videoId: string): Promise<Insights | null> {
 		rating: ratingAverage !== null ? { average: round(ratingAverage), max: ratingMax, count: ratingCount } : undefined,
 		sentiment: sentiment.positive + sentiment.neutral + sentiment.negative ? sentiment : undefined,
 		questions,
-		liked: comments.filter((c) => c.sentiment > 0.2).slice(0, TOP_COMMENTS),
+		liked: comments.filter((c) => toneOf(c.sentiment) === 'positive').slice(0, TOP_COMMENTS),
 		disliked: comments
-			.filter((c) => c.sentiment < -0.2)
+			.filter((c) => toneOf(c.sentiment) === 'negative')
 			.reverse()
 			.slice(0, TOP_COMMENTS),
+		comments: [...comments].sort((a, b) => a.time - b.time),
+		ratings: responses
+			.filter((r) => r.feedbackType === 'rating' && r.featureData.value?.rating !== undefined)
+			.map((r) => ({ time: r.time, value: r.featureData.value!.rating!, max: r.featureData.amount ?? 5 }))
+			.sort((a, b) => a.time - b.time),
 		fetchedAt: new Date().toISOString()
 	};
 }
@@ -138,7 +144,10 @@ export const insights = {
 	/** Cached for a few hours; `null` when nobody has watched or responded yet. */
 	async get(videoId: string): Promise<Insights | null> {
 		const cached = await store.get<Cached>('insights', videoId);
-		if (cached && Date.now() - Date.parse(cached.fetchedAt) < TTL) return cached.insights;
+		// Insights cached before they kept every comment and rating are built again.
+		const current = cached && (!cached.insights || (cached.insights.comments && cached.insights.ratings));
+		if (cached && current && Date.now() - Date.parse(cached.fetchedAt) < TTL)
+			return cached.insights;
 		try {
 			const fresh = await build(videoId);
 			await store.set<Cached>('insights', videoId, { fetchedAt: new Date().toISOString(), insights: fresh });

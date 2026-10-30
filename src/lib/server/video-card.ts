@@ -1,5 +1,6 @@
+import { insights } from './insights.js';
 import { lumiere } from './lumiere.js';
-import type { VideoCardData } from '#lib/cards/types.js';
+import type { Span, VideoCardData } from '#lib/cards/types.js';
 
 type Chapter = { title: string; start: number; end: number };
 type Entity = {
@@ -12,7 +13,12 @@ type Entity = {
 	subcategories?: { description: string }[];
 	actor?: { name: string };
 };
-type Moment = { timestampStart: number; midpoint: number; entities?: { id: string }[] };
+type Moment = {
+	timestampStart: number;
+	timestampEnd: number;
+	midpoint: number;
+	entities?: { id: string }[];
+};
 
 const MAX_CHARACTERS = 6;
 const MAX_THEMES = 8;
@@ -21,12 +27,14 @@ const MAX_BRANDS = 8;
 /** Signed URLs expire after a couple of hours, so this runs when the card is made and on every page visit. */
 export async function videoCardData(videoId: string): Promise<VideoCardData> {
 	const soft = <T>(p: Promise<T>) => p.catch(() => null);
-	const [stream, video, chapters, entities, moments] = await Promise.all([
+	const [stream, video, chapters, entities, moments, viewers] = await Promise.all([
 		soft(lumiere.assetUrl(videoId, { assetType: 'download', fileName: 'low.mp4' })),
 		soft(lumiere.video(videoId)),
 		soft(lumiere.chapters(videoId) as Promise<{ chapters: Chapter[] }>),
 		soft(lumiere.entities(videoId) as Promise<{ entities: Entity[] }>),
-		soft(lumiere.moments(videoId) as Promise<{ moments: Moment[] }>)
+		soft(lumiere.moments(videoId) as Promise<{ moments: Moment[] }>),
+		// Viewer data, when it was shown to an audience (cached for a few hours).
+		soft(insights.get(videoId))
 	]);
 	const frame = (time: number, width = 320) =>
 		soft(lumiere.assetUrl(videoId, { assetType: 'thumbnail', width, time }).then((a) => a.url));
@@ -37,6 +45,7 @@ export async function videoCardData(videoId: string): Promise<VideoCardData> {
 		(chapters?.chapters ?? []).map(async (c) => ({
 			title: c.title,
 			start: c.start,
+			end: c.end,
 			// A few seconds in: chapters often open on a cut or a black frame.
 			thumb: (await frame(c.start + Math.min(3, (c.end - c.start) / 2))) ?? undefined
 		}))
@@ -49,6 +58,17 @@ export async function videoCardData(videoId: string): Promise<VideoCardData> {
 			.slice(0, max);
 	const appearances = (e: Entity) =>
 		(moments?.moments ?? []).filter((m) => m.entities?.some((x) => x.id === e.id));
+	/** Its moments as time spans, in order, with ones that touch or overlap joined. */
+	const spans = (e: Entity) =>
+		appearances(e)
+			.map((m) => ({ start: m.timestampStart, end: m.timestampEnd }))
+			.sort((a, b) => a.start - b.start)
+			.reduce<Span[]>((all, s) => {
+				const last = all.at(-1);
+				if (last && s.start <= last.end) last.end = Math.max(last.end, s.end);
+				else all.push({ ...s });
+				return all;
+			}, []);
 
 	const people = top('identity', MAX_CHARACTERS);
 	const characters = await Promise.all(
@@ -61,21 +81,24 @@ export async function videoCardData(videoId: string): Promise<VideoCardData> {
 				name: e.name,
 				role: e.categories?.[0]?.description.split(' / ')[0],
 				actor: e.actor?.name,
-				image: shot ? ((await frame(shot.midpoint)) ?? undefined) : undefined
+				image: shot ? ((await frame(shot.midpoint)) ?? undefined) : undefined,
+				appearances: spans(e)
 			};
 		})
 	);
 
 	const themes = top('theme', MAX_THEMES).map((e) => ({
 		name: e.name,
-		description: e.description
+		description: e.description,
+		appearances: spans(e)
 	}));
 
 	const brands = top('brand', MAX_BRANDS).map((e) => ({
 		name: e.name,
 		category: (e.subcategories?.[0] ?? e.categories?.[0])?.description,
 		// Where the brand first shows up. No frame: logos fade in and out, so moment frames are often black.
-		time: appearances(e)[0]?.timestampStart
+		time: appearances(e)[0]?.timestampStart,
+		appearances: spans(e)
 	}));
 
 	return {
@@ -86,6 +109,7 @@ export async function videoCardData(videoId: string): Promise<VideoCardData> {
 		scenes,
 		characters,
 		themes,
-		brands
+		brands,
+		viewers: viewers ?? undefined
 	};
 }

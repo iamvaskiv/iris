@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Kbd } from '@latitudelabs/design-system';
 	import { X } from '@latitudelabs/design-system/icons';
-	import { SCALE_MAX, stepTitle } from './question-types';
+	import { SCALE_MAX, stepTitle, timecode } from './question-types';
 	import type { Question, SampleResults } from '../types';
 
 	/** One question's individual responses, newest first; filtered to an option when one is picked. */
@@ -59,7 +59,17 @@
 			<!-- Who answered and when, above their answer. -->
 			<li class="flex flex-col gap-1">
 				<div class="flex justify-between gap-4 text-caption text-muted-foreground">
-					<span>Respondent {person.respondent} · {person.age}</span>
+					<!-- A video's viewers also say where they commented and how many stars they gave it. -->
+					<span
+						>{[
+							`Respondent ${person.respondent}`,
+							person.age,
+							person.time !== undefined && `at ${timecode(person.time)}`,
+							person.rating !== undefined && `${person.rating} / 5 stars`
+						]
+							.filter(Boolean)
+							.join(' · ')}</span
+					>
 					<span>{person.when}</span>
 				</div>
 				{#if person.value !== undefined}

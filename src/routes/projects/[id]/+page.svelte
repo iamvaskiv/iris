@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { ChevronLeft, Icon } from '@latitudelabs/design-system/icons';
+	import { Button, Dialog, buttonVariants } from '@latitudelabs/design-system';
+	import { ChevronLeft, Icon, X } from '@latitudelabs/design-system/icons';
 	import { page } from '$app/state';
 	import { replaceState } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import AiDock, { timeOfDayGreeting, type DockMode } from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import BirdsEyeIcon from '#lib/components/BirdsEyeIcon.svelte';
@@ -13,6 +15,7 @@
 	import Tooltip from '#lib/components/Tooltip.svelte';
 	import TooltipGroup from '#lib/components/TooltipGroup.svelte';
 	import { cardComponent, cardSize } from '#lib/cards/registry.js';
+	import { shareProjectCards } from '#lib/cards/viewer-sources.js';
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 	import { takePendingVideo } from '#lib/new-project.js';
 	import { transcript, type TranscriptMessage } from '#lib/transcript.js';
@@ -23,6 +26,14 @@
 	// Local copy of the project that this page edits as the conversation goes on.
 	// svelte-ignore state_referenced_locally
 	let project = $state(structuredClone(data.project));
+	// A video card finds the project's studies that show its video, to switch its viewer data to their sample results.
+	shareProjectCards(
+		() => project.cards,
+		(id, cardData) => {
+			const card = project.cards.find((c) => c.id === id);
+			if (card) card.data = cardData;
+		}
+	);
 	let thinking = $state(false);
 	let error = $state('');
 	let draft = $state('');
@@ -35,7 +46,6 @@
 
 	// Empty projects show the dock centred; when the first card arrives it morphs down to the bottom panel
 	// (View Transitions where supported, an instant switch otherwise).
-	// svelte-ignore state_referenced_locally
 	let centered = $state(project.cards.length === 0);
 	$effect(() => {
 		const next = project.cards.length === 0;
@@ -56,7 +66,7 @@
 		if (video) {
 			upload(video);
 		} else if (q) {
-			replaceState(page.url.pathname, {});
+			replaceState(resolve('/projects/[id]', { id: page.params.id ?? '' }), {});
 			send(q);
 		} else {
 			focus(project.focusedId, 'instant');
@@ -81,7 +91,7 @@
 			body: JSON.stringify({ name: project.name === 'New project' ? undefined : project.name })
 		});
 		project.id = (await res.json()).id;
-		replaceState(`/projects/${project.id}`, {});
+		replaceState(resolve('/projects/[id]', { id: project.id }), {});
 	}
 
 	async function upload(file: File) {
@@ -252,6 +262,30 @@
 		await tick();
 		await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 		await tick();
+	}
+
+	// Deleting a card: its × asks first, in a dialog naming it; then it goes (saved on the server), and the card next to
+	// it takes focus.
+	let deleting = $state<Card | null>(null);
+	let deleteOpen = $state(false);
+	let deleteError = $state('');
+	function askDelete(card: Card) {
+		deleting = card;
+		deleteError = '';
+		deleteOpen = true;
+	}
+	async function deleteCard() {
+		const card = deleting;
+		if (!card) return;
+		const res = await fetch(`/api/projects/${project.id}/cards/${card.id}`, {
+			method: 'DELETE'
+		}).catch(() => null);
+		if (!res?.ok) return void (deleteError = "Couldn't delete it. Try again in a moment.");
+		deleteOpen = false;
+		const at = project.cards.findIndex((c) => c.id === card.id);
+		if (at < 0) return;
+		project.cards.splice(at, 1);
+		if (project.focusedId === card.id) focus((project.cards[at] ?? project.cards[at - 1])?.id);
 	}
 
 	async function focus(id: string | undefined, behavior: ScrollBehavior = 'smooth') {
@@ -502,7 +536,7 @@
 						class={birdsEye
 							? 'shrink-0 cursor-pointer outline-offset-4 outline-ring/50 transition-[outline-color] hover:outline-2 focus-visible:outline-3'
 							: [
-									'mx-auto w-full transition-[opacity,scale] duration-300',
+									'group/card relative mx-auto w-full transition-[opacity,scale] duration-300',
 									{ normal: 'max-w-3xl', wide: 'max-w-5xl', full: '' }[cardSize(card)],
 									cardSize(card) === 'full'
 										? 'snap-start scroll-mt-4'
@@ -537,11 +571,43 @@
 						>
 							<CardView {card} />
 						</div>
+						{#if !birdsEye}
+							<!-- Delete, on the card's corner (over its edge, clear of buttons in its header); shown on hover
+							     or keyboard focus. Asks first. -->
+							<Button
+								variant="secondary"
+								size="icon-xs"
+								aria-label="Delete {card.title}"
+								class="absolute -top-2 -right-2 z-10 rounded-full opacity-0 shadow-raised transition-opacity group-focus-within/card:opacity-100 group-hover/card:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none"
+								onclick={(e: MouseEvent) => {
+									e.stopPropagation();
+									askDelete(card);
+								}}
+							>
+								<X />
+							</Button>
+						{/if}
 					</div>
 				{/each}
 			</div>
 		{/if}
 	</main>
+
+	<Dialog.Root bind:open={deleteOpen}>
+		<Dialog.Content>
+			<Dialog.Header>
+				<Dialog.Title>Delete “{deleting?.title}”?</Dialog.Title>
+				<Dialog.Description>
+					This removes the card from the project. Lumi can make it again if you ask.
+				</Dialog.Description>
+			</Dialog.Header>
+			{#if deleteError}<p class="text-caption text-destructive">{deleteError}</p>{/if}
+			<Dialog.Footer>
+				<Dialog.Close class={buttonVariants({ variant: 'secondary' })}>Cancel</Dialog.Close>
+				<Button variant="destructive" onclick={deleteCard}>Delete card</Button>
+			</Dialog.Footer>
+		</Dialog.Content>
+	</Dialog.Root>
 
 	{#if project.cards.length > 1 && !birdsEye}
 		<!-- A map of the cards, centred in the left safe zone, between the header and Lumi's dock. -->

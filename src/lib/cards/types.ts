@@ -23,6 +23,7 @@ export type Card = {
 		| 'text'
 		| 'upload'
 		| 'study'
+		| 'sources'
 		| (string & {});
 	title: string;
 	subtitle?: string;
@@ -41,22 +42,58 @@ export type VideoCardData = {
 	streamUrl?: string;
 	poster?: string;
 	duration?: number;
-	scenes?: { title: string; start: number; thumb?: string }[];
-	characters?: { name: string; role?: string; actor?: string; image?: string }[];
-	themes?: { name: string; description?: string }[];
+	scenes?: { title: string; start: number; end?: number; thumb?: string }[];
+	characters?: {
+		name: string;
+		role?: string;
+		actor?: string;
+		image?: string;
+		appearances?: Span[];
+	}[];
+	themes?: { name: string; description?: string; appearances?: Span[] }[];
 	/** `time`: seconds where the brand first shows up. */
-	brands?: { name: string; category?: string; time?: number }[];
+	brands?: { name: string; category?: string; time?: number; appearances?: Span[] }[];
+	/** What viewers made of it, when it was shown to an audience. */
+	viewers?: Insights;
 };
 
-/** Viewer insights card data: what an audience made of a video. */
-export type Insights = {
+/**
+ * Where something shows up in a video, in seconds. From Lumiere's moments (spans of about ten seconds that list who
+ * and what is in them), with back-to-back moments joined into one.
+ */
+export type Span = { start: number; end: number };
+
+/** Sources card data: one video, to compare its viewer data across sources (Lumiere's, and the project's studies). */
+export type SourcesData = {
 	videoId: string;
-	/** Estimated viewing sessions over the last year, not unique viewers. */
+	videoName?: string;
+	duration?: number;
+	scenes?: { title: string; start: number; end?: number }[];
+	/** Lumiere's viewer data, when it was shown to an audience there. */
+	viewers?: Insights;
+};
+
+/**
+ * What viewers made of a video, from any source (Lumiere's real viewers, or a study's sample results): how many, the
+ * rating and sentiment, and every comment and rating at the moment it was given.
+ */
+export type ViewerData = {
+	/** Estimated viewing sessions (Lumiere: over the last year, not unique viewers). */
 	views?: number;
+	/** How many responded (Lumiere) or watched (a study). */
 	responses: number;
 	rating?: { average: number; max: number; count: number };
 	/** Comment sentiment counts. */
 	sentiment?: { positive: number; neutral: number; negative: number };
+	/** Every comment, in the order of where in the video it was left. */
+	comments?: InsightComment[];
+	/** Every rating, where in the video it was given: from `min` (1 star, unless set) to `max`. */
+	ratings?: { time: number; value: number; max: number; min?: number }[];
+};
+
+/** Viewer insights card data: what an audience made of a video on Lumiere, with its on-video questions. */
+export type Insights = ViewerData & {
+	videoId: string;
 	/** Answers to questions shown during the video: an average for sliders and ratings, counts per option otherwise. */
 	questions: {
 		question: string;
@@ -145,6 +182,9 @@ export type SampleResponse = {
 	option?: number;
 	/** Slider: the number they picked, 0–10. */
 	value?: number;
+	/** Videos: when in it they left their comment (seconds), and the stars (1–5) they gave it. */
+	time?: number;
+	rating?: number;
 };
 
 export type Question = {
