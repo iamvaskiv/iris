@@ -33,10 +33,10 @@ export const cardComponent = (type: string) => registry[type] ?? TextCard;
  * How much room a card takes: the reading width (max-w-3xl); `wide` (max-w-5xl) for video and sources cards,
  * comparisons of three or more videos and tables with many columns; `full` (the page's width, from below the header to
  * behind Lumi's input) for studies (a question list beside a preview) and video cards in Timeline view (the video
- * beside its title, its lanes scrolling below). A study's insights, shown on their own in lanes, are wide.
+ * beside its title, its lanes scrolling below). In lanes a study's insights, beside its setup, are full size too.
  */
-export function cardSize(card: Card, part?: Part): 'normal' | 'wide' | 'full' {
-	if (card.type === 'study') return part === 'insights' ? 'wide' : 'full';
+export function cardSize(card: Card): 'normal' | 'wide' | 'full' {
+	if (card.type === 'study') return 'full';
 	// Its own module knows: full size in Timeline view, wide otherwise.
 	if (card.type === 'video') return videoCardSize(card);
 	const videos = (card.data?.videoIds as string[] | undefined)?.length ?? 0;

@@ -721,6 +721,8 @@
 	role="region"
 	aria-label="Project"
 	ondragover={(e) => {
+		// Files only: dragging something inside the page (a study's steps) isn't an upload.
+		if (!e.dataTransfer?.types.includes('Files')) return;
 		e.preventDefault();
 		dragging = true;
 	}}
@@ -842,7 +844,7 @@
 						>
 							{#each lane.slots as slot (slot.key)}
 								{@const CardView = cardComponent(slot.card.type)}
-								{@const size = cardSize(slot.card, slot.part)}
+								{@const size = cardSize(slot.card)}
 								<!-- As in the column below: one element in both views, a button in bird's eye. -->
 								<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 								<div

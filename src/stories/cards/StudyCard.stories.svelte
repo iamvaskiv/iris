@@ -17,7 +17,9 @@ its text, an open answer field (\`PromptInput\`), multiple-choice options, or a 
 people browse as a grid (the channel's name above it; a tile opens that video's step, its ▶ plays it full screen and × removes it) and open full screen (with **Vertical sliding**, sliding up and
 down between them like a short-video feed). A channel's videos are listed under it and work like video steps, with their own questions. A video step shows only its video; its picker and **Add question at m:ss** are in the settings, and with vertical sliding a channel's videos get up and down arrows to their neighbours. The gear at the preview's top right
 toggles a **question settings** sidebar on the right (its type, its time inside a video, delete), which stays open
-or closed as you move between questions. Lumi drafts the first questions; edits save to the project (not in Storybook).
+or closed as you move between questions. **New** adds a step without a type yet, last in the list ("Pick a type"):
+its preview offers the types, and picking one makes it that step; opening another step instead drops it. Drag a step to reorder it, with what's inside it;
+a channel's videos reorder within it (questions inside a video keep their time order). Lumi drafts the first questions; edits save to the project (not in Storybook).
 
 **Share** can't share yet: it offers **Fake responses**, which swaps the setup for (made-up) results Lumi writes from
 the questions, labelled **Sample data**, with a green **Fielding in progress** badge beside Share. Pick a question there to slide the overview aside and read its individual
@@ -182,6 +184,10 @@ some, an empty state with the **Fake responses** switch.`
 	<CardFrame full><StudyCard card={openFirst} /></CardFrame>
 </Story>
 
+<Story name="New step, picking its type">
+	<CardFrame full><StudyCard card={study} adding /></CardFrame>
+</Story>
+
 <Story name="No questions yet">
 	<CardFrame full><StudyCard card={empty} /></CardFrame>
 </Story>
@@ -191,11 +197,11 @@ some, an empty state with the **Fake responses** switch.`
 </Story>
 
 <Story name="Lanes: insights, no responses yet">
-	<CardFrame wide><StudyCard card={study} part="insights" /></CardFrame>
+	<CardFrame full><StudyCard card={study} part="insights" /></CardFrame>
 </Story>
 
 <Story name="Lanes: insights">
-	<CardFrame wide><StudyCard card={sampled} part="insights" /></CardFrame>
+	<CardFrame full><StudyCard card={sampled} part="insights" /></CardFrame>
 </Story>
 
 <Story name="Lanes: setup while fielding">

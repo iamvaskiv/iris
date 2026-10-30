@@ -6,6 +6,16 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 ## 2026-10-30
 
+**Studies**
+
+- **New** no longer adds an open question straight away: the new step waits, last in the list ("Pick a type"), while
+  its preview offers the types (open question, multiple choice, slider, video, channel). Picking one makes it that
+  step, ready to write; opening another step instead drops it.
+- Drag a step in the list to reorder it (a line shows where it will land); it takes its videos or questions with it.
+  A channel's videos reorder within it the same way. Questions inside a video keep their time order (set it in the
+  settings).
+- In lanes, a study's insights are full size, like its setup.
+
 **Project page (experimental)**
 
 - **Topic lanes**, on by default (Settings → Experimental, remembered on your device; off brings back the single
