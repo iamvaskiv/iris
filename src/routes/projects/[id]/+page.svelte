@@ -684,6 +684,12 @@
 	let scrollerInnerWidth = $state(0);
 	const scrollbarWidth = $derived(Math.max(0, scrollerWidth - scrollerInnerWidth));
 	/** After a lane's last card, less the card's width: room so it too can come to the lane's left edge. */
+	/** The last card of a lane with suggestions leaves room for them beside it (but never less than half the row). */
+	const SUGGESTED_MAX = {
+		normal: 'min(48rem, max(100% - 28rem, 50%))',
+		wide: 'min(64rem, max(100% - 28rem, 50%))',
+		full: 'max(100% - 28rem, 50%)'
+	};
 	const roomAfter = $derived(scrollerInnerWidth - rowStart - ROW_PAD - CARD_GAP);
 	let assetsOpen = $state(false);
 	let assetsPane = $state<HTMLElement | null>(null);
@@ -829,6 +835,7 @@
 					{@const current = currentOf(lane)}
 					{@const at = lane.slots.indexOf(current)}
 					{@const last = lane.slots.at(-1)!}
+					{@const next = laneSuggestions(lane, project.cards, project.suggestions, asked)}
 					<!-- A click anywhere in a lane that isn't the focused one (its title, the room beside its cards) brings it
 					     in, at its current card; a click on one of its cards brings in that card instead (handled there
 					     first). The keyboard has the cards and the arrows. -->
@@ -921,6 +928,9 @@
 									style:width={birdsEye
 										? `${(cardWidths[slot.key] ?? 0) * birdScale}px`
 										: undefined}
+									style:max-width={!birdsEye && next.length && slot === last
+										? SUGGESTED_MAX[size]
+										: undefined}
 									style:height={birdsEye
 										? `${Math.min(cardHeights[slot.key] ?? 0, laneHeight) * birdScale}px`
 										: undefined}
@@ -964,7 +974,6 @@
 								</div>
 							{/each}
 							{#if !birdsEye}
-								{@const next = laneSuggestions(lane, project.cards, project.suggestions, asked)}
 								<!-- After the last card: the lane's next steps, and room so the last card too can come to the lane's
 								     left edge. -->
 								{#if next.length || lane.slots.length > 1}
