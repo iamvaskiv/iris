@@ -835,7 +835,7 @@
 					{@const current = currentOf(lane)}
 					{@const at = lane.slots.indexOf(current)}
 					{@const last = lane.slots.at(-1)!}
-					{@const next = laneSuggestions(lane, project.cards, project.suggestions, asked)}
+					{@const next = laneSuggestions(lane, project.suggestions, asked)}
 					<!-- A click anywhere in a lane that isn't the focused one (its title, the room beside its cards) brings it
 					     in, at its current card; a click on one of its cards brings in that card instead (handled there
 					     first). The keyboard has the cards and the arrows. -->

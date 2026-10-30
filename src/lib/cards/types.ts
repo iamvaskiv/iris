@@ -251,7 +251,7 @@ export type ChatResponse = {
 	project?: { name: string; summary?: string };
 	/** Answers the assistant offers; shown as buttons in place of the input until the user replies. */
 	choices?: string[];
-	/** Next steps for each lane, by lane key, after this turn (see `suggestions.ts`). */
+	/** Lumi's next steps for each lane, by lane key, after this turn (see `server/suggestions.ts`). */
 	suggestions?: Record<string, string[]>;
 	error?: string;
 };
