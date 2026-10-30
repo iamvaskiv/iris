@@ -5,7 +5,8 @@ import type { Card } from './types';
  * page in the order their first card arrived. A study takes two places in its lane: its setup, then its insights to the
  * right of it.
  */
-export type Slot = { key: string; card: Card; part?: 'setup' | 'insights' };
+export type Part = 'setup' | 'insights';
+export type Slot = { key: string; card: Card; part?: Part };
 export type Lane = { key: string; title: string; slots: Slot[] };
 
 /** A study's insights slot; every other slot is keyed by its card's id. */

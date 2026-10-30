@@ -14,7 +14,8 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   one when the card belongs with others); older cards are placed by rules (videos together, a card about a video with
   it, anything else in a lane of its own).
 - Cards in a lane sit side by side, 40px apart, aligned top left, at their usual widths; a lane is a little shorter
-  than the window, so the next one peeks in below. A card taller than its lane scrolls inside it, on its own.
+  than the window, so the next one peeks in below. A card taller than its lane scrolls inside it, on its own (only
+  the focused one: over a card scrolled past or peeking in, the wheel moves between lanes).
 - The wheel moves a whole lane at a time, shift + wheel (or a sideways swipe) a card at a time, both with some
   resistance: it takes a little travel to move, and one gesture moves once, so a fling or reaching the end of a
   card's own scrolling doesn't jump on. The arrows under a lane's name step through its cards (with where you are,

@@ -15,6 +15,7 @@
 		Switch
 	} from '@latitudelabs/design-system';
 	import {
+		ChartColumn,
 		ChevronDown,
 		ChevronUp,
 		Icon,
@@ -92,8 +93,8 @@
 	});
 	/** With fake responses on, the card shows (made-up) results instead of the setup. */
 	const results = $derived(sample?.enabled ? sample.results : undefined);
-	/** Whether this card shows the insights side: the results, or (in lanes) the wait for them. */
-	const showInsights = $derived(part ? part === 'insights' : !!results);
+	/** The results this card shows: none on the setup side in lanes, which shows the setup even while fielding. */
+	const shownResults = $derived(part === 'setup' ? undefined : results);
 	/** Every step in list order, with questions inside a video right after it; `selected` indexes this. */
 	const steps = $derived(flatSteps(questions));
 	const question = $derived(steps[selected]?.q);
@@ -462,12 +463,12 @@
      question list and the preview scroll inside. -->
 <Card.Root class="relative h-(--card-height) min-h-100">
 	<!-- Above the results, which scroll up underneath it on the right. -->
-	<Card.Header class={[showInsights && results && 'relative z-20']}>
+	<Card.Header class={[shownResults && 'relative z-20']}>
 		<Card.Title class="flex items-center gap-2">
 			{card.title}
-			{#if showInsights && results}<Badge variant="secondary">Sample data</Badge>{/if}
-			{#if writing && showInsights && results}<span
-					class="text-caption font-normal text-muted-foreground">Lumi is updating the answers…</span
+			{#if shownResults}<Badge variant="secondary">Sample data</Badge>{/if}
+			{#if writing && shownResults}<span class="text-caption font-normal text-muted-foreground"
+					>Lumi is updating the answers…</span
 				>{/if}
 		</Card.Title>
 		<Card.Description
@@ -486,53 +487,26 @@
 					<p>
 						Sorry, sharing doesn't work yet. But we can pretend some answers have already come in.
 					</p>
-					<div class="flex items-center justify-between gap-4">
-						<Label for="sample-{card.id}">Fake responses</Label>
-						<Switch
-							id="sample-{card.id}"
-							checked={writing || !!sample?.enabled}
-							disabled={writing}
-							onCheckedChange={setSample}
-						/>
-					</div>
-					{#if writing}
-						<p class="text-caption text-muted-foreground">Lumi is making up answers…</p>
-					{:else if sampleError}
-						<p class="text-caption text-destructive">{sampleError}</p>
-					{/if}
+					{@render fakeResponses(`sample-${card.id}`)}
 				</Popover.Content>
 			</Popover.Root>
 		</Card.Action>
 	</Card.Header>
-	{#if showInsights && results}
+	{#if shownResults}
 		<Card.Content class="flex min-h-0 flex-1">
-			<StudyResults {questions} {results} />
+			<StudyResults {questions} results={shownResults} />
 		</Card.Content>
-	{:else if showInsights}
+	{:else if part === 'insights'}
 		<!-- No answers yet: they'd come in from sharing, which isn't built; fake ones can stand in. -->
 		<Card.Content class="flex min-h-0 flex-1 items-center justify-center pb-24">
-			<div class="flex max-w-sm flex-col items-center gap-4 text-center">
-				<div class="flex flex-col gap-1">
-					<p class="text-title">No responses yet</p>
-					<p class="text-body text-muted-foreground">
-						Insights show here once people answer. Sharing doesn't work yet, but Lumi can make up
-						some answers to show how they'd read.
-					</p>
-				</div>
-				<div class="flex items-center gap-3">
-					<Label for="sample-insights-{card.id}">Fake responses</Label>
-					<Switch
-						id="sample-insights-{card.id}"
-						checked={writing || !!sample?.enabled}
-						disabled={writing}
-						onCheckedChange={setSample}
-					/>
-				</div>
-				{#if writing}
-					<p class="text-caption text-muted-foreground">Lumi is making up answers…</p>
-				{:else if sampleError}
-					<p class="text-caption text-destructive">{sampleError}</p>
-				{/if}
+			<div class="flex max-w-sm flex-col items-center gap-3 text-center">
+				<Icon icon={ChartColumn} size="lg" class="text-muted-foreground" />
+				<p class="text-title">No responses yet</p>
+				<p class="text-caption text-muted-foreground">
+					Insights show here once people answer. Sharing doesn't work yet, but Lumi can make up some
+					answers to show how they'd read.
+				</p>
+				{@render fakeResponses(`sample-insights-${card.id}`)}
 			</div>
 		</Card.Content>
 	{:else}
@@ -814,6 +788,24 @@
 		</Card.Content>
 	{/if}
 </Card.Root>
+
+<!-- Share's stand-in: switches made-up answers on or off, with how that's going. -->
+{#snippet fakeResponses(id: string)}
+	<div class="flex items-center justify-between gap-4">
+		<Label for={id}>Fake responses</Label>
+		<Switch
+			{id}
+			checked={writing || !!sample?.enabled}
+			disabled={writing}
+			onCheckedChange={setSample}
+		/>
+	</div>
+	{#if writing}
+		<p class="text-caption text-muted-foreground">Lumi is making up answers…</p>
+	{:else if sampleError}
+		<p class="text-caption text-destructive">{sampleError}</p>
+	{/if}
+{/snippet}
 
 <!-- Asks before a change that loses work (deleting a step, or changing its type), naming what goes. -->
 <Dialog.Root bind:open={confirmOpen}>

@@ -16,7 +16,6 @@
 	import Tooltip from '#lib/components/Tooltip.svelte';
 	import TooltipGroup from '#lib/components/TooltipGroup.svelte';
 	import { cardComponent, cardSize } from '#lib/cards/registry.js';
-	import StudyCard from '#lib/cards/StudyCard.svelte';
 	import { lanes, slotCardId, type Lane } from '#lib/cards/lanes.js';
 	import { experimental, loadExperimental } from '#lib/experimental.svelte.js';
 	import { shareProjectCards } from '#lib/cards/viewer-sources.js';
@@ -187,7 +186,7 @@
 			const i = project.cards.findIndex((c) => c.id === op.card.id);
 			if (i >= 0) project.cards[i] = op.card;
 		}
-		project.focusedId = op.op === 'focus' ? op.id : op.card.id;
+		setFocus(op.op === 'focus' ? op.id : op.card.id);
 	}
 
 	// ── Focus & positioning ────────────────────────────────────────────────────────────────────────────
@@ -265,8 +264,13 @@
 			: height <= available
 				? r.top + (available - height) / 2
 				: r.top + PEEK;
-		autoScrolling = true;
+		guardScroll();
 		scroller.scrollTo({ top: scroller.scrollTop + top - target, behavior });
+	}
+
+	/** The app is about to scroll: focus stays with the card it chose, not whichever passes by on the way. */
+	function guardScroll() {
+		autoScrolling = true;
 		// scrollend may not fire if nothing moved; don't leave the guard stuck.
 		clearTimeout(autoScrollTimer);
 		autoScrollTimer = setTimeout(() => (autoScrolling = false), 800);
@@ -341,7 +345,7 @@
 		frame = requestAnimationFrame(() => {
 			frame = 0;
 			const id = mostVisible();
-			if (id) project.focusedId = id;
+			if (id) setFocus(id);
 		});
 	}
 
@@ -352,7 +356,7 @@
 		if (lanesOn) return laneScrollEnd();
 		// The last scroll frame (or the browser's snap) may not have been processed yet.
 		const id = mostVisible();
-		if (id) project.focusedId = id;
+		if (id) setFocus(id);
 	}
 
 	// ── Lanes (experimental) ───────────────────────────────────────────────────────────────────────────
@@ -374,21 +378,19 @@
 	const LANE_TOP = 16; // below the header, like full-size cards
 	const LANE_GAP = 48; // from a lane's cards to the next lane's, with a line halfway
 	const LANE_PEEK = 112; // kept at the bottom of the view for the next lane (LANE_GAP of it before the lane starts)
-	const LANE_TITLE = 144; // the lane titles' column (w-36)
+	const LANE_TITLE = 224; // the lane titles' column (sm:w-56 below): room for a name of a few words on one line
 	const ROW_PAD = 8; // inside a lane's row, so the cards' delete buttons and shadows aren't clipped
 	const CARD_GAP = 40;
 	const WHEEL_STEP = 150; // wheel travel (px) before moving on to the next lane or card
 	const GESTURE_GAP = 250; // ms: wheel events closer together than this are one gesture
 	/** How tall a lane's cards can be (full-size ones are exactly this); taller ones scroll inside. */
 	const laneHeight = $derived(Math.max(320, viewHeight - HEADER - LANE_TOP - LANE_PEEK));
-	let rowWidth = $state(0);
 	/**
 	 * Where a lane's cards start: after its title. The row itself runs the full width, under the title, so a card
 	 * scrolled past is cut at the window's edge, as on the right.
 	 */
 	const sideTitles = new MediaQuery('min-width: 640px');
 	const rowStart = $derived((sideTitles.current ? LANE_TITLE : 0) + ROW_PAD);
-	let slotWidths = $state<Record<string, number>>({});
 
 	const laneOf = (key: string | undefined) =>
 		laneList.find((l) => l.slots.some((s) => s.key === key));
@@ -413,12 +415,10 @@
 		const row = lane && rowEls[lane.key];
 		if (!lane || !el || !section || !row) return;
 		laneCurrent[lane.key] = key;
-		autoScrolling = true;
+		guardScroll();
 		const top = section.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
 		scroller.scrollTo({ top: scroller.scrollTop + top - HEADER, behavior });
 		scrollRow(row, el, behavior);
-		clearTimeout(autoScrollTimer);
-		autoScrollTimer = setTimeout(() => (autoScrolling = false), 800);
 	}
 
 	/** Moves to a slot already on the page: no waiting for layout, as `focus` does for new cards. */
@@ -439,16 +439,22 @@
 		if (slot) go(slot.key);
 	}
 
-	/** Whether something between the pointer and its lane (a tall card, a list in one) can still scroll that way. */
+	/**
+	 * Whether something in the focused card under the pointer (the card, taller than its lane, or a list in it) can still
+	 * scroll that way. Over any other card (one scrolled past, under the lane's title, or one peeking in) the wheel moves
+	 * on instead.
+	 */
 	function scrollsInside(target: Element, sideways: boolean, delta: number) {
-		const stop = target.closest('[data-lane-row]') ?? scroller;
-		for (let el: Element | null = target; el && el !== stop; el = el.parentElement) {
-			const style = getComputedStyle(el);
-			if (!/auto|scroll/.test(sideways ? style.overflowX : style.overflowY)) continue;
+		const card = target.closest('[data-lane-row] > [id^="card-"]');
+		if (!card || card.id !== `card-${focusedSlot}`) return false;
+		for (let el: Element | null = target; el && el !== card; el = el.parentElement) {
 			const [at, size, view] = sideways
 				? [el.scrollLeft, el.scrollWidth, el.clientWidth]
 				: [el.scrollTop, el.scrollHeight, el.clientHeight];
-			if (size > view + 1 && (delta > 0 ? at + view < size - 1 : at > 0.5)) return true;
+			// Sizes first (cheap): only something that overflows can scroll, and only then is its style looked up.
+			if (size <= view + 1 || !(delta > 0 ? at + view < size - 1 : at > 0.5)) continue;
+			const style = getComputedStyle(el);
+			if (/auto|scroll/.test(sideways ? style.overflowX : style.overflowY)) return true;
 		}
 		return false;
 	}
@@ -481,12 +487,26 @@
 		return () => node.removeEventListener('wheel', onwheel);
 	}
 
+	/** The item whose element's edge (`top` or `left`) is nearest `at`. */
+	function nearest<T>(
+		items: T[],
+		el: (item: T) => Element | undefined | null,
+		edge: 'top' | 'left',
+		at: number
+	) {
+		let best: { item: T; distance: number } | undefined;
+		for (const item of items) {
+			const rect = el(item)?.getBoundingClientRect();
+			const distance = rect ? Math.abs(rect[edge] - at) : Infinity;
+			if (!best || distance < best.distance) best = { item, distance };
+		}
+		return best?.item;
+	}
+
 	/** After the page scrolled some other way (touch, the scrollbar, keys): the lane under the header takes focus. */
 	function laneScrollEnd() {
 		const top = scroller.getBoundingClientRect().top + HEADER;
-		const distance = (lane: Lane) =>
-			Math.abs((laneEls[lane.key]?.getBoundingClientRect().top ?? Infinity) - top);
-		const lane = laneList.toSorted((a, b) => distance(a) - distance(b))[0];
+		const lane = nearest(laneList, (l) => laneEls[l.key], 'top', top);
 		if (lane && lane !== laneOf(focusedSlot)) setFocus(currentOf(lane).key);
 	}
 
@@ -494,9 +514,7 @@
 	function rowScrollEnd(lane: Lane) {
 		if (autoScrolling || birdsEye) return;
 		const left = (rowEls[lane.key]?.getBoundingClientRect().left ?? 0) + rowStart;
-		const distance = (key: string) =>
-			Math.abs((cardEl(key)?.getBoundingClientRect().left ?? Infinity) - left);
-		const slot = lane.slots.toSorted((a, b) => distance(a.key) - distance(b.key))[0];
+		const slot = nearest(lane.slots, (s) => cardEl(s.key), 'left', left);
 		if (!slot) return;
 		laneCurrent[lane.key] = slot.key;
 		if (laneOf(focusedSlot) === lane) setFocus(slot.key);
@@ -515,9 +533,10 @@
 	let flying = $state(false);
 	const BIRD_GAP = 24;
 
-	/** Every card's element id: in lanes a study has two (its setup and its insights). */
-	const slotKeys = $derived(
-		lanesOn ? laneList.flatMap((l) => l.slots.map((s) => s.key)) : project.cards.map((c) => c.id)
+	/** Bird's eye's groups of card element ids: a group per lane (a study has two, its setup and its insights), or the
+	 * whole column as one. */
+	const birdGroups = $derived(
+		lanesOn ? laneList.map((l) => l.slots.map((s) => s.key)) : [project.cards.map((c) => c.id)]
 	);
 
 	/**
@@ -525,7 +544,7 @@
 	 * each lane wraps on its own, beside its title.
 	 */
 	function fitScale() {
-		const wide = window.matchMedia('(min-width: 640px)').matches;
+		const wide = sideTitles.current;
 		const sides = lanesOn ? (wide ? LANE_TITLE : 0) + 32 : wide ? 160 : 32;
 		const width = scroller.clientWidth - sides;
 		const height = snapArea - 2 * BIRD_GAP;
@@ -534,9 +553,7 @@
 			cardWidths[key] ?? 0,
 			Math.min(cardHeights[key] ?? 0, lanesOn ? laneHeight : Infinity)
 		];
-		const groups = lanesOn
-			? laneList.map((l) => l.slots.map((s) => size(s.key)))
-			: [project.cards.map((c) => size(c.id))];
+		const groups = birdGroups.map((keys) => keys.map(size));
 		for (let scale = 0.4; scale > 0.12; scale -= 0.02) {
 			let total = 0;
 			for (const sizes of groups) {
@@ -558,9 +575,9 @@
 		return 0.12;
 	}
 
-	async function setBirdsEye(on: boolean, focusId = lanesOn ? focusedSlot : project.focusedId) {
+	async function setBirdsEye(on: boolean, focusId = focusedSlot) {
 		if (on === birdsEye || !project.cards.length) return;
-		const keys = slotKeys;
+		const keys = birdGroups.flat();
 		const first = new Map(keys.map((k) => [k, cardEl(k)?.getBoundingClientRect()]));
 		if (on) birdScale = fitScale();
 		else flying = true;
@@ -776,7 +793,7 @@
 						     all but the arrows. -->
 						<div
 							class={[
-								'flex shrink-0 flex-col gap-2 px-4 sm:w-36 sm:pt-(--row-pad) sm:pr-4 sm:pl-6',
+								'flex shrink-0 flex-col gap-2 px-4 sm:w-56 sm:pt-(--row-pad) sm:pr-4 sm:pl-6',
 								!birdsEye && 'sm:pointer-events-none sm:absolute sm:left-0 sm:z-10'
 							]}
 							style:--row-pad="{ROW_PAD}px"
@@ -810,7 +827,6 @@
 						</div>
 						<div
 							bind:this={rowEls[lane.key]}
-							bind:clientWidth={rowWidth}
 							data-lane-row
 							class={[
 								'flex min-w-0 flex-1 items-start',
@@ -826,12 +842,11 @@
 						>
 							{#each lane.slots as slot (slot.key)}
 								{@const CardView = cardComponent(slot.card.type)}
-								{@const size = slot.part === 'insights' ? 'wide' : cardSize(slot.card)}
+								{@const size = cardSize(slot.card, slot.part)}
 								<!-- As in the column below: one element in both views, a button in bird's eye. -->
 								<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 								<div
 									id="card-{slot.key}"
-									bind:offsetWidth={slotWidths[slot.key]}
 									role={birdsEye ? 'button' : undefined}
 									tabindex={birdsEye ? 0 : undefined}
 									aria-label={birdsEye
@@ -886,11 +901,7 @@
 											style:width={birdsEye ? `${cardWidths[slot.key] ?? 0}px` : undefined}
 											style:scale={birdsEye ? birdScale : undefined}
 										>
-											{#if slot.part}
-												<StudyCard card={slot.card} part={slot.part} />
-											{:else}
-												<CardView card={slot.card} />
-											{/if}
+											<CardView card={slot.card} part={slot.part} />
 										</div>
 									</div>
 									<!-- A study's insights go with it: deleting is on its setup. -->
@@ -904,7 +915,7 @@
 									class="shrink-0"
 									style:width="{Math.max(
 										0,
-										rowWidth - rowStart - ROW_PAD - CARD_GAP - (slotWidths[last.key] ?? 0)
+										scrollerInnerWidth - rowStart - ROW_PAD - CARD_GAP - (cardWidths[last.key] ?? 0)
 									)}px"
 								></div>
 							{/if}
