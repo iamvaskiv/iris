@@ -12,6 +12,7 @@
 	import { onMount } from 'svelte';
 	import { dev } from '$app/env';
 	import AppHeader from '#lib/components/AppHeader.svelte';
+	import { experimental, loadExperimental, setLanes } from '#lib/experimental.svelte.js';
 	import { loadOrbVariant, orbVariant, useOrbVariant } from '#lib/orb-variant.svelte.js';
 	import type { PageProps } from './$types';
 
@@ -42,7 +43,10 @@
 		{ value: 'eye-spiral', label: 'Eye · Spiral' },
 		{ value: 'breathe-swirl', label: 'Breathe + swirl' }
 	];
-	onMount(loadOrbVariant);
+	onMount(() => {
+		loadOrbVariant();
+		loadExperimental();
+	});
 
 	// Applies immediately, like every switch.
 	async function save(checked: boolean) {
@@ -126,6 +130,31 @@
 					/>
 				</div>
 				{#if error}<p class="text-caption text-destructive" role="alert">{error}</p>{/if}
+			</Card.Content>
+		</Card.Root>
+
+		<!-- Remembered on this device, like the theme. -->
+		<Card.Root>
+			<Card.Header>
+				<Card.Title>Experimental</Card.Title>
+			</Card.Header>
+			<Card.Content>
+				<div class="flex items-start justify-between gap-4">
+					<div class="flex flex-col gap-1">
+						<Label for="topic-lanes">Topic lanes</Label>
+						<p id="topic-lanes-description" class="text-caption text-muted-foreground">
+							Group a project's cards by topic, one horizontal lane per topic: a study's setup with
+							its insights beside it, videos side by side. When off, cards stack in one column. Only
+							on this device.
+						</p>
+					</div>
+					<Switch
+						id="topic-lanes"
+						aria-describedby="topic-lanes-description"
+						checked={experimental.lanes}
+						onCheckedChange={setLanes}
+					/>
+				</div>
 			</Card.Content>
 		</Card.Root>
 	</main>

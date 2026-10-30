@@ -21,7 +21,11 @@ or closed as you move between questions. Lumi drafts the first questions; edits 
 
 **Share** can't share yet: it offers **Fake responses**, which swaps the setup for (made-up) results Lumi writes from
 the questions, labelled **Sample data**, with a green **Fielding in progress** badge beside Share. Pick a question there to slide the overview aside and read its individual
-responses; pick an option to see who chose it.`
+responses; pick an option to see who chose it.
+
+With **topic lanes** on (Settings → Experimental), a study takes two places in its lane: its setup (\`part="setup"\`,
+shown even while fielding) and, to the right of it, its insights (\`part="insights"\`): the results, or until there are
+some, an empty state with the **Fake responses** switch.`
 				}
 			}
 		}
@@ -184,4 +188,16 @@ responses; pick an option to see who chose it.`
 
 <Story name="Sample results">
 	<CardFrame full><StudyCard card={sampled} /></CardFrame>
+</Story>
+
+<Story name="Lanes: insights, no responses yet">
+	<CardFrame wide><StudyCard card={study} part="insights" /></CardFrame>
+</Story>
+
+<Story name="Lanes: insights">
+	<CardFrame wide><StudyCard card={sampled} part="insights" /></CardFrame>
+</Story>
+
+<Story name="Lanes: setup while fielding">
+	<CardFrame full><StudyCard card={sampled} part="setup" /></CardFrame>
 </Story>

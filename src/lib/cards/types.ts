@@ -27,6 +27,11 @@ export type Card = {
 		| (string & {});
 	title: string;
 	subtitle?: string;
+	/**
+	 * The topic the card belongs to, set by Lumi: cards with the same topic share a lane (experimental lanes). Without
+	 * one, rules in `lanes.ts` place the card.
+	 */
+	topic?: string;
 	body?: string;
 	items?: CardItem[];
 	/** Table cards: column headings and rows of cells (first column labels the row). */
