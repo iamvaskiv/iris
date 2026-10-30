@@ -37,8 +37,9 @@ export function ruleSuggestions(lane: Lane, cards: Card[]): string[] {
 	}
 	if (of('insights').length) out.push('What did people dislike?', 'Who liked it most?');
 	if (of('comparison').length || of('viewers').length) out.push('Which one works best?');
+	// Named after the lane: the same words in several lanes would all go once asked in one, and wouldn't say which.
 	if (!out.length && own.some((c) => c.type !== 'upload'))
-		out.push('Tell me more', 'What stands out?');
+		out.push(`Tell me more about ${lane.title}`, `What stands out in ${lane.title}?`);
 	return [...new Set(out)];
 }
 
