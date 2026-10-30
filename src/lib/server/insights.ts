@@ -1,6 +1,7 @@
 import { lumiere } from './lumiere.js';
 import { store } from './store.js';
 import type { Insights } from '#lib/cards/types.js';
+import { toneOf } from '#lib/cards/viewer.js';
 
 /**
  * Viewer insights (views, ratings, sentiment, answers to on-video questions, comments) for videos that were shown
@@ -125,9 +126,9 @@ async function build(videoId: string): Promise<Insights | null> {
 		rating: ratingAverage !== null ? { average: round(ratingAverage), max: ratingMax, count: ratingCount } : undefined,
 		sentiment: sentiment.positive + sentiment.neutral + sentiment.negative ? sentiment : undefined,
 		questions,
-		liked: comments.filter((c) => c.sentiment > 0.2).slice(0, TOP_COMMENTS),
+		liked: comments.filter((c) => toneOf(c.sentiment) === 'positive').slice(0, TOP_COMMENTS),
 		disliked: comments
-			.filter((c) => c.sentiment < -0.2)
+			.filter((c) => toneOf(c.sentiment) === 'negative')
 			.reverse()
 			.slice(0, TOP_COMMENTS),
 		comments: [...comments].sort((a, b) => a.time - b.time),

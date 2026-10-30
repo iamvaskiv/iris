@@ -67,13 +67,19 @@ comments at their moments) and slider answers there (as ratings out of 10).`
 
 <Story name="Where a character appears">
 	<CardFrame wide
-		><VideoCard card={womenTalking} pick={{ kind: 'character', index: 0 }} /></CardFrame
+		><VideoCard
+			card={womenTalking}
+			initial={{ pick: { kind: 'character', index: 0 } }}
+		/></CardFrame
 	>
 </Story>
 
 <Story name="Timeline view">
 	<CardFrame full
-		><VideoCard card={womenTalking} lanes pick={{ kind: 'character', index: 0 }} /></CardFrame
+		><VideoCard
+			card={womenTalking}
+			initial={{ lanes: true, pick: { kind: 'character', index: 0 } }}
+		/></CardFrame
 	>
 </Story>
 
@@ -82,17 +88,21 @@ comments at their moments) and slider answers there (as ratings out of 10).`
 </Story>
 
 <Story name="Timeline view with viewer data">
-	<CardFrame full><VideoCard card={withViewers} lanes /></CardFrame>
+	<CardFrame full><VideoCard card={withViewers} initial={{ lanes: true }} /></CardFrame>
 </Story>
 
 <Story name="Viewer data from a study">
 	<CardFrame full
-		><VideoCard card={withViewers} studies={[study]} source={study.id} lanes /></CardFrame
+		><VideoCard
+			card={withViewers}
+			studies={[study]}
+			initial={{ lanes: true, source: study.id }}
+		/></CardFrame
 	>
 </Story>
 
 <Story name="Rating along the video">
-	<CardFrame full><VideoCard card={spreadRatings} lanes /></CardFrame>
+	<CardFrame full><VideoCard card={spreadRatings} initial={{ lanes: true }} /></CardFrame>
 </Story>
 
 <Story name="Short clip">

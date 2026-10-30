@@ -5,6 +5,7 @@
 	import { ChevronLeft, Icon, X } from '@latitudelabs/design-system/icons';
 	import { page } from '$app/state';
 	import { replaceState } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import AiDock, { timeOfDayGreeting, type DockMode } from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import BirdsEyeIcon from '#lib/components/BirdsEyeIcon.svelte';
@@ -26,7 +27,13 @@
 	// svelte-ignore state_referenced_locally
 	let project = $state(structuredClone(data.project));
 	// A video card finds the project's studies that show its video, to switch its viewer data to their sample results.
-	shareProjectCards(() => project.cards);
+	shareProjectCards(
+		() => project.cards,
+		(id, cardData) => {
+			const card = project.cards.find((c) => c.id === id);
+			if (card) card.data = cardData;
+		}
+	);
 	let thinking = $state(false);
 	let error = $state('');
 	let draft = $state('');
@@ -39,7 +46,6 @@
 
 	// Empty projects show the dock centred; when the first card arrives it morphs down to the bottom panel
 	// (View Transitions where supported, an instant switch otherwise).
-	// svelte-ignore state_referenced_locally
 	let centered = $state(project.cards.length === 0);
 	$effect(() => {
 		const next = project.cards.length === 0;
@@ -60,7 +66,7 @@
 		if (video) {
 			upload(video);
 		} else if (q) {
-			replaceState(page.url.pathname, {});
+			replaceState(resolve('/projects/[id]', { id: page.params.id ?? '' }), {});
 			send(q);
 		} else {
 			focus(project.focusedId, 'instant');
@@ -85,7 +91,7 @@
 			body: JSON.stringify({ name: project.name === 'New project' ? undefined : project.name })
 		});
 		project.id = (await res.json()).id;
-		replaceState(`/projects/${project.id}`, {});
+		replaceState(resolve('/projects/[id]', { id: project.id }), {});
 	}
 
 	async function upload(file: File) {

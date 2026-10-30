@@ -27,6 +27,7 @@
 	import { cubicOut } from 'svelte/easing';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { readLocal, writeLocal } from '#lib/local.js';
+	import { projectCardUpdate } from './viewer-sources';
 	import ChannelGrid from './study/ChannelGrid.svelte';
 	import ChannelPlayer from './study/ChannelPlayer.svelte';
 	import ResizeHandle from './study/ResizeHandle.svelte';
@@ -405,6 +406,7 @@
 	let scaleValue = $state(5);
 
 	// Share: sharing isn't built yet, so it offers fake responses instead (Lumi writes them on the server).
+	const updateCard = projectCardUpdate();
 	let writing = $state(false);
 	let sampleError = $state('');
 
@@ -435,6 +437,12 @@
 			});
 			if (!res.ok) throw new Error(`${res.status}`);
 			sample = (await res.json()).sample;
+			// Hand the results back to the page, so the project's video and sources cards show them at once.
+			updateCard?.(card.id, {
+				...card.data,
+				questions: $state.snapshot(questions),
+				sample: $state.snapshot(sample)
+			});
 		} catch (e) {
 			sampleError = `Couldn't make up the answers (${e instanceof Error ? e.message : e}).`;
 		} finally {

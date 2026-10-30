@@ -51,6 +51,17 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   playhead run through every lane. Click a lane to go to that moment, a scene to go to its start, or a name to pick it
   as before (the other lanes dim). Its groups open and close like the card's sections.
 
+**For developers**
+
+- A study's reactions to the whole video show among a video card's Comments (they had landed under Scenes), and a
+  study's new sample results reach the project's video and sources cards at once, without a reload.
+- Viewer data has one shape for every source (`ViewerData`, which Lumiere's insights build on); its helpers (tones,
+  curves, scene segments, where a moment sits) live in `cards/viewer.ts` and `cards/curve.ts`, and Timeline view and
+  the Sources card share their scenes row, scene lines and curve chart (`cards/timeline/`). The video card's viewer
+  numbers and sections are their own components (`cards/video/`).
+- Storybook fixture images are named after the image itself, not its signed link, so capturing again keeps the same
+  files instead of leaving copies behind.
+
 ## 2026-10-29
 
 **Projects**

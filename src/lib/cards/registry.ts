@@ -1,6 +1,6 @@
 import type { Component } from 'svelte';
 import type { Card } from './types';
-import { hasLanes, timelineView } from './timeline-view.svelte';
+import { videoCardSize } from './timeline-view.svelte';
 import ComparisonCard from './ComparisonCard.svelte';
 import InsightsCard from './InsightsCard.svelte';
 import ListCard from './ListCard.svelte';
@@ -35,11 +35,11 @@ export const cardComponent = (type: string) => registry[type] ?? TextCard;
  * beside its title, its lanes scrolling below).
  */
 export function cardSize(card: Card): 'normal' | 'wide' | 'full' {
-	if (card.type === 'study' || (card.type === 'video' && timelineView.on && hasLanes(card)))
-		return 'full';
+	if (card.type === 'study') return 'full';
+	// Its own module knows: full size in Timeline view, wide otherwise.
+	if (card.type === 'video') return videoCardSize(card);
 	const videos = (card.data?.videoIds as string[] | undefined)?.length ?? 0;
 	if (
-		card.type === 'video' ||
 		card.type === 'sources' ||
 		(card.type === 'comparison' && videos >= 3) ||
 		(card.type === 'table' && (card.columns?.length ?? 0) >= 5)

@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { Card, Stat } from '@latitudelabs/design-system';
-	import { curvePaths, smoothCurve } from './curve';
+	import { along, ratingCurve, sceneSegments, sentimentCurves } from './curve';
 	import { timecode } from './format';
-	import { projectCards, studySources, type ViewerSource } from './viewer-sources';
+	import CurveChart from './timeline/CurveChart.svelte';
+	import SceneBlocks from './timeline/SceneBlocks.svelte';
+	import SceneLines from './timeline/SceneLines.svelte';
+	import { TONE_DOT, toneOf } from './viewer';
+	import { projectCards, viewerSources, type ViewerSource } from './viewer-sources';
 	import type { Card as CardData, SourcesData } from './types';
 
 	/**
@@ -23,12 +27,7 @@
 		{ bg: 'bg-category-green', stroke: 'stroke-category-green' }
 	];
 	const sources = $derived(
-		[
-			...(data.viewers
-				? [{ id: 'lumiere', name: 'Lumiere', kind: 'lumiere' as const, viewers: data.viewers }]
-				: []),
-			...(data.videoId ? studySources(studies ?? sharedCards?.() ?? [], data.videoId) : [])
-		]
+		viewerSources(data.viewers, studies ?? sharedCards?.() ?? [], data.videoId)
 			.slice(0, COLOURS.length)
 			.map((s, i) => ({ ...s, colour: COLOURS[i] }))
 	);
@@ -62,40 +61,15 @@
 	// Along the video: each source's curves on one shared scale, so they compare. Sentiment is scaled together, so the
 	// biggest swing of any source nearly fills the row; ratings run from the lowest mark to full marks.
 	const duration = $derived(data.duration ?? 0);
-	const percent = (t: number) => (duration ? Math.min(100, Math.max(0, (t / duration) * 100)) : 0);
-	const sentimentCurves = $derived.by(() => {
-		const curves = sources.map((s) =>
-			smoothCurve(
-				(s.viewers.comments ?? []).map((c) => ({ time: c.time, value: (c.sentiment + 1) / 2 })),
-				duration,
-				{ baseline: 0.5 }
-			)
-		);
-		const swing = Math.max(0, ...curves.flat().map((y) => Math.abs(y - 0.5)));
-		return curves.map((ys) =>
-			curvePaths(swing ? ys.map((y) => 0.5 + ((y - 0.5) / swing) * 0.45) : ys)
-		);
-	});
-	const ratingCurves = $derived(
-		sources.map((s) =>
-			(s.viewers.ratings ?? []).length
-				? curvePaths(
-						smoothCurve(
-							(s.viewers.ratings ?? []).map((r) => {
-								const min = r.min ?? 1;
-								return { time: r.time, value: (r.value - min) / (r.max - min || 1) };
-							}),
-							duration
-						)
-					)
-				: null
+	const percent = (t: number) => along(t, duration);
+	const sentiment = $derived(
+		sentimentCurves(
+			sources.map((s) => s.viewers.comments ?? []),
+			duration
 		)
 	);
-	const segments = $derived(
-		(data.scenes ?? []).map((s, i, all) => ({ ...s, end: s.end ?? all[i + 1]?.start ?? duration }))
-	);
-	const toneDot = (sentiment: number) =>
-		sentiment > 0.2 ? 'bg-success' : sentiment < -0.2 ? 'bg-destructive' : 'bg-muted-foreground';
+	const ratings = $derived(sources.map((s) => ratingCurve(s.viewers.ratings ?? [], duration)));
+	const segments = $derived(sceneSegments(data.scenes ?? [], duration));
 </script>
 
 <Card.Root>
@@ -143,26 +117,11 @@
 		{#if duration}
 			<!-- Along the video: labels on the left (w-48), the video's length on the right, scene lines through it all. -->
 			<div class="relative isolate flex flex-col gap-1" role="group" aria-label="Along the video">
-				<div class="pointer-events-none absolute inset-y-0 right-0 left-48 z-10" aria-hidden="true">
-					{#each segments.slice(1) as s, i (i)}
-						<div class="absolute inset-y-0 w-px bg-border" style:left="{percent(s.start)}%"></div>
-					{/each}
-				</div>
+				<SceneLines {segments} {duration} />
 
 				<div class="flex h-10 items-center">
 					<span class="w-48 shrink-0 text-caption text-muted-foreground">Scenes</span>
-					<div class="relative h-8 flex-1">
-						{#each segments as s, i (i)}
-							<div
-								class="absolute inset-y-0 truncate rounded-sm bg-muted px-2 text-caption leading-8"
-								style:left="calc({percent(s.start)}% + 1px)"
-								style:width="calc({percent(s.end) - percent(s.start)}% - 2px)"
-								title="{s.title} · {timecode(s.start)}"
-							>
-								{s.title}
-							</div>
-						{/each}
-					</div>
+					<SceneBlocks {segments} {duration} />
 				</div>
 
 				<div class="flex h-24 items-center">
@@ -170,16 +129,27 @@
 						<span class="text-caption">Sentiment</span>
 						<span class="text-caption text-muted-foreground">Above the line: positive</span>
 					</span>
-					{@render overlay(sentimentCurves, true, 'Comment sentiment along the video, by source')}
+					<CurveChart
+						curves={sentiment.map((paths, i) => ({ paths, stroke: sources[i].colour.stroke }))}
+						label="Comment sentiment along the video, by source"
+						{duration}
+						midline
+					/>
 				</div>
 
-				{#if ratingCurves.some(Boolean)}
+				{#if ratings.some(Boolean)}
 					<div class="flex h-24 items-center">
 						<span class="flex w-48 shrink-0 flex-col">
 							<span class="text-caption">Rating</span>
 							<span class="text-caption text-muted-foreground">Lowest mark to full marks</span>
 						</span>
-						{@render overlay(ratingCurves, false, 'Average rating along the video, by source')}
+						<CurveChart
+							curves={ratings.map(
+								(paths, i) => paths && { paths, stroke: sources[i].colour.stroke }
+							)}
+							label="Average rating along the video, by source"
+							{duration}
+						/>
 					</div>
 				{/if}
 
@@ -198,7 +168,7 @@
 								<span
 									class={[
 										'absolute top-1/2 size-2 -translate-1/2 rounded-full',
-										toneDot(c.sentiment)
+										TONE_DOT[toneOf(c.sentiment)]
 									]}
 									style:left="{percent(c.time)}%"
 									title="{timecode(c.time)} · {c.text}"
@@ -211,38 +181,3 @@
 		{/if}
 	</Card.Content>
 </Card.Root>
-
-<!-- Every source's curve along the video, laid over each other in their colours (with `midline`, a neutral line). -->
-{#snippet overlay(curves: ({ line: string } | null)[], midline: boolean, label: string)}
-	<div class="h-full flex-1 py-2">
-		<svg
-			viewBox="0 0 1000 100"
-			preserveAspectRatio="none"
-			class="size-full overflow-visible"
-			role="img"
-			aria-label={label}
-		>
-			{#if midline}
-				<line
-					x1="0"
-					y1="50"
-					x2="1000"
-					y2="50"
-					class="stroke-border"
-					vector-effect="non-scaling-stroke"
-				/>
-			{/if}
-			{#each curves as c, i (i)}
-				{#if c}
-					<path
-						d={c.line}
-						fill="none"
-						class={sources[i].colour.stroke}
-						stroke-width="2"
-						vector-effect="non-scaling-stroke"
-					/>
-				{/if}
-			{/each}
-		</svg>
-	</div>
-{/snippet}

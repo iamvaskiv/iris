@@ -23,15 +23,32 @@ async function projectData(id) {
 	return page ? unflatten(page.data).project : null;
 }
 
+/**
+ * What identifies an image, the same on every capture: its path and its settings (Mux keeps the frame's time and
+ * width inside the signed token), without the token's dates, which change each time. So the same frame keeps its
+ * file, and a capture doesn't leave old copies behind.
+ */
+function imageKey(url) {
+	const { pathname, searchParams } = new URL(url);
+	const token = searchParams.get('token');
+	let claims = {};
+	try {
+		claims = JSON.parse(Buffer.from(token?.split('.')[1] ?? '', 'base64url').toString());
+	} catch {
+		// Not a token we can read: fall back to the path alone.
+	}
+	for (const changing of ['exp', 'iat', 'nbf']) delete claims[changing];
+	const settings = Object.keys(claims)
+		.sort()
+		.map((k) => `${k}=${JSON.stringify(claims[k])}`);
+	return [pathname, ...settings].join('&');
+}
+
 /** Downloads a signed image once and returns the path Storybook serves it at. */
 const saved = new Map();
 async function localImage(url) {
 	if (!saved.has(url)) {
-		const name =
-			createHash('sha1')
-				.update(new URL(url).pathname + new URL(url).searchParams.get('token')?.slice(-24))
-				.digest('hex')
-				.slice(0, 12) + '.jpg';
+		const name = createHash('sha1').update(imageKey(url)).digest('hex').slice(0, 12) + '.jpg';
 		const res = await fetch(url);
 		if (!res.ok) throw new Error(`Image ${res.status}: ${url.slice(0, 80)}`);
 		writeFileSync(`${OUT}/images/${name}`, Buffer.from(await res.arrayBuffer()));

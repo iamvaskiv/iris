@@ -73,15 +73,27 @@ export type SourcesData = {
 	viewers?: Insights;
 };
 
-/** Viewer insights card data: what an audience made of a video. */
-export type Insights = {
-	videoId: string;
-	/** Estimated viewing sessions over the last year, not unique viewers. */
+/**
+ * What viewers made of a video, from any source (Lumiere's real viewers, or a study's sample results): how many, the
+ * rating and sentiment, and every comment and rating at the moment it was given.
+ */
+export type ViewerData = {
+	/** Estimated viewing sessions (Lumiere: over the last year, not unique viewers). */
 	views?: number;
+	/** How many responded (Lumiere) or watched (a study). */
 	responses: number;
 	rating?: { average: number; max: number; count: number };
 	/** Comment sentiment counts. */
 	sentiment?: { positive: number; neutral: number; negative: number };
+	/** Every comment, in the order of where in the video it was left. */
+	comments?: InsightComment[];
+	/** Every rating, where in the video it was given: from `min` (1 star, unless set) to `max`. */
+	ratings?: { time: number; value: number; max: number; min?: number }[];
+};
+
+/** Viewer insights card data: what an audience made of a video on Lumiere, with its on-video questions. */
+export type Insights = ViewerData & {
+	videoId: string;
 	/** Answers to questions shown during the video: an average for sliders and ratings, counts per option otherwise. */
 	questions: {
 		question: string;
@@ -94,10 +106,6 @@ export type Insights = {
 	/** Most positive and most negative comments, with the second of the video they were left at. */
 	liked: InsightComment[];
 	disliked: InsightComment[];
-	/** Every comment, in the order of where in the video it was left. */
-	comments?: InsightComment[];
-	/** Every rating, where in the video it was given: from `min` (1 star, unless set) to `max`. */
-	ratings?: { time: number; value: number; max: number; min?: number }[];
 	fetchedAt: string;
 };
 

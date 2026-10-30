@@ -3006,32 +3006,32 @@
 		"body": "Riley turns thirteen, and new teenage emotions led by Anxiety move into Headquarters. Anxiety bottles up Joy and the original emotions in a glass jar. They then try to get back and protect Riley's identity.",
 		"data": {
 			"videoId": "vuvIanfCkI8R",
-			"poster": "/fixtures/e845b931d46f.jpg",
+			"poster": "/fixtures/730f9a5cc4c4.jpg",
 			"duration": 144.561089,
 			"scenes": [
 				{
 					"title": "Riley Turns Thirteen",
 					"start": 0,
 					"end": 29,
-					"thumb": "/fixtures/f7995106b766.jpg"
+					"thumb": "/fixtures/e6b1b48eabb3.jpg"
 				},
 				{
 					"title": "Meet the New Emotions",
 					"start": 29,
 					"end": 66,
-					"thumb": "/fixtures/ecbffcaabd11.jpg"
+					"thumb": "/fixtures/d717a637e952.jpg"
 				},
 				{
 					"title": "High School Anxiety & Headquarters Takeover",
 					"start": 66,
 					"end": 100,
-					"thumb": "/fixtures/c688206aabe1.jpg"
+					"thumb": "/fixtures/142a221fbdea.jpg"
 				},
 				{
 					"title": "Suppressed Emotions & The Sar-chasm",
 					"start": 100,
 					"end": 145,
-					"thumb": "/fixtures/6dfeadff016d.jpg"
+					"thumb": "/fixtures/443a484f617d.jpg"
 				}
 			],
 			"characters": [
@@ -3039,7 +3039,7 @@
 					"name": "Anger",
 					"role": "Comic Relief",
 					"actor": "Lewis Black",
-					"image": "/fixtures/eace516f5a6d.jpg",
+					"image": "/fixtures/27bc85f4de78.jpg",
 					"appearances": [
 						{
 							"start": 8,
@@ -3055,7 +3055,7 @@
 					"name": "Anxiety",
 					"role": "Antagonist",
 					"actor": "Maya Hawke",
-					"image": "/fixtures/43e9dcc23786.jpg",
+					"image": "/fixtures/e9bd3a5f3704.jpg",
 					"appearances": [
 						{
 							"start": 29,
@@ -3067,7 +3067,7 @@
 					"name": "Disgust",
 					"role": "Sidekick",
 					"actor": "Liza Lapira",
-					"image": "/fixtures/c479cc6c990f.jpg",
+					"image": "/fixtures/8ba4934d0f20.jpg",
 					"appearances": [
 						{
 							"start": 0,
@@ -3087,7 +3087,7 @@
 					"name": "Fear",
 					"role": "Comic Relief",
 					"actor": "Tony Hale",
-					"image": "/fixtures/eace516f5a6d.jpg",
+					"image": "/fixtures/27bc85f4de78.jpg",
 					"appearances": [
 						{
 							"start": 8,
@@ -3103,7 +3103,7 @@
 					"name": "Joy",
 					"role": "Hero",
 					"actor": "Amy Poehler",
-					"image": "/fixtures/c479cc6c990f.jpg",
+					"image": "/fixtures/8ba4934d0f20.jpg",
 					"appearances": [
 						{
 							"start": 0,
@@ -3115,7 +3115,7 @@
 					"name": "Riley Andersen",
 					"role": "Hero",
 					"actor": "Kensington Tallman",
-					"image": "/fixtures/c479cc6c990f.jpg",
+					"image": "/fixtures/8ba4934d0f20.jpg",
 					"appearances": [
 						{
 							"start": 0,

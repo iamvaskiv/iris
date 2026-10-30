@@ -1,5 +1,6 @@
 <script lang="ts" module>
 	import type { Span } from './types';
+	import type { Tone } from './viewer';
 
 	/** One lane: something on the card and where it's on screen. `index` is its place in the card's own list. */
 	export type Lane = {
@@ -21,7 +22,7 @@
 		time: number;
 		/** From -1 (negative) to 1 (positive). */
 		sentiment: number;
-		tone: 'positive' | 'neutral' | 'negative';
+		tone: Tone;
 		text: string;
 	};
 </script>
@@ -29,8 +30,12 @@
 <script lang="ts">
 	import { Avatar } from '@latitudelabs/design-system';
 	import { ChevronDown } from '@latitudelabs/design-system/icons';
-	import { curvePaths, smoothCurve } from './curve';
+	import { along, ratingCurve as ratingPaths, sceneSegments, sentimentCurves } from './curve';
 	import { timecode } from './format';
+	import CurveChart from './timeline/CurveChart.svelte';
+	import SceneBlocks from './timeline/SceneBlocks.svelte';
+	import SceneLines from './timeline/SceneLines.svelte';
+	import { TONE_DOT, initials } from './viewer';
 
 	/**
 	 * The video as lanes (Timeline view): the scenes across the top, viewers' comments by sentiment (positive, neutral and negative,
@@ -61,22 +66,14 @@
 		onpick: (kind: LaneGroup['kind'], index: number) => void;
 	} = $props();
 
-	const percent = (t: number) => (duration ? Math.min(100, Math.max(0, (t / duration) * 100)) : 0);
-	const segments = $derived(
-		scenes.map((s, i) => ({ ...s, end: s.end ?? scenes[i + 1]?.start ?? duration }))
-	);
+	const percent = (t: number) => along(t, duration);
+	const segments = $derived(sceneSegments(scenes, duration));
 	const screenTime = (lane: Lane) =>
 		(lane.appearances ?? []).reduce((n, s) => n + s.end - s.start, 0);
 	const sorted = (lanes: Lane[]) => [...lanes].sort((a, b) => screenTime(b) - screenTime(a));
 	const share = (lane: Lane) => Math.round(percent(screenTime(lane)));
 	const isPicked = (kind: LaneGroup['kind'], lane: Lane) =>
 		picked?.kind === kind && picked.index === lane.index;
-	const initials = (name: string) =>
-		name
-			.split(' ')
-			.map((w) => w[0])
-			.slice(0, 2)
-			.join('');
 
 	/** Which groups are open: all of them to begin with, as on the card's sections. */
 	const open = $state<Record<string, boolean>>({
@@ -90,40 +87,16 @@
 
 	// Charts: how positive the comments were along the video (a curve about a neutral midline), and the average rating
 	// along it (a rating question at the end shows as one rise there).
-	// Scaled so its biggest swing nearly fills the row: comments are often mildly positive throughout, and a true
-	// scale would leave a near-flat line. Above the midline is still positive, below it negative.
-	const sentimentCurve = $derived.by(() => {
-		const ys = smoothCurve(
-			comments.map((c) => ({ time: c.time, value: (c.sentiment + 1) / 2 })),
-			duration,
-			{ baseline: 0.5 }
-		);
-		const swing = Math.max(...ys.map((y) => Math.abs(y - 0.5)));
-		return curvePaths(swing ? ys.map((y) => 0.5 + ((y - 0.5) / swing) * 0.45) : ys);
-	});
-	const ratingCurve = $derived(
-		curvePaths(
-			smoothCurve(
-				// The lowest mark (one star, or 0 on a slider) at the bottom, full marks at the top.
-				ratings.map((r) => {
-					const min = r.min ?? 1;
-					return { time: r.time, value: (r.value - min) / (r.max - min || 1) };
-				}),
-				duration
-			)
-		)
-	);
+	const sentimentCurve = $derived(sentimentCurves([comments], duration)[0]);
+	const ratingCurve = $derived(ratingPaths(ratings, duration));
 	const ratingAverage = $derived(
 		ratings.length ? ratings.reduce((n, r) => n + r.value, 0) / ratings.length : 0
 	);
 
-	/** Unique per card, for the charts' gradient ids. */
-	const uid = $props.id();
-
 	const TONES = [
-		{ key: 'positive', label: 'Positive', dot: 'bg-success' },
-		{ key: 'neutral', label: 'Neutral', dot: 'bg-muted-foreground' },
-		{ key: 'negative', label: 'Negative', dot: 'bg-destructive' }
+		{ key: 'positive', label: 'Positive', dot: TONE_DOT.positive },
+		{ key: 'neutral', label: 'Neutral', dot: TONE_DOT.neutral },
+		{ key: 'negative', label: 'Negative', dot: TONE_DOT.negative }
 	] as const;
 
 	/** Clicking a lane goes to that moment. */
@@ -136,33 +109,14 @@
 <!-- Labels on the left (w-48), lanes on the right; the overlay of scene lines and the playhead covers the lanes. -->
 <!-- Isolated, so the overlay stays above the lanes but under Lumi's dock. -->
 <div class="relative isolate flex flex-col" role="group" aria-label="Timeline view">
-	<div class="pointer-events-none absolute inset-y-0 right-0 left-48 z-10" aria-hidden="true">
-		{#each segments.slice(1) as s, i (i)}
-			<div class="absolute inset-y-0 w-px bg-border" style:left="{percent(s.start)}%"></div>
-		{/each}
-		<div
-			class="absolute inset-y-0 w-0.5 -translate-x-1/2 bg-foreground"
-			style:left="{percent(time)}%"
-		></div>
-	</div>
+	<SceneLines {segments} {duration} {time} />
 
 	{@render toggle('scenes', 'Scenes', segments.length)}
 	<!-- The scenes: a block each, titled; click one to go to its start. -->
 	{#if open.scenes}
 		<div class="flex h-12 items-center">
 			<span class="w-48 shrink-0"></span>
-			<div class="relative h-8 flex-1">
-				{#each segments as s, i (i)}
-					<button
-						type="button"
-						class="absolute inset-y-0 truncate rounded-sm bg-muted px-2 text-left text-caption outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
-						style:left="calc({percent(s.start)}% + 1px)"
-						style:width="calc({percent(s.end) - percent(s.start)}% - 2px)"
-						title="{s.title} · {timecode(s.start)}"
-						onclick={() => onseek(s.start)}>{s.title}</button
-					>
-				{/each}
-			</div>
+			<SceneBlocks {segments} {duration} {onseek} />
 		</div>
 	{/if}
 
@@ -177,7 +131,12 @@
 						{ratings.length === 1 ? 'rating' : 'ratings'}</span
 					>
 				</span>
-				{@render chart(ratingCurve, false, 'Average rating along the video')}
+				<CurveChart
+					curves={[ratingCurve && { paths: ratingCurve, fill: true }]}
+					label="Average rating along the video"
+					{duration}
+					{onseek}
+				/>
 			</div>
 		{/if}
 	{/if}
@@ -190,7 +149,13 @@
 					<span class="text-caption">Over time</span>
 					<span class="text-caption text-muted-foreground">Above the line: positive</span>
 				</span>
-				{@render chart(sentimentCurve, true, 'Comment sentiment along the video')}
+				<CurveChart
+					curves={[{ paths: sentimentCurve, fill: true }]}
+					label="Comment sentiment along the video"
+					{duration}
+					midline
+					{onseek}
+				/>
 			</div>
 		{/if}
 		{#each open.viewers ? TONES : [] as tone (tone.key)}
@@ -282,44 +247,4 @@
 			aria-hidden="true"
 		/>
 	</button>
-{/snippet}
-
-<!-- A smoothed curve along the video (an area under a line; with `midline`, a neutral line through the middle). Click
-     to go to that moment. -->
-{#snippet chart(paths: { line: string; area: string }, midline: boolean, label: string)}
-	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-	<div class="relative h-full flex-1 cursor-pointer py-2 text-foreground" onclick={seek}>
-		<svg
-			viewBox="0 0 1000 100"
-			preserveAspectRatio="none"
-			class="size-full overflow-visible"
-			role="img"
-			aria-label={label}
-		>
-			<defs>
-				<linearGradient id="{uid}-{midline ? 'sentiment' : 'rating'}" x1="0" y1="0" x2="0" y2="1">
-					<stop offset="0" stop-color="currentColor" stop-opacity="0.35" />
-					<stop offset="1" stop-color="currentColor" stop-opacity="0" />
-				</linearGradient>
-			</defs>
-			{#if midline}
-				<line
-					x1="0"
-					y1="50"
-					x2="1000"
-					y2="50"
-					class="stroke-border"
-					vector-effect="non-scaling-stroke"
-				/>
-			{/if}
-			<path d={paths.area} fill="url(#{uid}-{midline ? 'sentiment' : 'rating'})" />
-			<path
-				d={paths.line}
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.5"
-				vector-effect="non-scaling-stroke"
-			/>
-		</svg>
-	</div>
 {/snippet}

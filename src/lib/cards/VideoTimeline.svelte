@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { along, sceneSegments } from './curve';
 	import { timecode } from './format';
+	import { TONE_DOT, type Tone } from './viewer';
 	import type { Span } from './types';
 
 	/**
@@ -24,21 +26,15 @@
 		/** What's picked appears here. */
 		spans?: Span[];
 		/** Viewers' comments, where they were left. */
-		marks?: { time: number; tone: 'positive' | 'neutral' | 'negative'; text?: string }[];
+		marks?: { time: number; tone: Tone; text?: string }[];
 		/** What's picked, for screen readers ("Otto Anderson appears 4 times"). */
 		label?: string;
 		onseek: (time: number) => void;
 	} = $props();
 
-	const percent = (t: number) => (duration ? Math.min(100, Math.max(0, (t / duration) * 100)) : 0);
+	const percent = (t: number) => along(t, duration);
 	/** Each scene runs to the next one's start (or its own end, or the video's end). */
-	const segments = $derived(
-		scenes.map((s, i) => ({
-			title: s.title,
-			start: s.start,
-			end: s.end ?? scenes[i + 1]?.start ?? duration
-		}))
-	);
+	const segments = $derived(sceneSegments(scenes, duration));
 
 	let dragging = false;
 	function seekTo(e: PointerEvent) {
@@ -97,9 +93,7 @@
 		<div
 			class={[
 				'pointer-events-none absolute top-0 size-1.5 -translate-x-1/2 rounded-full',
-				{ positive: 'bg-success', neutral: 'bg-muted-foreground', negative: 'bg-destructive' }[
-					m.tone
-				]
+				TONE_DOT[m.tone]
 			]}
 			style:left="{percent(m.time)}%"
 		></div>

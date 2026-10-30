@@ -30,3 +30,6 @@ export function hasLanes(card: Card) {
 			))
 	);
 }
+
+/** How wide a video card is: full size while it shows Timeline view's lanes, wide otherwise. */
+export const videoCardSize = (card: Card) => (timelineView.on && hasLanes(card) ? 'full' : 'wide');
