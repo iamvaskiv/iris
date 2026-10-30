@@ -9,6 +9,7 @@ import { comparisonData } from './comparison.js';
 import { assets, describeAssets } from './assets.js';
 import { cleanQuestions, nameVideos } from './study.js';
 import { flatSteps, timecode } from '#lib/cards/study/question-types.js';
+import { topicOf } from '#lib/cards/lanes.js';
 import type { Card, CardOp, ChatResponse, ComparisonData, StudyData } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
 import { REPLY_NUDGE } from '#lib/transcript.js';
@@ -67,6 +68,7 @@ Card rules:
 - A card is about one subject. Keep titles short and stable so the card can be found and extended later.
 - A study card can show sample results: made-up answers for a demo, because sharing isn't built yet (Share → Fake responses). You may talk about them, but always say they're sample answers, never real ones.
 - "upload" cards are managed by the app (upload progress); never update or focus them.
+- Every card has a topic: a short name (1-3 words) for the line of work it belongs to, e.g. "Videos" or "Brand study". Cards with the same topic are shown together, side by side in one lane. When you add a card, give it the topic of the cards it belongs with: a card about one video takes that video card's topic, a study's follow-ups take the study's topic. Video cards go under "Videos" unless they belong to another topic's work; videos uploaded together always share one. Start a new topic only for a new line of work, and reuse existing topics exactly as written. Never mention topics in your reply.
 - Don't repeat a card's content in your text reply; point to it ("Added her scenes to Envy's card.").
 
 Projects:
@@ -101,7 +103,7 @@ function describeCards(cards: Card[], focusedId?: string) {
 			: '';
 		// A study's questions in full (as JSON), since update_card replaces the whole list.
 		const study = c.type === 'study' ? ` | questions: ${JSON.stringify((c.data as StudyData | undefined)?.questions ?? [])}${describeSample(c.data as StudyData | undefined)}` : '';
-		return `- [${c.id}] ${c.type} "${c.title}"${c.subtitle ? ` (${c.subtitle})` : ''}${c.id === focusedId ? ' (in focus)' : ''}${items}${table}${body}${study}`;
+		return `- [${c.id}] ${c.type} "${c.title}"${c.subtitle ? ` (${c.subtitle})` : ''}${c.type === 'upload' ? '' : ` topic "${topicOf(c, cards)}"`}${c.id === focusedId ? ' (in focus)' : ''}${items}${table}${body}${study}`;
 	});
 	return `Cards on screen, oldest first:\n${lines.join('\n')}`;
 }
@@ -311,6 +313,7 @@ const allTools: Anthropic.Tool[] = [
 				type: { type: 'string', enum: CARD_TYPES },
 				title: { type: 'string' },
 				subtitle: { type: 'string' },
+				topic: { type: 'string', description: 'The topic (line of work) the card belongs to; cards with the same topic are shown together.' },
 				body: { type: 'string' },
 				videoId: { type: 'string' },
 				videoIds: { type: 'array', items: { type: 'string' }, description: 'Comparison cards: the videos, in column order.' },
@@ -333,6 +336,7 @@ const allTools: Anthropic.Tool[] = [
 				type: { type: 'string', enum: CARD_TYPES },
 				title: { type: 'string' },
 				subtitle: { type: 'string' },
+				topic: { type: 'string', description: 'The topic (line of work) the card belongs to (to move it); cards with the same topic are shown together.' },
 				body: { type: 'string' },
 				items: itemsSchema,
 				questions: { ...questionsSchema, description: 'Study cards: the whole list of questions (replaces it).' },

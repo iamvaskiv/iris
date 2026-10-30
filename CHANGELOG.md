@@ -6,6 +6,37 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 ## 2026-10-30
 
+**Studies**
+
+- **New** no longer adds an open question straight away: the new step waits, last in the list ("Pick a type"), while
+  its preview offers the types (open question, multiple choice, slider, video, channel). Picking one makes it that
+  step, ready to write; opening another step instead drops it.
+- Drag a step in the list to reorder it (a line shows where it will land); it takes its videos or questions with it.
+  A channel's videos reorder within it the same way. Questions inside a video keep their time order (set it in the
+  settings).
+- In lanes, a study's insights are full size, like its setup.
+
+**Project page (experimental)**
+
+- **Topic lanes**, on by default (Settings → Experimental, remembered on your device; off brings back the single
+  column). A project's cards are grouped by topic into horizontal lanes stacked down the page, each named on its
+  left: a study with its follow-ups, the videos side by side, and so on. Lumi gives every new card a topic (reusing
+  one when the card belongs with others); older cards are placed by rules (videos together, a card about a video with
+  it, anything else in a lane of its own).
+- Cards in a lane sit side by side, 40px apart, aligned top left, at their usual widths; a lane is a little shorter
+  than the window, so the next one peeks in below. A card taller than its lane scrolls inside it, on its own (only
+  the focused one: over a card scrolled past or peeking in, the wheel moves between lanes).
+- The wheel moves a whole lane at a time, shift + wheel (or a sideways swipe) a card at a time, both with some
+  resistance: it takes a little travel to move, and one gesture moves once, so a fling or reaching the end of a
+  card's own scrolling doesn't jump on. The arrows under a lane's name step through its cards (with where you are,
+  "2/3"); click a card to bring it in.
+- A study is two cards in its lane: its setup, and its **insights** to the right (the sample results, or until there
+  are some, "No responses yet" with the Fake responses switch).
+- Bird's eye view shows the lanes, each lane's cards beside its name; its toggle moves to the bottom right, where it
+  stays clear of the lane names. The card map on the left is hidden in lanes for now.
+- Dropping several videos uploads them all (it used to take only the first); their cards land side by side in the
+  Videos lane.
+
 **Cards**
 
 - Every card has a small × on its top-right corner (shown on hover or keyboard focus, just over the card's edge) to

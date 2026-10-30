@@ -15,6 +15,7 @@
 		Switch
 	} from '@latitudelabs/design-system';
 	import {
+		ChartColumn,
 		ChevronDown,
 		ChevronUp,
 		Icon,
@@ -37,7 +38,9 @@
 	import VideoStepPreview from './study/VideoStepPreview.svelte';
 	import type { VideoAsset } from './study/VideoPicker.svelte';
 	import { feedSlide } from './study/slide';
+	import { dragSteps, type StepMove } from './study/drag-steps';
 	import {
+		QUESTION_TYPES,
 		SCALE_MAX,
 		SCALE_MIN,
 		childrenOf,
@@ -57,19 +60,25 @@
 	/**
 	 * For Storybook, how it starts: `settings` opens (or closes) the settings sidebar instead of what was remembered,
 	 * `select` selects that step, `watch` plays that video of the selected channel full screen, and `media` stands in
-	 * for the videos' links and posters (Storybook has no server to ask).
+	 * for the videos' links and posters (Storybook has no server to ask), and `adding` starts with a new step waiting for
+	 * its type. `part` shows one side of the study, for
+	 * lanes: its setup (even while fielding), or its insights (results, or an empty state until there are some).
 	 */
 	let {
 		card,
+		part,
 		settings,
 		select,
 		watch,
+		adding = false,
 		media: givenMedia
 	}: {
 		card: CardData;
+		part?: 'setup' | 'insights';
 		settings?: boolean;
 		select?: string;
 		watch?: number;
+		adding?: boolean;
 		media?: Record<string, { streamUrl: string | null; poster: string | null }>;
 	} = $props();
 
@@ -89,6 +98,8 @@
 	});
 	/** With fake responses on, the card shows (made-up) results instead of the setup. */
 	const results = $derived(sample?.enabled ? sample.results : undefined);
+	/** The results this card shows: none on the setup side in lanes, which shows the setup even while fielding. */
+	const shownResults = $derived(part === 'setup' ? undefined : results);
 	/** Every step in list order, with questions inside a video right after it; `selected` indexes this. */
 	const steps = $derived(flatSteps(questions));
 	const question = $derived(steps[selected]?.q);
@@ -167,12 +178,61 @@
 
 	let questionField = $state<HTMLTextAreaElement | null>(null);
 	let list = $state<HTMLElement | null>(null);
+	/**
+	 * New adds a step whose type isn't picked yet: last in the list, its preview offering the types. It's only here
+	 * (nothing is saved) until a type is picked, and goes if another step is opened instead.
+	 */
+	// svelte-ignore state_referenced_locally
+	let undecided = $state(adding);
 	async function addQuestion() {
+		undecided = true;
+		await tick();
+		list?.querySelector('[aria-current=step]')?.scrollIntoView({ block: 'nearest' });
+	}
+
+	/** What each type is, in the new step's choice of types. */
+	const TYPE_HINTS: Record<Question['type'], string> = {
+		open: 'A written answer',
+		choice: 'One of a few options',
+		scale: 'A number from 0 to 10',
+		video: 'One of your videos, to watch',
+		channel: 'Videos to browse and open'
+	};
+	const TYPE_DOTS: Record<Question['type'], string> = {
+		open: 'bg-muted-foreground',
+		choice: 'bg-category-orange',
+		scale: 'bg-category-magenta',
+		video: 'bg-category-green',
+		channel: 'bg-category-blue'
+	};
+
+	/** The new step becomes a step of that type, ready to write (a video's picker is in the settings). */
+	async function decide(type: Question['type']) {
 		const id = crypto.randomUUID().slice(0, 8);
-		questions.push({ id, type: 'open', text: '' });
+		questions.push({
+			id,
+			type,
+			text: '',
+			...(type === 'choice' && { options: ['', ''] }),
+			...(type === 'channel' && { videos: [] })
+		});
+		undecided = false;
 		save();
 		await selectId(id);
 		questionField?.focus({ preventScroll: true });
+	}
+
+	/** Moves a step (dragged in the list) before or after a sibling; the selected step stays selected. */
+	function moveStep({ step, target, after }: StepMove) {
+		const id = steps[selected]?.q.id;
+		const siblings = step.parent ? childrenOf(step.parent) : questions;
+		siblings.splice(siblings.indexOf(step.q), 1);
+		siblings.splice(siblings.indexOf(target.q) + (after ? 1 : 0), 0, step.q);
+		selected = Math.max(
+			0,
+			flatSteps(questions).findIndex((s) => s.q.id === id)
+		);
+		save();
 	}
 
 	/** A question inside the selected video, popping up at `time`; kept in time order. */
@@ -413,7 +473,9 @@
 	// Sample results from before individual responses existed: have Lumi write them again (once per page view).
 	let refreshed = false;
 	$effect(() => {
-		const stale = results && questions.some((q) => !results.questions[q.id]?.people);
+		// Once per study: its insights side, beside it in lanes, leaves it to the setup.
+		const stale =
+			part !== 'insights' && results && questions.some((q) => !results.questions[q.id]?.people);
 		if (stale && !refreshed && !writing) {
 			refreshed = true;
 			setSample(true);
@@ -455,15 +517,19 @@
      question list and the preview scroll inside. -->
 <Card.Root class="relative h-(--card-height) min-h-100">
 	<!-- Above the results, which scroll up underneath it on the right. -->
-	<Card.Header class={[results && 'relative z-20']}>
+	<Card.Header class={[shownResults && 'relative z-20']}>
 		<Card.Title class="flex items-center gap-2">
 			{card.title}
-			{#if results}<Badge variant="secondary">Sample data</Badge>{/if}
-			{#if writing && results}<span class="text-caption font-normal text-muted-foreground"
+			{#if shownResults}<Badge variant="secondary">Sample data</Badge>{/if}
+			{#if writing && shownResults}<span class="text-caption font-normal text-muted-foreground"
 					>Lumi is updating the answers…</span
 				>{/if}
 		</Card.Title>
-		<Card.Description>{card.subtitle ?? 'Questions to share with people'}</Card.Description>
+		<Card.Description
+			>{part === 'insights'
+				? 'Insights'
+				: (card.subtitle ?? 'Questions to share with people')}</Card.Description
+		>
 		<!-- With sample results the study reads as live: a "Fielding in progress" badge beside Share. -->
 		<Card.Action class="flex items-center gap-2">
 			{#if results}<Badge variant="success">Fielding in progress</Badge>{/if}
@@ -475,27 +541,27 @@
 					<p>
 						Sorry, sharing doesn't work yet. But we can pretend some answers have already come in.
 					</p>
-					<div class="flex items-center justify-between gap-4">
-						<Label for="sample-{card.id}">Fake responses</Label>
-						<Switch
-							id="sample-{card.id}"
-							checked={writing || !!sample?.enabled}
-							disabled={writing}
-							onCheckedChange={setSample}
-						/>
-					</div>
-					{#if writing}
-						<p class="text-caption text-muted-foreground">Lumi is making up answers…</p>
-					{:else if sampleError}
-						<p class="text-caption text-destructive">{sampleError}</p>
-					{/if}
+					{@render fakeResponses(`sample-${card.id}`)}
 				</Popover.Content>
 			</Popover.Root>
 		</Card.Action>
 	</Card.Header>
-	{#if results}
+	{#if shownResults}
 		<Card.Content class="flex min-h-0 flex-1">
-			<StudyResults {questions} {results} />
+			<StudyResults {questions} results={shownResults} />
+		</Card.Content>
+	{:else if part === 'insights'}
+		<!-- No answers yet: they'd come in from sharing, which isn't built; fake ones can stand in. -->
+		<Card.Content class="flex min-h-0 flex-1 items-center justify-center pb-24">
+			<div class="flex max-w-sm flex-col items-center gap-3 text-center">
+				<Icon icon={ChartColumn} size="lg" class="text-muted-foreground" />
+				<p class="text-title">No responses yet</p>
+				<p class="text-caption text-muted-foreground">
+					Insights show here once people answer. Sharing doesn't work yet, but Lumi can make up some
+					answers to show how they'd read.
+				</p>
+				{@render fakeResponses(`sample-insights-${card.id}`)}
+			</div>
 		</Card.Content>
 	{:else}
 		<Card.Content class="flex min-h-0 flex-1 flex-row gap-4">
@@ -514,15 +580,30 @@
 					<Steps
 						aria-label="Questions"
 						{@attach extendSteps(steps)}
-						steps={steps.map((s) => ({
-							title: stepTitle(s.q),
-							description: stepDescription(s),
-							color: typeColor(s.q.type),
-							indent: !!s.parent,
-							number: s.number
-						}))}
-						current={selected}
+						{@attach dragSteps(steps, moveStep)}
+						steps={[
+							...steps.map((s) => ({
+								title: stepTitle(s.q),
+								description: stepDescription(s),
+								color: typeColor(s.q.type),
+								indent: !!s.parent,
+								number: s.number
+							})),
+							...(undecided
+								? [
+										{
+											title: 'New step',
+											description: 'Pick a type',
+											number: `${questions.length + 1}.`
+										}
+									]
+								: [])
+						]}
+						current={undecided ? steps.length : selected}
 						onselect={(i: number) => {
+							if (i >= steps.length) return;
+							// Opening another step drops the new one still waiting for a type.
+							undecided = false;
 							resume = null;
 							playing = null;
 							selected = i;
@@ -551,8 +632,33 @@
 						slideBy ? 'overflow-hidden' : 'overflow-y-auto'
 					]}
 				>
-					<p class="absolute top-4 left-4 text-caption text-muted-foreground">Preview</p>
-					{#if question}
+					<!-- Not while picking a new step's type: that isn't something people will see. -->
+					{#if !undecided}<p class="absolute top-4 left-4 text-caption text-muted-foreground">
+							Preview
+						</p>{/if}
+					{#if undecided}
+						<!-- The new step's choice of types, styled like a multiple-choice question's options. -->
+						<div class="m-auto flex w-full max-w-xl flex-col gap-4">
+							<p class="text-heading">What kind of step?</p>
+							<div class="flex flex-col gap-1" role="group" aria-label="Step types">
+								{#each QUESTION_TYPES as t (t.value)}
+									<button
+										type="button"
+										class="group/type flex h-12 items-center gap-4 rounded-lg bg-secondary px-4 text-left text-body-lg transition-[background-color,box-shadow] duration-200 outline-none hover:bg-card hover:shadow-hairline focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none"
+										onclick={() => decide(t.value)}
+									>
+										<span
+											class="size-2 shrink-0 rounded-full transition-[scale] duration-200 group-hover/type:scale-150 motion-reduce:transition-none {TYPE_DOTS[
+												t.value
+											]}"
+										></span>
+										<span class="flex-1">{t.label}</span>
+										<span class="text-caption text-muted-foreground">{TYPE_HINTS[t.value]}</span>
+									</button>
+								{/each}
+							</div>
+						</div>
+					{:else if question}
 						<Button
 							variant="ghost"
 							size="icon-sm"
@@ -744,7 +850,7 @@
 					/>
 				{/if}
 			</div>
-			{#if question && settingsOpen}
+			{#if question && settingsOpen && !undecided}
 				<!-- The selected question's settings; stays open (or closed) as you move between questions. -->
 				<!-- Clips its fixed-width content while it grows or shrinks, so nothing rewraps on the way. -->
 				<aside
@@ -776,6 +882,24 @@
 		</Card.Content>
 	{/if}
 </Card.Root>
+
+<!-- Share's stand-in: switches made-up answers on or off, with how that's going. -->
+{#snippet fakeResponses(id: string)}
+	<div class="flex items-center justify-between gap-4">
+		<Label for={id}>Fake responses</Label>
+		<Switch
+			{id}
+			checked={writing || !!sample?.enabled}
+			disabled={writing}
+			onCheckedChange={setSample}
+		/>
+	</div>
+	{#if writing}
+		<p class="text-caption text-muted-foreground">Lumi is making up answers…</p>
+	{:else if sampleError}
+		<p class="text-caption text-destructive">{sampleError}</p>
+	{/if}
+{/snippet}
 
 <!-- Asks before a change that loses work (deleting a step, or changing its type), naming what goes. -->
 <Dialog.Root bind:open={confirmOpen}>
