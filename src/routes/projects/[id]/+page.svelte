@@ -383,6 +383,7 @@
 	const CARD_GAP = 40;
 	const WHEEL_STEP = 150; // wheel travel (px) before moving on to the next lane or card
 	const GESTURE_GAP = 250; // ms: wheel events closer together than this are one gesture
+	const STEP_REST = 600; // ms after a step in which a trackpad's lumpy momentum can't pass for a new swipe
 	/** How tall a lane's cards can be (full-size ones are exactly this); taller ones scroll inside. */
 	const laneHeight = $derived(Math.max(320, viewHeight - HEADER - LANE_TOP - LANE_PEEK));
 	/**
@@ -485,15 +486,20 @@
 		recent: [] as number[]
 	});
 	let gesture = freshGesture(false, 0);
+	/** When the wheel last moved on a lane or a card. */
+	let steppedAt = -Infinity;
 	function isNewGesture(e: WheelEvent, sideways: boolean, delta: number) {
+		// A pause, or the other way: momentum does neither.
 		if (e.timeStamp - gesture.at > GESTURE_GAP || sideways !== gesture.sideways) return true;
 		if (delta && Math.sign(delta) !== gesture.dir) return true;
+		// Growing again only counts a while after a step: a hard swipe's deltas surge and dip (Chrome also merges
+		// momentum events into double ones), which right after a step would move on a second time.
 		const r = gesture.recent;
-		if (!gesture.fell || r.length < 5) return false;
-		// Growing again: the last three deltas (this one included) well above the three before them.
+		if (!gesture.fell || r.length < 5 || e.timeStamp - steppedAt < STEP_REST) return false;
+		// Growing again: the last three deltas (this one included) at least double the three before them.
 		const now = (r[r.length - 2] + r[r.length - 1] + Math.abs(delta)) / 3;
 		const before = (r[r.length - 5] + r[r.length - 4] + r[r.length - 3]) / 3;
-		return now >= 4 && now > before * 1.5;
+		return now >= 4 && now > before * 2;
 	}
 
 	function onwheel(e: WheelEvent) {
@@ -514,6 +520,7 @@
 		gesture.sum += delta;
 		if (Math.abs(gesture.sum) < WHEEL_STEP) return;
 		gesture.spent = true;
+		steppedAt = e.timeStamp;
 		if (!sideways) return stepLane(Math.sign(gesture.sum));
 		// Sideways: the lane under the pointer (it may be the one peeking in), else the focused one.
 		const under = (e.target as Element).closest<HTMLElement>('[data-lane]')?.dataset.lane;

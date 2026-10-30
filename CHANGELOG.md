@@ -29,7 +29,7 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 - The wheel moves a whole lane at a time, shift + wheel (or a sideways swipe) a card at a time, both with some
   resistance: it takes a little travel to move, and one gesture moves once, so a fling or reaching the end of a
   card's own scrolling doesn't jump on. On a trackpad, a new swipe during the last one's momentum counts as a new
-  gesture (it used to be ignored until a click stopped the momentum). The arrows under a lane's name step through its cards (with where you are,
+  gesture (it used to be ignored until a click stopped the momentum), while a hard swipe still moves just one. The arrows under a lane's name step through its cards (with where you are,
   "2/3"); click a card to bring it in.
 - A study is two cards in its lane: its setup, and its **insights** to the right (the sample results, or until there
   are some, "No responses yet" with the Fake responses switch).
