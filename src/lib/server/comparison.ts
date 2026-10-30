@@ -11,6 +11,9 @@ const names = (entities: Entity[], type: string) =>
 		.sort((a, b) => b.relevance - a.relevance)
 		.map((e) => e.name);
 
+/** A video's name as people know it, without the file extension. */
+export const videoName = (name: string) => name.replace(/\.(mp4|mov|webm|mkv)$/i, '');
+
 /** One column of a comparison: what the analysis and the audience say about a video. Missing parts stay empty. */
 async function compared(videoId: string): Promise<ComparedVideo> {
 	const soft = <T>(p: Promise<T>) => p.catch(() => null);
@@ -36,7 +39,7 @@ async function compared(videoId: string): Promise<ComparedVideo> {
 	const all = entities?.entities ?? [];
 	return {
 		videoId,
-		name: video?.name.replace(/\.(mp4|mov|webm|mkv)$/i, '') ?? videoId,
+		name: video ? videoName(video.name) : videoId,
 		poster: poster ?? undefined,
 		duration: video?.duration,
 		analysed,

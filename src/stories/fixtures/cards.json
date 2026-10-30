@@ -5079,5 +5079,1320 @@
 				"fetchedAt": "2026-10-30T13:34:07.235Z"
 			}
 		}
+	},
+	"Trailer Reactions · How viewers reacted": {
+		"id": "6ba34310",
+		"type": "viewers",
+		"title": "How viewers reacted",
+		"body": "Inside Out 2 drew 174 responses and a 4.7/5 rating, while Otto has only 2 comments and no ratings yet.",
+		"topic": "Videos",
+		"data": {
+			"videoIds": [
+				"vuvIanfCkI8R",
+				"vHgqYPjduiQ9"
+			],
+			"videos": [
+				{
+					"videoId": "vuvIanfCkI8R",
+					"name": "Inside Out 2 | Trailer 1",
+					"poster": "/fixtures/0cfd4135c8a3.jpg",
+					"duration": 144.561089,
+					"viewers": {
+						"videoId": "vuvIanfCkI8R",
+						"views": 0,
+						"responses": 174,
+						"rating": {
+							"average": 4.7,
+							"max": 5,
+							"count": 21
+						},
+						"sentiment": {
+							"positive": 23,
+							"neutral": 10,
+							"negative": 7
+						},
+						"questions": [
+							{
+								"question": "Choose a character whose emotions you would like to see the most",
+								"type": "hotspot",
+								"responses": 39,
+								"options": [
+									{
+										"label": "Little girl",
+										"count": 23
+									},
+									{
+										"label": "Dad",
+										"count": 9
+									},
+									{
+										"label": "Mom",
+										"count": 4
+									}
+								]
+							},
+							{
+								"question": "How do you feel about new emotions?",
+								"type": "slider",
+								"responses": 28,
+								"average": 8.1,
+								"max": 10
+							},
+							{
+								"question": "Which new emotion is the most interesting for you?",
+								"type": "choice",
+								"responses": 21,
+								"options": [
+									{
+										"label": "Embarrassment",
+										"count": 8
+									},
+									{
+										"label": "Anxiety",
+										"count": 7
+									},
+									{
+										"label": "Envy",
+										"count": 3
+									},
+									{
+										"label": "Ennui",
+										"count": 3
+									}
+								]
+							},
+							{
+								"question": "Rate this trailer!",
+								"type": "rating",
+								"responses": 20,
+								"average": 4.8,
+								"max": 5
+							},
+							{
+								"question": "How likely are you to see this movie when it comes out?",
+								"type": "slider",
+								"responses": 17,
+								"average": 8.4,
+								"max": 10
+							}
+						],
+						"liked": [
+							{
+								"text": "Love this guy :D :D :D",
+								"time": 121.5272819,
+								"sentiment": 0.9,
+								"emotions": [
+									"joy",
+									"admiration"
+								]
+							},
+							{
+								"text": "love it so far! can't wait for a release 🫢",
+								"time": 105.798732,
+								"sentiment": 0.9,
+								"emotions": [
+									"joy",
+									"anticipation",
+									"excitement"
+								]
+							},
+							{
+								"text": "Wow, cool turn of events",
+								"time": 101.972927,
+								"sentiment": 0.9,
+								"emotions": [
+									"surprise",
+									"excitement"
+								]
+							},
+							{
+								"text": "A funny character",
+								"time": 31.995971,
+								"sentiment": 0.9,
+								"emotions": [
+									"joy",
+									"surprise"
+								]
+							}
+						],
+						"disliked": [
+							{
+								"text": "hair looks a bit noisy",
+								"time": 17.6437823,
+								"sentiment": -0.8,
+								"emotions": []
+							},
+							{
+								"text": "Don't like spits",
+								"time": 18.57062,
+								"sentiment": -0.8,
+								"emotions": [
+									"disgust",
+									"anger"
+								]
+							},
+							{
+								"text": "why there is so many orange buttons?",
+								"time": 43.287929,
+								"sentiment": -0.7,
+								"emotions": [
+									"confusion"
+								]
+							},
+							{
+								"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
+								"time": 103.05962,
+								"sentiment": -0.5,
+								"emotions": []
+							}
+						],
+						"comments": [
+							{
+								"text": "Love her",
+								"time": 1.126748,
+								"sentiment": 0.8,
+								"emotions": [
+									"appreciation",
+									"enjoyment"
+								]
+							},
+							{
+								"text": "wooow",
+								"time": 1.698128,
+								"sentiment": 0.3,
+								"emotions": [
+									"surprise"
+								]
+							},
+							{
+								"text": "This scene is good but not great",
+								"time": 2.618375,
+								"sentiment": 0.2,
+								"emotions": [
+									"appreciation",
+									"disappointment"
+								]
+							},
+							{
+								"text": "gg",
+								"time": 3.238196,
+								"sentiment": 0,
+								"emotions": []
+							},
+							{
+								"text": "goood",
+								"time": 3.824154,
+								"sentiment": 0,
+								"emotions": []
+							},
+							{
+								"text": "Love the transition",
+								"time": 3.9243778,
+								"sentiment": 0.9,
+								"emotions": [
+									"admiration",
+									"joy"
+								]
+							},
+							{
+								"text": "I love this scene!",
+								"time": 4.995538,
+								"sentiment": 0.8,
+								"emotions": [
+									"appreciation",
+									"excitement",
+									"optimism"
+								]
+							},
+							{
+								"text": "ok",
+								"time": 6.335371182373457,
+								"sentiment": 0,
+								"emotions": []
+							},
+							{
+								"text": "what a nice moment!",
+								"time": 6.709729,
+								"sentiment": 0.8,
+								"emotions": [
+									"appreciation",
+									"optimism"
+								]
+							},
+							{
+								"text": "WOw what a nice moment!",
+								"time": 8.049049,
+								"sentiment": 0.8,
+								"emotions": [
+									"appreciation",
+									"excitement",
+									"optimism"
+								]
+							},
+							{
+								"text": "gddg",
+								"time": 8.109088,
+								"sentiment": 0,
+								"emotions": []
+							},
+							{
+								"text": "love it",
+								"time": 10.817289707661601,
+								"sentiment": 0.8,
+								"emotions": [
+									"joy"
+								]
+							},
+							{
+								"text": "Like the start of the video",
+								"time": 11.410355,
+								"sentiment": 0.9,
+								"emotions": [
+									"admiration",
+									"joy"
+								]
+							},
+							{
+								"text": "What a dynamic start!",
+								"time": 11.705471,
+								"sentiment": 0.9,
+								"emotions": [
+									"excitement",
+									"admiration"
+								]
+							},
+							{
+								"text": "love this guy!",
+								"time": 12.2378786,
+								"sentiment": 0.9,
+								"emotions": [
+									"joy",
+									"admiration"
+								]
+							},
+							{
+								"text": "That's fire 🔥",
+								"time": 12.456641,
+								"sentiment": 0.5,
+								"emotions": [
+									"joy",
+									"excitement"
+								]
+							},
+							{
+								"text": "anger is the best",
+								"time": 12.9342121,
+								"sentiment": 0,
+								"emotions": [
+									"anger"
+								]
+							},
+							{
+								"text": "great shot",
+								"time": 14.879395,
+								"sentiment": 0.6,
+								"emotions": [
+									"enthusiasm"
+								]
+							},
+							{
+								"text": "love it",
+								"time": 14.988811,
+								"sentiment": 0.8,
+								"emotions": [
+									"appreciation",
+									"enjoyment"
+								]
+							},
+							{
+								"text": "Let's change head position a little bit. Now it feels unnatural",
+								"time": 15.136804,
+								"sentiment": -0.4,
+								"emotions": [
+									"confusion"
+								]
+							},
+							{
+								"text": "wow",
+								"time": 16.321607,
+								"sentiment": 0.9,
+								"emotions": [
+									"surprise"
+								]
+							},
+							{
+								"text": "Unreal usage of natural depth of blur. Looks cool and realistic",
+								"time": 16.52259,
+								"sentiment": 0.5,
+								"emotions": [
+									"admiration",
+									"joy"
+								]
+							},
+							{
+								"text": "hair looks a bit noisy",
+								"time": 17.6437823,
+								"sentiment": -0.8,
+								"emotions": []
+							},
+							{
+								"text": "Don't like spits",
+								"time": 18.57062,
+								"sentiment": -0.8,
+								"emotions": [
+									"disgust",
+									"anger"
+								]
+							},
+							{
+								"text": "Hah, funny awkward moment",
+								"time": 24.6847032,
+								"sentiment": 0.8,
+								"emotions": [
+									"joy",
+									"surprise"
+								]
+							},
+							{
+								"text": "A funny character",
+								"time": 31.995971,
+								"sentiment": 0.9,
+								"emotions": [
+									"joy",
+									"surprise"
+								]
+							},
+							{
+								"text": "Anxiety is weird.",
+								"time": 37.493244,
+								"sentiment": -0.2,
+								"emotions": [
+									"anxiety"
+								]
+							},
+							{
+								"text": "cool",
+								"time": 39.773582,
+								"sentiment": 0.4,
+								"emotions": [
+									"enjoyment"
+								]
+							},
+							{
+								"text": "This character looks out of this world. Maybe it is a good thing, but it is very different from others' styles",
+								"time": 41.8588279,
+								"sentiment": 0.4,
+								"emotions": [
+									"admiration",
+									"surprise"
+								]
+							},
+							{
+								"text": "I love disgust and envy too.",
+								"time": 42.894018,
+								"sentiment": -0.2,
+								"emotions": [
+									"disgust",
+									"envy"
+								]
+							},
+							{
+								"text": "why there is so many orange buttons?",
+								"time": 43.287929,
+								"sentiment": -0.7,
+								"emotions": [
+									"confusion"
+								]
+							},
+							{
+								"text": "Now I see almost all characters have \"noisy\" hair :D",
+								"time": 56.0025873,
+								"sentiment": -0.4,
+								"emotions": [
+									"joy",
+									"surprise"
+								]
+							},
+							{
+								"text": "kj",
+								"time": 67.313903,
+								"sentiment": 0,
+								"emotions": []
+							},
+							{
+								"text": "She's my favorite human character",
+								"time": 70.966361,
+								"sentiment": 0.6,
+								"emotions": [
+									"appreciation",
+									"optimism"
+								]
+							},
+							{
+								"text": "Wow, cool turn of events",
+								"time": 101.972927,
+								"sentiment": 0.9,
+								"emotions": [
+									"surprise",
+									"excitement"
+								]
+							},
+							{
+								"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
+								"time": 103.05962,
+								"sentiment": -0.5,
+								"emotions": []
+							},
+							{
+								"text": "love it so far! can't wait for a release 🫢",
+								"time": 105.798732,
+								"sentiment": 0.9,
+								"emotions": [
+									"joy",
+									"anticipation",
+									"excitement"
+								]
+							},
+							{
+								"text": "Too dramatic girl. Funny scene",
+								"time": 109.661179,
+								"sentiment": 0.1,
+								"emotions": [
+									"joy",
+									"surprise"
+								]
+							},
+							{
+								"text": "Love this guy :D :D :D",
+								"time": 121.5272819,
+								"sentiment": 0.9,
+								"emotions": [
+									"joy",
+									"admiration"
+								]
+							},
+							{
+								"text": "the aerial view has a different background than the ground view",
+								"time": 127.471601,
+								"sentiment": -0.4,
+								"emotions": []
+							}
+						],
+						"ratings": [
+							{
+								"time": 141.296116,
+								"value": 4,
+								"max": 5
+							},
+							{
+								"time": 141.296116,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.296116,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.296116,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.296116,
+								"value": 3,
+								"max": 5
+							},
+							{
+								"time": 141.296116,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.296116,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.296116,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.296116,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.330944,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.330944,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.330944,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.330944,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.330944,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.330944,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.330944,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.330944,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.330944,
+								"value": 5,
+								"max": 5
+							},
+							{
+								"time": 141.3309444,
+								"value": 3,
+								"max": 5
+							},
+							{
+								"time": 141.3309444,
+								"value": 4,
+								"max": 5
+							},
+							{
+								"time": 141.3309444,
+								"value": 5,
+								"max": 5
+							}
+						],
+						"fetchedAt": "2026-10-30T19:34:33.438Z"
+					}
+				},
+				{
+					"videoId": "vHgqYPjduiQ9",
+					"name": "A MAN CALLED OTTO - Official Trailer (HD)",
+					"poster": "/fixtures/9a5c7ead0c43.jpg",
+					"duration": 159.284133,
+					"viewers": {
+						"videoId": "vHgqYPjduiQ9",
+						"views": 0,
+						"responses": 2,
+						"sentiment": {
+							"positive": 1,
+							"neutral": 1,
+							"negative": 0
+						},
+						"questions": [],
+						"liked": [
+							{
+								"text": "Woooow",
+								"time": 88.48518,
+								"sentiment": 0.3,
+								"emotions": [
+									"excitement",
+									"appreciation"
+								]
+							}
+						],
+						"disliked": [],
+						"comments": [
+							{
+								"text": "Test comment",
+								"time": 0.70035,
+								"sentiment": 0,
+								"emotions": []
+							},
+							{
+								"text": "Woooow",
+								"time": 88.48518,
+								"sentiment": 0.3,
+								"emotions": [
+									"excitement",
+									"appreciation"
+								]
+							}
+						],
+						"ratings": [],
+						"fetchedAt": "2026-10-30T20:32:39.621Z"
+					}
+				}
+			]
+		}
+	},
+	"Trailer Reactions · Trailer reactions study": {
+		"id": "60225307",
+		"type": "study",
+		"title": "Trailer reactions study",
+		"body": "Both trailers, each with one open question halfway through.",
+		"topic": "Trailer study",
+		"data": {
+			"questions": [
+				{
+					"id": "2dab82d1",
+					"type": "video",
+					"text": "",
+					"videoId": "vuvIanfCkI8R",
+					"questions": [
+						{
+							"id": "c2ae4b00",
+							"type": "open",
+							"text": "What is going through your mind right now?",
+							"placeholder": "My first reaction is…",
+							"time": 72
+						}
+					],
+					"videoName": "Inside Out 2 | Trailer 1"
+				},
+				{
+					"id": "a4eb3a5e",
+					"type": "video",
+					"text": "",
+					"videoId": "vHgqYPjduiQ9",
+					"questions": [
+						{
+							"id": "2045f24c",
+							"type": "open",
+							"text": "What is going through your mind right now?",
+							"placeholder": "My first reaction is…",
+							"time": 80
+						}
+					],
+					"videoName": "A MAN CALLED OTTO - Official Trailer (HD)"
+				}
+			],
+			"sample": {
+				"enabled": true,
+				"results": {
+					"basis": "[6,[\"video\",null,\"\",\"vuvIanfCkI8R\",null],[\"open\",72,\"What is going through your mind right now?\",null,null],[\"video\",null,\"\",\"vHgqYPjduiQ9\",null],[\"open\",80,\"What is going through your mind right now?\",null,null]]",
+					"views": 139,
+					"completion": 86,
+					"rating": 74,
+					"sentiment": {
+						"positive": 56,
+						"neutral": 25,
+						"negative": 19
+					},
+					"summary": "Viewers were warmer toward the Inside Out 2 trailer, which drew excitement and laughs, especially from under-33s. A Man Called Otto landed more quietly: older viewers found it moving and relatable, while younger viewers called it predictable or heavy. The sequel excited people, while the Otto trailer prompted reflection and some remake fatigue.",
+					"insights": [
+						{
+							"title": "Anxiety steals the show",
+							"body": "The new emotion Anxiety was the most-cited moment in the Inside Out 2 trailer, and many viewers said they saw themselves in it. The 1:12 pop-up drew mostly excited, personal answers."
+						},
+						{
+							"title": "Otto splits by age",
+							"body": "Viewers 45 and over responded with emotion and memories of family, while many under 33 said the trailer gives away the whole story or that they didn't need a remake. Praise for Tom Hanks was the one thing that cut across age groups."
+						}
+					],
+					"quote": {
+						"text": "Anxiety is basically my brain at 2am, and I laughed and felt a bit attacked at the same time.",
+						"who": "Respondent, 24–32"
+					},
+					"questions": {
+						"2dab82d1": {
+							"responses": 134,
+							"counts": [
+								99,
+								23,
+								12
+							],
+							"people": [
+								{
+									"respondent": 26,
+									"age": "24–32",
+									"when": "Today",
+									"text": "New emotions, bigger cast. So it's the same formula again.",
+									"sentiment": "neutral",
+									"time": 31,
+									"rating": 3
+								},
+								{
+									"respondent": 68,
+									"age": "18–23",
+									"when": "Yesterday",
+									"text": "The puberty alarm gag is exactly the kind of joke the first film did so well.",
+									"sentiment": "positive",
+									"time": 22,
+									"rating": 5
+								},
+								{
+									"respondent": 3,
+									"age": "24–32",
+									"when": "Yesterday",
+									"text": "Am I going to cry again? Probably yes.",
+									"sentiment": "positive",
+									"time": 110,
+									"rating": 4
+								},
+								{
+									"respondent": 107,
+									"age": "24–32",
+									"when": "2 days ago",
+									"text": "Riley is already a teenager, I'm not ready for this.",
+									"sentiment": "positive",
+									"time": 5,
+									"rating": 5
+								},
+								{
+									"respondent": 43,
+									"age": "18–23",
+									"when": "2 days ago",
+									"text": "Can't wait for the release date.",
+									"sentiment": "positive",
+									"time": 141,
+									"rating": 5
+								},
+								{
+									"respondent": 78,
+									"age": "24–32",
+									"when": "3 days ago",
+									"text": "They show a lot of the plot here, I'd rather be surprised.",
+									"sentiment": "negative",
+									"time": 118,
+									"rating": 2
+								},
+								{
+									"respondent": 69,
+									"age": "33–44",
+									"when": "4 days ago",
+									"text": "That's a lot of characters to juggle in 90 minutes.",
+									"sentiment": "neutral",
+									"time": 49,
+									"rating": 3
+								},
+								{
+									"respondent": 10,
+									"age": "18–23",
+									"when": "5 days ago",
+									"text": "This is literally me before any exam.",
+									"sentiment": "positive",
+									"time": 66,
+									"rating": 5
+								},
+								{
+									"respondent": 102,
+									"age": "33–44",
+									"when": "5 days ago",
+									"text": "The humour feels a bit cheaper than the original.",
+									"sentiment": "negative",
+									"time": 101,
+									"rating": 2
+								},
+								{
+									"respondent": 40,
+									"age": "45+",
+									"when": "5 days ago",
+									"text": "The colours of the new emotions really pop, it looks gorgeous.",
+									"sentiment": "positive",
+									"time": 126,
+									"rating": 5
+								},
+								{
+									"respondent": 24,
+									"age": "33–44",
+									"when": "6 days ago",
+									"text": "Great to hear the original voices again.",
+									"sentiment": "positive",
+									"time": 14,
+									"rating": 5
+								},
+								{
+									"respondent": 4,
+									"age": "18–23",
+									"when": "6 days ago",
+									"text": "Anxiety's design is perfect, look at that hair!",
+									"sentiment": "positive",
+									"time": 40,
+									"rating": 5
+								},
+								{
+									"respondent": 42,
+									"age": "24–32",
+									"when": "7 days ago",
+									"text": "Ennui with the French accent made me laugh out loud.",
+									"sentiment": "positive",
+									"time": 84,
+									"rating": 5
+								},
+								{
+									"respondent": 41,
+									"age": "24–32",
+									"when": "9 days ago",
+									"text": "Joy getting pushed aside hits harder than I expected.",
+									"sentiment": "positive",
+									"time": 58,
+									"rating": 4
+								},
+								{
+									"respondent": 33,
+									"age": "45+",
+									"when": "9 days ago",
+									"text": "Fine, I'll watch it, but nothing groundbreaking so far.",
+									"sentiment": "neutral",
+									"time": 134,
+									"rating": 3
+								},
+								{
+									"respondent": 23,
+									"age": "45+",
+									"when": "10 days ago",
+									"text": "Not sure we needed a sequel, the first one felt complete.",
+									"sentiment": "negative",
+									"time": 75,
+									"rating": 2
+								},
+								{
+									"respondent": 9,
+									"age": "33–44",
+									"when": "12 days ago",
+									"text": "My daughter is already asking when we can go see it.",
+									"sentiment": "positive",
+									"time": 92,
+									"rating": 4
+								}
+							]
+						},
+						"c2ae4b00": {
+							"responses": 130,
+							"people": [
+								{
+									"respondent": 64,
+									"age": "45+",
+									"when": "Today",
+									"text": "The visuals are amazing, that's what I'm focused on.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 68,
+									"age": "18–23",
+									"when": "Yesterday",
+									"text": "Oh no, they're going to make me cry again.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 3,
+									"age": "24–32",
+									"when": "Yesterday",
+									"text": "Looks cute but I think I've seen this structure before.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 43,
+									"age": "18–23",
+									"when": "2 days ago",
+									"text": "Can't stop smiling.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 78,
+									"age": "24–32",
+									"when": "3 days ago",
+									"text": "Feels a little rushed, like they're cramming in every new character.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 94,
+									"age": "24–32",
+									"when": "3 days ago",
+									"text": "I feel seen, and slightly attacked.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 69,
+									"age": "33–44",
+									"when": "4 days ago",
+									"text": "I'm thinking about how I felt at 13. This movie gets it.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 56,
+									"age": "33–44",
+									"when": "4 days ago",
+									"text": "Wondering if my kids will recognise themselves in Anxiety.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 102,
+									"age": "33–44",
+									"when": "5 days ago",
+									"text": "I love how they turned a serious topic into something funny.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 10,
+									"age": "18–23",
+									"when": "5 days ago",
+									"text": "Excited! Just hoping the ending isn't spoiled by the trailer.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 4,
+									"age": "18–23",
+									"when": "6 days ago",
+									"text": "Need to see this with my little sister.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 22,
+									"age": "45+",
+									"when": "6 days ago",
+									"text": "Is this just a merchandise machine now?",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 32,
+									"age": "45+",
+									"when": "7 days ago",
+									"text": "Good, a film that makes anxiety understandable for kids.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 42,
+									"age": "24–32",
+									"when": "7 days ago",
+									"text": "That's me during every presentation at work.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 41,
+									"age": "24–32",
+									"when": "9 days ago",
+									"text": "Anxiety is basically my brain at 2am, and I laughed and felt a bit attacked at the same time.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 9,
+									"age": "33–44",
+									"when": "12 days ago",
+									"text": "Honestly a bit worried the new emotions will crowd out Joy and Sadness.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 49,
+									"age": "33–44",
+									"when": "12 days ago",
+									"text": "Not convinced the sequel can match the emotional punch of the first.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 36,
+									"age": "45+",
+									"when": "13 days ago",
+									"text": "Not much, it's a decent trailer.",
+									"sentiment": "neutral"
+								}
+							]
+						},
+						"a4eb3a5e": {
+							"responses": 125,
+							"counts": [
+								69,
+								34,
+								22
+							],
+							"people": [
+								{
+									"respondent": 64,
+									"age": "45+",
+									"when": "Today",
+									"text": "The neighbour who keeps interrupting him is great.",
+									"sentiment": "positive",
+									"time": 26,
+									"rating": 4
+								},
+								{
+									"respondent": 38,
+									"age": "18–23",
+									"when": "Today",
+									"text": "Pleasant enough, nothing I'd rush out to see.",
+									"sentiment": "neutral",
+									"time": 138,
+									"rating": 3
+								},
+								{
+									"respondent": 3,
+									"age": "24–32",
+									"when": "Yesterday",
+									"text": "He reminds me so much of my grandfather.",
+									"sentiment": "positive",
+									"time": 38,
+									"rating": 5
+								},
+								{
+									"respondent": 43,
+									"age": "18–23",
+									"when": "2 days ago",
+									"text": "Too many cat jokes and not enough story.",
+									"sentiment": "negative",
+									"time": 101,
+									"rating": 2
+								},
+								{
+									"respondent": 44,
+									"age": "33–44",
+									"when": "2 days ago",
+									"text": "This one is going to make me tear up in the cinema.",
+									"sentiment": "positive",
+									"time": 130,
+									"rating": 5
+								},
+								{
+									"respondent": 78,
+									"age": "24–32",
+									"when": "3 days ago",
+									"text": "Funny, then suddenly sad. The tone shift is a bit jarring.",
+									"sentiment": "neutral",
+									"time": 69,
+									"rating": 3
+								},
+								{
+									"respondent": 94,
+									"age": "24–32",
+									"when": "3 days ago",
+									"text": "The trailer basically tells me the whole film.",
+									"sentiment": "negative",
+									"time": 110,
+									"rating": 2
+								},
+								{
+									"respondent": 56,
+									"age": "33–44",
+									"when": "4 days ago",
+									"text": "The little girl next door is the best part.",
+									"sentiment": "positive",
+									"time": 58,
+									"rating": 4
+								},
+								{
+									"respondent": 102,
+									"age": "33–44",
+									"when": "5 days ago",
+									"text": "Tom Hanks being grumpy is already charming.",
+									"sentiment": "positive",
+									"time": 6,
+									"rating": 4
+								},
+								{
+									"respondent": 10,
+									"age": "18–23",
+									"when": "5 days ago",
+									"text": "Grumpy old man with a heart of gold, haven't we seen this before?",
+									"sentiment": "negative",
+									"time": 47,
+									"rating": 2
+								},
+								{
+									"respondent": 42,
+									"age": "24–32",
+									"when": "7 days ago",
+									"text": "I think this is a remake of the Swedish film. I preferred the original.",
+									"sentiment": "neutral",
+									"time": 15,
+									"rating": 3
+								},
+								{
+									"respondent": 6,
+									"age": "45+",
+									"when": "7 days ago",
+									"text": "The music at the end got me.",
+									"sentiment": "positive",
+									"time": 152,
+									"rating": 4
+								},
+								{
+									"respondent": 98,
+									"age": "45+",
+									"when": "8 days ago",
+									"text": "Hanks can do this in his sleep and I'll still watch it.",
+									"sentiment": "positive",
+									"time": 120,
+									"rating": 4
+								},
+								{
+									"respondent": 49,
+									"age": "33–44",
+									"when": "12 days ago",
+									"text": "The flashbacks look beautiful.",
+									"sentiment": "positive",
+									"time": 92,
+									"rating": 5
+								},
+								{
+									"respondent": 36,
+									"age": "45+",
+									"when": "13 days ago",
+									"text": "Oh, this is getting emotional fast.",
+									"sentiment": "positive",
+									"time": 80,
+									"rating": 4
+								},
+								{
+									"respondent": 59,
+									"age": "24–32",
+									"when": "13 days ago",
+									"text": "Why remake it though? Seems unnecessary.",
+									"sentiment": "negative",
+									"time": 146,
+									"rating": 1
+								},
+								{
+									"respondent": 17,
+									"age": "45+",
+									"when": "13 days ago",
+									"text": "A solid feel-good film for a quiet Sunday.",
+									"sentiment": "positive",
+									"time": 157,
+									"rating": 4
+								}
+							]
+						},
+						"2045f24c": {
+							"responses": 120,
+							"people": [
+								{
+									"respondent": 38,
+									"age": "18–23",
+									"when": "Today",
+									"text": "I think I've guessed the entire plot already.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 44,
+									"age": "33–44",
+									"when": "2 days ago",
+									"text": "Waiting for the neighbours to win him over, which is obviously coming.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 83,
+									"age": "45+",
+									"when": "2 days ago",
+									"text": "Sweet and gentle, exactly what I need right now.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 78,
+									"age": "24–32",
+									"when": "3 days ago",
+									"text": "Is this going to be too depressing for a Friday night?",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 94,
+									"age": "24–32",
+									"when": "3 days ago",
+									"text": "Tom Hanks is the only reason I'd watch this.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 56,
+									"age": "33–44",
+									"when": "4 days ago",
+									"text": "He reminds me of my dad after my mum passed away, and I got teary.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 74,
+									"age": "24–32",
+									"when": "6 days ago",
+									"text": "Lovely, I'll take my mum to see it.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 73,
+									"age": "18–23",
+									"when": "6 days ago",
+									"text": "The mood got heavy suddenly, I wasn't ready.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 6,
+									"age": "45+",
+									"when": "7 days ago",
+									"text": "It's good that a film shows how lonely people can be.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 98,
+									"age": "45+",
+									"when": "8 days ago",
+									"text": "It's sad, but in a way that feels warm.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 101,
+									"age": "18–23",
+									"when": "9 days ago",
+									"text": "Thinking about calling my grandfather tonight.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 97,
+									"age": "18–23",
+									"when": "9 days ago",
+									"text": "Honestly bored, it's the same grumpy-neighbour story.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 49,
+									"age": "33–44",
+									"when": "12 days ago",
+									"text": "Not sure how I feel about the dark humour around the sad parts.",
+									"sentiment": "neutral"
+								},
+								{
+									"respondent": 50,
+									"age": "33–44",
+									"when": "12 days ago",
+									"text": "It made me think about my neighbours and how little I know them.",
+									"sentiment": "positive"
+								},
+								{
+									"respondent": 59,
+									"age": "24–32",
+									"when": "13 days ago",
+									"text": "A bit manipulative, they clearly want me to cry.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 17,
+									"age": "45+",
+									"when": "13 days ago",
+									"text": "Remake of a film I loved, so I'm skeptical.",
+									"sentiment": "negative"
+								},
+								{
+									"respondent": 2,
+									"age": "33–44",
+									"when": "13 days ago",
+									"text": "Wow, that scene hit me harder than I expected.",
+									"sentiment": "positive"
+								}
+							]
+						}
+					},
+					"by": "lumi"
+				}
+			}
+		}
 	}
 }

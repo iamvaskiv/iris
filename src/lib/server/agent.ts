@@ -3,6 +3,7 @@ import * as env from '$app/env/private';
 import { lumiere } from './lumiere.js';
 import { settings } from './settings.js';
 import { sourcesData } from './sources.js';
+import { viewersData } from './viewers.js';
 import { videoCardData } from './video-card.js';
 import { insights } from './insights.js';
 import { comparisonData } from './comparison.js';
@@ -137,7 +138,7 @@ function describeSample(data: StudyData | undefined) {
 }
 
 /** Card types the assistant can create (upload cards are the app's own). */
-const CARD_TYPES = ['video', 'insights', 'comparison', 'sources', 'list', 'quotes', 'table', 'text', 'study'];
+const CARD_TYPES = ['video', 'insights', 'comparison', 'sources', 'viewers', 'list', 'quotes', 'table', 'text', 'study'];
 
 const tableSchema = {
 	columns: { type: 'array', items: { type: 'string' } },
@@ -302,6 +303,7 @@ const allTools: Anthropic.Tool[] = [
 - "insights": viewer insights for a video (views, rating, sentiment, answers to questions, liked and disliked comments). Pass videoId; the numbers are filled in for you. Only when get_insights has data. Body: one sentence with the key takeaway.
 - "comparison": two to four videos side by side. Pass videoIds; posters, length, scenes, characters, themes and brands, and from audience data views, responses, response rate, rating, comment sentiment, the top liked and criticised comments and answers to questions asked in several of the videos are filled in for you. Pass focus "audience" to compare only how viewers responded (views, sentiment, ratings...), "content" for only what's in the videos; leave it out for both. Add your own rows for what the numbers don't show (e.g. tone, opening, pacing, call to action): rows of [label, one short value per video in videoIds order]. Never repeat the automatic rows. Body: one sentence with the key difference. Prefer this over a table when comparing videos.
 - "sources": ONE video's viewer data compared across its sources: Lumiere's real viewers, and each study card in the project that shows the video and has sample results (named after the study). Each source's key numbers in a row and, along the video, every source's sentiment and rating curves laid over each other and their comments. Pass videoId; everything is filled in for you. Use it whenever the user wants to compare real and sample (or several studies') viewer data for a video, rather than a table. Title: e.g. "Real vs sample viewers". Body: one sentence with the key difference.
+- "viewers": how viewers reacted to two to four videos, compared. Pass videoIds; everything is filled in for you. A row per video (its poster and key numbers: viewers, rating, positive and negative shares, comments) and, along each video (0–100% of its length, so videos of different lengths line up), every video's sentiment and rating curves laid over each other and their comments. Each video's viewer data is Lumiere's real viewers or, picked on the card, a study card in the project that shows it and has sample results. Use it whenever the user wants to compare how viewers reacted to several videos (e.g. "compare how viewers reacted to these videos"); a "comparison" is for side-by-side facts. Title: e.g. "How viewers reacted". Body: one sentence with the key difference.
 - "list": a list of things (characters, scenes, themes, brands...). Fill items with title/subtitle/description and time (seconds) when known.
 - "quotes": lines spoken by someone. items: title = the quote, subtitle = speaker, time = seconds.
 - "table": numbers or short facts across a few dimensions (metrics per video, counts per character, side-by-side comparisons). Pass columns (headings; the first labels the rows) and rows (arrays of cells, same length as columns). Keep cells short; use numbers for numeric cells.
@@ -316,7 +318,7 @@ const allTools: Anthropic.Tool[] = [
 				topic: { type: 'string', description: 'The topic (line of work) the card belongs to; cards with the same topic are shown together.' },
 				body: { type: 'string' },
 				videoId: { type: 'string' },
-				videoIds: { type: 'array', items: { type: 'string' }, description: 'Comparison cards: the videos, in column order.' },
+				videoIds: { type: 'array', items: { type: 'string' }, description: 'Comparison and viewers cards: the videos, in order.' },
 				focus: { type: 'string', enum: ['all', 'content', 'audience'], description: 'Comparison cards: which rows to show.' },
 				items: itemsSchema,
 				questions: questionsSchema,
@@ -390,6 +392,10 @@ async function makeCard(input: CardInput): Promise<Card> {
 	if (card.type === 'comparison') {
 		if (!videoIds || videoIds.length < 2 || videoIds.length > 4) throw new Error('A comparison needs two to four videoIds.');
 		card.data = await comparisonData(videoIds, focus);
+	}
+	if (card.type === 'viewers') {
+		if (!videoIds || videoIds.length < 2 || videoIds.length > 4) throw new Error('A viewers card needs two to four videoIds.');
+		card.data = await viewersData(videoIds);
 	}
 	return card;
 }

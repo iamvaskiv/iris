@@ -200,7 +200,8 @@ ratings with their moments, from `insights.ts`, cached for a few hours). And eac
 the video (a video step, or a video in a channel) and has sample results: its made-up viewers' comments and star
 ratings at their moments, and the answers to questions popping up in the video (`viewer-sources.ts`, worked out in the
 browser from the project's cards, which the project page shares). The video card switches between them with
-**Source**; the sources card lays them over each other.
+**Source**; the sources card lays them over each other. The viewers card compares several videos, each with its own
+**Source**, along 0–100% of each video so different lengths line up.
 
 ```mermaid
 ---
@@ -211,15 +212,17 @@ flowchart LR
     lumiere["Lumiere API<br/>feedback: comments, ratings"] --> insights["insights.ts<br/>(cached 6 h)"]
     insights -->|"data.viewers"| video["Video card<br/>Source picker"]
     insights -->|"data.viewers"| sources["Sources card<br/>overlaid curves, bars"]
+    insights -->|"data.videos[].viewers"| viewers["Viewers card<br/>a Source picker per video"]
     studies["Study cards in the project<br/>sample results"] -->|"studySources()"| video
     studies -->|"studySources()"| sources
+    studies -->|"studySources()"| viewers
     lumi["Lumi (Claude)<br/>writes sample results"] --> studies
 
     classDef ui stroke:#4c7dff,fill:#4c7dff33
     classDef server stroke:#00bd32,fill:#00bd3233
     classDef ai stroke:#f424ff,fill:#f424ff33
     classDef external stroke:#f79205,fill:#f7920533
-    class video,sources,studies ui
+    class video,sources,viewers,studies ui
     class insights server
     class lumi ai
     class lumiere external
