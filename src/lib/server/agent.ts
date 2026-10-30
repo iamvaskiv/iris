@@ -10,7 +10,8 @@ import { comparisonData } from './comparison.js';
 import { assets, describeAssets } from './assets.js';
 import { cleanQuestions, nameVideos } from './study.js';
 import { flatSteps, timecode } from '#lib/cards/study/question-types.js';
-import { topicOf } from '#lib/cards/lanes.js';
+import { laneKey, topicOf } from '#lib/cards/lanes.js';
+import { MAX_SUGGESTIONS } from '#lib/cards/suggestions.js';
 import type { Card, CardOp, ChatResponse, ComparisonData, StudyData } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
 import { REPLY_NUDGE } from '#lib/transcript.js';
@@ -70,6 +71,7 @@ Card rules:
 - A study card can show sample results: made-up answers for a demo, because sharing isn't built yet (Share → Fake responses). You may talk about them, but always say they're sample answers, never real ones.
 - "upload" cards are managed by the app (upload progress); never update or focus them.
 - Every card has a topic: a short name (1-3 words) for the line of work it belongs to, e.g. "Videos" or "Brand study". Cards with the same topic are shown together, side by side in one lane. When you add a card, give it the topic of the cards it belongs with: a card about one video takes that video card's topic, a study's follow-ups take the study's topic. Video cards go under "Videos" unless they belong to another topic's work; videos uploaded together always share one. Start a new topic only for a new line of work, and reuse existing topics exactly as written. Never mention topics in your reply.
+- At the end of a turn that added or changed cards, call suggest_next for each topic you touched: 2-3 next steps shown after that topic's last card, specific to its cards and to what the user is after ("What will people think about it?", "Compare the endings"). Written as the user's request, 2-6 words, nothing already answered on screen.
 - Don't repeat a card's content in your text reply; point to it ("Added her scenes to Envy's card.").
 
 Projects:
@@ -358,6 +360,19 @@ const allTools: Anthropic.Tool[] = [
 		input_schema: { type: 'object', properties: { name: { type: 'string' }, summary: { type: 'string' } } }
 	},
 	{
+		name: 'suggest_next',
+		description:
+			"Set the 2-3 next steps offered after a topic's last card (they replace the topic's current ones). Clicking one sends it to you as the user's message.",
+		input_schema: {
+			type: 'object',
+			properties: {
+				topic: { type: 'string', description: 'An existing topic, exactly as written.' },
+				suggestions: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 }
+			},
+			required: ['topic', 'suggestions']
+		}
+	},
+	{
 		name: 'add_video',
 		description: "Attach one of the user's videos (assets) to the project" + ' (or, with library access, a video library video).',
 		input_schema: { type: 'object', properties: { videoId: { type: 'string' } }, required: ['videoId'] }
@@ -400,7 +415,15 @@ async function makeCard(input: CardInput): Promise<Card> {
 	return card;
 }
 
-type Turn = { project: Project; ops: CardOp[]; library: boolean; assetIds: Set<string>; choices?: string[] };
+type Turn = {
+	project: Project;
+	ops: CardOp[];
+	library: boolean;
+	assetIds: Set<string>;
+	choices?: string[];
+	/** suggest_next's, by lane key. */
+	suggestions: Record<string, string[]>;
+};
 
 async function runTool(name: string, input: Record<string, unknown>, turn: Turn): Promise<unknown> {
 	const { project, ops, library, assetIds } = turn;
@@ -447,6 +470,15 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 		case 'focus_card': {
 			ops.push({ op: 'focus', id: find().id });
 			return { focused: true };
+		}
+		case 'suggest_next': {
+			const key = laneKey(String(input.topic ?? ''));
+			const topics = new Set(project.cards.map((c) => laneKey(topicOf(c, project.cards))));
+			if (!topics.has(key)) throw new Error(`No topic "${input.topic}". Topics: ${[...topics].join(', ')}`);
+			const list = [...new Set(((input.suggestions as unknown[]) ?? []).map((o) => String(o).trim()).filter(Boolean))];
+			if (!list.length) throw new Error('Suggest at least one next step.');
+			turn.suggestions[key] = list.slice(0, MAX_SUGGESTIONS);
+			return { shown: true };
 		}
 		case 'update_project':
 			if (input.name) project.name = input.name as string;
@@ -544,7 +576,7 @@ export async function runLoop(opts: {
 async function agent({ message, project }: ChatRequest): Promise<ChatResponse> {
 	const { libraryAccess: library } = await settings.get();
 	const userAssets = await assets.list();
-	const turn: Turn = { project, ops: [], library, assetIds: new Set(userAssets.map((a) => a.id)) };
+	const turn: Turn = { project, ops: [], library, assetIds: new Set(userAssets.map((a) => a.id)), suggestions: {} };
 	const { text, history } = await runLoop({
 		system: `${systemPrompt(library)}\n\n${describeProject(project)}\n${describeAssets(userAssets)}\n${describeCards(project.cards, project.focusedId)}`,
 		tools: toolsFor(library),
@@ -552,7 +584,7 @@ async function agent({ message, project }: ChatRequest): Promise<ChatResponse> {
 		message,
 		exec: (name, input) => runTool(name, input, turn)
 	});
-	return { text, ops: turn.ops, history, choices: turn.choices };
+	return { text, ops: turn.ops, history, choices: turn.choices, suggestions: turn.suggestions };
 }
 
 /** Keyword-based stand-in for the LLM so the UI can be tried without an Anthropic key. Uses real Lumiere data. */
