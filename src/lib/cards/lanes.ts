@@ -15,12 +15,12 @@ export const slotCardId = (key: string) =>
 	key.endsWith(INSIGHTS) ? key.slice(0, -INSIGHTS.length) : key;
 
 /**
- * The card's topic: Lumi's, or else by rules: videos (and uploads and comparisons) go together under "Videos", a card
+ * The card's topic: Lumi's, or else by rules: videos (and uploads, comparisons and viewer comparisons) go together under "Videos", a card
  * about one video goes with that video's card, and anything else (a study, a list…) starts a lane of its own.
  */
 export function topicOf(card: Card, cards: Card[]): string {
 	if (card.topic?.trim()) return card.topic.trim();
-	if (['video', 'upload', 'comparison'].includes(card.type)) return 'Videos';
+	if (['video', 'upload', 'comparison', 'viewers'].includes(card.type)) return 'Videos';
 	const videoId = card.data?.videoId;
 	const video = videoId
 		? cards.find((c) => c.type === 'video' && c.data?.videoId === videoId)

@@ -6,6 +6,15 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 ## 2026-10-30
 
+**Cards**
+
+- **Viewers card**: how viewers reacted to two to four videos, compared. Ask Lumi to "compare how viewers reacted to
+  these videos". A row per video in its own colour, with its poster (play opens it in the card, with a playhead
+  along the curves), a **Source** picker (Lumiere's real viewers, or any study in the project that shows the video and
+  has sample results; each video switches on its own) and its viewers, rating, positive and negative shares and
+  comments. Below, the videos' sentiment and rating curves laid over each other, and a lane of comments per video,
+  along 0–100% of each video so different lengths line up. It goes in the Videos lane.
+
 **Studies**
 
 - **New** no longer adds an open question straight away: the new step waits, last in the list ("Pick a type"), while

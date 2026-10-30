@@ -3,10 +3,11 @@ import { comparisonData } from './comparison.js';
 import { insights } from './insights.js';
 import { sourcesData } from './sources.js';
 import { videoCardData } from './video-card.js';
+import { viewersData } from './viewers.js';
 
 /**
  * Brings saved cards' data up to date before they're shown, in place. Signed media URLs expire after a couple of
- * hours, so video, sources and comparison cards are rebuilt on every visit; insights come from their cache and are refreshed
+ * hours, so video, sources, comparison and viewers cards are rebuilt on every visit; insights come from their cache and are refreshed
  * when it expires.
  */
 export async function refreshCardData(cards: Card[]) {
@@ -22,6 +23,8 @@ export async function refreshCardData(cards: Card[]) {
 					c.data.videoIds as string[],
 					c.data.focus as ComparisonData['focus']
 				);
+			if (c.type === 'viewers' && c.data?.videoIds)
+				c.data = await viewersData(c.data.videoIds as string[]);
 		})
 	);
 }

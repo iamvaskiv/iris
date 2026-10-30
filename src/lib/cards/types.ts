@@ -24,6 +24,7 @@ export type Card = {
 		| 'upload'
 		| 'study'
 		| 'sources'
+		| 'viewers'
 		| (string & {});
 	title: string;
 	subtitle?: string;
@@ -74,6 +75,25 @@ export type SourcesData = {
 	videoName?: string;
 	duration?: number;
 	scenes?: { title: string; start: number; end?: number }[];
+	/** Lumiere's viewer data, when it was shown to an audience there. */
+	viewers?: Insights;
+};
+
+/**
+ * Viewers card data: several videos, to compare how their viewers reacted. Each video's viewer data comes from Lumiere
+ * (`viewers`) or, picked on the card, from one of the project's studies that shows it.
+ */
+export type ViewersData = {
+	videoIds: string[];
+	videos: ViewersVideo[];
+};
+
+export type ViewersVideo = {
+	videoId: string;
+	name: string;
+	poster?: string;
+	streamUrl?: string;
+	duration?: number;
 	/** Lumiere's viewer data, when it was shown to an audience there. */
 	viewers?: Insights;
 };

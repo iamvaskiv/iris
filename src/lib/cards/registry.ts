@@ -12,6 +12,7 @@ import TableCard from './TableCard.svelte';
 import TextCard from './TextCard.svelte';
 import UploadCard from './UploadCard.svelte';
 import VideoCard from './VideoCard.svelte';
+import ViewersCard from './ViewersCard.svelte';
 
 /** Card type → component. Unknown types render as TextCard. In lanes a study also gets which side it shows (`part`). */
 const registry: Record<string, Component<{ card: Card; part?: Part }>> = {
@@ -24,13 +25,14 @@ const registry: Record<string, Component<{ card: Card; part?: Part }>> = {
 	study: StudyCard,
 	table: TableCard,
 	text: TextCard,
-	upload: UploadCard
+	upload: UploadCard,
+	viewers: ViewersCard
 };
 
 export const cardComponent = (type: string) => registry[type] ?? TextCard;
 
 /**
- * How much room a card takes: the reading width (max-w-3xl); `wide` (max-w-5xl) for video and sources cards,
+ * How much room a card takes: the reading width (max-w-3xl); `wide` (max-w-5xl) for video, sources and viewers cards,
  * comparisons of three or more videos and tables with many columns; `full` (the page's width, from below the header to
  * behind Lumi's input) for studies (a question list beside a preview) and video cards in Timeline view (the video
  * beside its title, its lanes scrolling below). In lanes a study's insights, beside its setup, are full size too.
@@ -42,6 +44,7 @@ export function cardSize(card: Card): 'normal' | 'wide' | 'full' {
 	const videos = (card.data?.videoIds as string[] | undefined)?.length ?? 0;
 	if (
 		card.type === 'sources' ||
+		card.type === 'viewers' ||
 		(card.type === 'comparison' && videos >= 3) ||
 		(card.type === 'table' && (card.columns?.length ?? 0) >= 5)
 	)

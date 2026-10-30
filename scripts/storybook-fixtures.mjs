@@ -9,8 +9,8 @@ import { unflatten } from 'devalue';
 const BASE = process.argv[2] ?? 'http://localhost:5173';
 const OUT = 'src/stories/fixtures';
 // Projects whose cards make good examples: a video with full analysis, insights + lists, comparisons, a study, and a
-// video with viewer data (Inside Out 2 Trailer 1).
-const PROJECTS = ['261e9e50', 'a796d6eb', '19d3003d', 'b701005e', '7e7aec56'];
+// video with viewer data (Inside Out 2 Trailer 1), and how viewers reacted to two trailers (Trailer Reactions).
+const PROJECTS = ['261e9e50', 'a796d6eb', '19d3003d', 'b701005e', '7e7aec56', '886e17ef'];
 
 mkdirSync(`${OUT}/images`, { recursive: true });
 
