@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import * as env from '$app/env/private';
 import { lumiere } from './lumiere.js';
 import { settings } from './settings.js';
+import { sourcesData } from './sources.js';
 import { videoCardData } from './video-card.js';
 import { insights } from './insights.js';
 import { comparisonData } from './comparison.js';
@@ -134,7 +135,7 @@ function describeSample(data: StudyData | undefined) {
 }
 
 /** Card types the assistant can create (upload cards are the app's own). */
-const CARD_TYPES = ['video', 'insights', 'comparison', 'list', 'quotes', 'table', 'text', 'study'];
+const CARD_TYPES = ['video', 'insights', 'comparison', 'sources', 'list', 'quotes', 'table', 'text', 'study'];
 
 const tableSchema = {
 	columns: { type: 'array', items: { type: 'string' } },
@@ -298,6 +299,7 @@ const allTools: Anthropic.Tool[] = [
 - "video": a video with its summary, scenes and characters. Pass videoId; the player, scenes and characters are added for you. Title: what the video is (e.g. "Women Talking trailer"), not the file name. Body: a two or three sentence summary.
 - "insights": viewer insights for a video (views, rating, sentiment, answers to questions, liked and disliked comments). Pass videoId; the numbers are filled in for you. Only when get_insights has data. Body: one sentence with the key takeaway.
 - "comparison": two to four videos side by side. Pass videoIds; posters, length, scenes, characters, themes and brands, and from audience data views, responses, response rate, rating, comment sentiment, the top liked and criticised comments and answers to questions asked in several of the videos are filled in for you. Pass focus "audience" to compare only how viewers responded (views, sentiment, ratings...), "content" for only what's in the videos; leave it out for both. Add your own rows for what the numbers don't show (e.g. tone, opening, pacing, call to action): rows of [label, one short value per video in videoIds order]. Never repeat the automatic rows. Body: one sentence with the key difference. Prefer this over a table when comparing videos.
+- "sources": ONE video's viewer data compared across its sources: Lumiere's real viewers, and each study card in the project that shows the video and has sample results (named after the study). Each source's key numbers in a row and, along the video, every source's sentiment and rating curves laid over each other and their comments. Pass videoId; everything is filled in for you. Use it whenever the user wants to compare real and sample (or several studies') viewer data for a video, rather than a table. Title: e.g. "Real vs sample viewers". Body: one sentence with the key difference.
 - "list": a list of things (characters, scenes, themes, brands...). Fill items with title/subtitle/description and time (seconds) when known.
 - "quotes": lines spoken by someone. items: title = the quote, subtitle = speaker, time = seconds.
 - "table": numbers or short facts across a few dimensions (metrics per video, counts per character, side-by-side comparisons). Pass columns (headings; the first labels the rows) and rows (arrays of cells, same length as columns). Keep cells short; use numbers for numeric cells.
@@ -372,6 +374,10 @@ async function makeCard(input: CardInput): Promise<Card> {
 	const card: Card = { id: crypto.randomUUID().slice(0, 8), ...rest, data: videoId ? { videoId } : undefined };
 	if (card.type === 'study') card.data = { questions: await nameVideos(cleanQuestions(questions ?? [])) };
 	if (card.type === 'video' && videoId) card.data = await videoCardData(videoId);
+	if (card.type === 'sources') {
+		if (!videoId) throw new Error('A sources card needs the videoId.');
+		card.data = await sourcesData(videoId);
+	}
 	if (card.type === 'insights') {
 		const data = videoId && (await insights.get(videoId));
 		if (!data) throw new Error('No viewer insights for that video: nobody has watched or responded yet.');

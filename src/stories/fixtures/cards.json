@@ -3006,32 +3006,32 @@
 		"body": "Riley turns thirteen, and new teenage emotions led by Anxiety move into Headquarters. Anxiety bottles up Joy and the original emotions in a glass jar. They then try to get back and protect Riley's identity.",
 		"data": {
 			"videoId": "vuvIanfCkI8R",
-			"poster": "/fixtures/a951dfc989c0.jpg",
+			"poster": "/fixtures/e845b931d46f.jpg",
 			"duration": 144.561089,
 			"scenes": [
 				{
 					"title": "Riley Turns Thirteen",
 					"start": 0,
 					"end": 29,
-					"thumb": "/fixtures/b97eba42a36d.jpg"
+					"thumb": "/fixtures/f7995106b766.jpg"
 				},
 				{
 					"title": "Meet the New Emotions",
 					"start": 29,
 					"end": 66,
-					"thumb": "/fixtures/602904ee6dc2.jpg"
+					"thumb": "/fixtures/ecbffcaabd11.jpg"
 				},
 				{
 					"title": "High School Anxiety & Headquarters Takeover",
 					"start": 66,
 					"end": 100,
-					"thumb": "/fixtures/0e85fb778ce1.jpg"
+					"thumb": "/fixtures/c688206aabe1.jpg"
 				},
 				{
 					"title": "Suppressed Emotions & The Sar-chasm",
 					"start": 100,
 					"end": 145,
-					"thumb": "/fixtures/e9a0d0b2025e.jpg"
+					"thumb": "/fixtures/6dfeadff016d.jpg"
 				}
 			],
 			"characters": [
@@ -3039,7 +3039,7 @@
 					"name": "Anger",
 					"role": "Comic Relief",
 					"actor": "Lewis Black",
-					"image": "/fixtures/7089420d6d91.jpg",
+					"image": "/fixtures/eace516f5a6d.jpg",
 					"appearances": [
 						{
 							"start": 8,
@@ -3055,7 +3055,7 @@
 					"name": "Anxiety",
 					"role": "Antagonist",
 					"actor": "Maya Hawke",
-					"image": "/fixtures/86a06427d6f6.jpg",
+					"image": "/fixtures/43e9dcc23786.jpg",
 					"appearances": [
 						{
 							"start": 29,
@@ -3067,7 +3067,7 @@
 					"name": "Disgust",
 					"role": "Sidekick",
 					"actor": "Liza Lapira",
-					"image": "/fixtures/41c6b121b506.jpg",
+					"image": "/fixtures/c479cc6c990f.jpg",
 					"appearances": [
 						{
 							"start": 0,
@@ -3087,7 +3087,7 @@
 					"name": "Fear",
 					"role": "Comic Relief",
 					"actor": "Tony Hale",
-					"image": "/fixtures/7089420d6d91.jpg",
+					"image": "/fixtures/eace516f5a6d.jpg",
 					"appearances": [
 						{
 							"start": 8,
@@ -3103,7 +3103,7 @@
 					"name": "Joy",
 					"role": "Hero",
 					"actor": "Amy Poehler",
-					"image": "/fixtures/41c6b121b506.jpg",
+					"image": "/fixtures/c479cc6c990f.jpg",
 					"appearances": [
 						{
 							"start": 0,
@@ -3115,7 +3115,7 @@
 					"name": "Riley Andersen",
 					"role": "Hero",
 					"actor": "Kensington Tallman",
-					"image": "/fixtures/41c6b121b506.jpg",
+					"image": "/fixtures/c479cc6c990f.jpg",
 					"appearances": [
 						{
 							"start": 0,
@@ -4407,6 +4407,676 @@
 					},
 					"by": "lumi"
 				}
+			}
+		}
+	},
+	"Inside Out 2 Reception · Real vs sample viewer data": {
+		"id": "68be9d11",
+		"type": "table",
+		"title": "Real vs sample viewer data",
+		"columns": [
+			"Metric",
+			"Real viewer data",
+			"Sample study results"
+		],
+		"rows": [
+			[
+				"Views",
+				"0 recorded",
+				"92"
+			],
+			[
+				"Responses",
+				"174",
+				"79 to 89 per question"
+			],
+			[
+				"Rating",
+				"4.7 / 5 (21 ratings)",
+				"77%"
+			],
+			[
+				"Sentiment (pos / neu / neg)",
+				"58% / 25% / 17% (23 / 10 / 7 comments)",
+				"58% / 25% / 17%"
+			],
+			[
+				"New emotions slider (0-10)",
+				"8.1 (28 answers)",
+				"7.6 (86 answers)"
+			],
+			[
+				"Top new emotion",
+				"Embarrassment 8, Anxiety 7, Envy 3, Ennui 3",
+				"Anxiety 32, Ennui 24, Embarrassment 13, Envy 10"
+			],
+			[
+				"Main criticism",
+				"Visual details: noisy hair, orange buttons, light beams through the jar",
+				"Joy seems sidelined; can a sequel match the first?"
+			]
+		]
+	},
+	"Inside Out 2 Reception · Real vs sample viewers": {
+		"id": "6ee82660",
+		"type": "sources",
+		"title": "Real vs sample viewers",
+		"body": "Sentiment is nearly identical in both sources, but the top new emotion differs.",
+		"data": {
+			"videoId": "vuvIanfCkI8R",
+			"videoName": "Inside Out 2 | Trailer 1",
+			"duration": 144.561089,
+			"scenes": [
+				{
+					"title": "Riley Turns Thirteen",
+					"start": 0,
+					"end": 29
+				},
+				{
+					"title": "Meet the New Emotions",
+					"start": 29,
+					"end": 66
+				},
+				{
+					"title": "High School Anxiety & Headquarters Takeover",
+					"start": 66,
+					"end": 100
+				},
+				{
+					"title": "Suppressed Emotions & The Sar-chasm",
+					"start": 100,
+					"end": 145
+				}
+			],
+			"viewers": {
+				"videoId": "vuvIanfCkI8R",
+				"views": 0,
+				"responses": 174,
+				"rating": {
+					"average": 4.7,
+					"max": 5,
+					"count": 21
+				},
+				"sentiment": {
+					"positive": 23,
+					"neutral": 10,
+					"negative": 7
+				},
+				"questions": [
+					{
+						"question": "Choose a character whose emotions you would like to see the most",
+						"type": "hotspot",
+						"responses": 39,
+						"options": [
+							{
+								"label": "Little girl",
+								"count": 23
+							},
+							{
+								"label": "Dad",
+								"count": 9
+							},
+							{
+								"label": "Mom",
+								"count": 4
+							}
+						]
+					},
+					{
+						"question": "How do you feel about new emotions?",
+						"type": "slider",
+						"responses": 28,
+						"average": 8.1,
+						"max": 10
+					},
+					{
+						"question": "Which new emotion is the most interesting for you?",
+						"type": "choice",
+						"responses": 21,
+						"options": [
+							{
+								"label": "Embarrassment",
+								"count": 8
+							},
+							{
+								"label": "Anxiety",
+								"count": 7
+							},
+							{
+								"label": "Envy",
+								"count": 3
+							},
+							{
+								"label": "Ennui",
+								"count": 3
+							}
+						]
+					},
+					{
+						"question": "Rate this trailer!",
+						"type": "rating",
+						"responses": 20,
+						"average": 4.8,
+						"max": 5
+					},
+					{
+						"question": "How likely are you to see this movie when it comes out?",
+						"type": "slider",
+						"responses": 17,
+						"average": 8.4,
+						"max": 10
+					}
+				],
+				"liked": [
+					{
+						"text": "Love this guy :D :D :D",
+						"time": 121.5272819,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"admiration"
+						]
+					},
+					{
+						"text": "love it so far! can't wait for a release 🫢",
+						"time": 105.798732,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"anticipation",
+							"excitement"
+						]
+					},
+					{
+						"text": "Wow, cool turn of events",
+						"time": 101.972927,
+						"sentiment": 0.9,
+						"emotions": [
+							"surprise",
+							"excitement"
+						]
+					},
+					{
+						"text": "A funny character",
+						"time": 31.995971,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"surprise"
+						]
+					}
+				],
+				"disliked": [
+					{
+						"text": "hair looks a bit noisy",
+						"time": 17.6437823,
+						"sentiment": -0.8,
+						"emotions": []
+					},
+					{
+						"text": "Don't like spits",
+						"time": 18.57062,
+						"sentiment": -0.8,
+						"emotions": [
+							"disgust",
+							"anger"
+						]
+					},
+					{
+						"text": "why there is so many orange buttons?",
+						"time": 43.287929,
+						"sentiment": -0.7,
+						"emotions": [
+							"confusion"
+						]
+					},
+					{
+						"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
+						"time": 103.05962,
+						"sentiment": -0.5,
+						"emotions": []
+					}
+				],
+				"comments": [
+					{
+						"text": "Love her",
+						"time": 1.126748,
+						"sentiment": 0.8,
+						"emotions": [
+							"appreciation",
+							"enjoyment"
+						]
+					},
+					{
+						"text": "wooow",
+						"time": 1.698128,
+						"sentiment": 0.3,
+						"emotions": [
+							"surprise"
+						]
+					},
+					{
+						"text": "This scene is good but not great",
+						"time": 2.618375,
+						"sentiment": 0.2,
+						"emotions": [
+							"appreciation",
+							"disappointment"
+						]
+					},
+					{
+						"text": "gg",
+						"time": 3.238196,
+						"sentiment": 0,
+						"emotions": []
+					},
+					{
+						"text": "goood",
+						"time": 3.824154,
+						"sentiment": 0,
+						"emotions": []
+					},
+					{
+						"text": "Love the transition",
+						"time": 3.9243778,
+						"sentiment": 0.9,
+						"emotions": [
+							"admiration",
+							"joy"
+						]
+					},
+					{
+						"text": "I love this scene!",
+						"time": 4.995538,
+						"sentiment": 0.8,
+						"emotions": [
+							"appreciation",
+							"excitement",
+							"optimism"
+						]
+					},
+					{
+						"text": "ok",
+						"time": 6.335371182373457,
+						"sentiment": 0,
+						"emotions": []
+					},
+					{
+						"text": "what a nice moment!",
+						"time": 6.709729,
+						"sentiment": 0.8,
+						"emotions": [
+							"appreciation",
+							"optimism"
+						]
+					},
+					{
+						"text": "WOw what a nice moment!",
+						"time": 8.049049,
+						"sentiment": 0.8,
+						"emotions": [
+							"appreciation",
+							"excitement",
+							"optimism"
+						]
+					},
+					{
+						"text": "gddg",
+						"time": 8.109088,
+						"sentiment": 0,
+						"emotions": []
+					},
+					{
+						"text": "love it",
+						"time": 10.817289707661601,
+						"sentiment": 0.8,
+						"emotions": [
+							"joy"
+						]
+					},
+					{
+						"text": "Like the start of the video",
+						"time": 11.410355,
+						"sentiment": 0.9,
+						"emotions": [
+							"admiration",
+							"joy"
+						]
+					},
+					{
+						"text": "What a dynamic start!",
+						"time": 11.705471,
+						"sentiment": 0.9,
+						"emotions": [
+							"excitement",
+							"admiration"
+						]
+					},
+					{
+						"text": "love this guy!",
+						"time": 12.2378786,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"admiration"
+						]
+					},
+					{
+						"text": "That's fire 🔥",
+						"time": 12.456641,
+						"sentiment": 0.5,
+						"emotions": [
+							"joy",
+							"excitement"
+						]
+					},
+					{
+						"text": "anger is the best",
+						"time": 12.9342121,
+						"sentiment": 0,
+						"emotions": [
+							"anger"
+						]
+					},
+					{
+						"text": "great shot",
+						"time": 14.879395,
+						"sentiment": 0.6,
+						"emotions": [
+							"enthusiasm"
+						]
+					},
+					{
+						"text": "love it",
+						"time": 14.988811,
+						"sentiment": 0.8,
+						"emotions": [
+							"appreciation",
+							"enjoyment"
+						]
+					},
+					{
+						"text": "Let's change head position a little bit. Now it feels unnatural",
+						"time": 15.136804,
+						"sentiment": -0.4,
+						"emotions": [
+							"confusion"
+						]
+					},
+					{
+						"text": "wow",
+						"time": 16.321607,
+						"sentiment": 0.9,
+						"emotions": [
+							"surprise"
+						]
+					},
+					{
+						"text": "Unreal usage of natural depth of blur. Looks cool and realistic",
+						"time": 16.52259,
+						"sentiment": 0.5,
+						"emotions": [
+							"admiration",
+							"joy"
+						]
+					},
+					{
+						"text": "hair looks a bit noisy",
+						"time": 17.6437823,
+						"sentiment": -0.8,
+						"emotions": []
+					},
+					{
+						"text": "Don't like spits",
+						"time": 18.57062,
+						"sentiment": -0.8,
+						"emotions": [
+							"disgust",
+							"anger"
+						]
+					},
+					{
+						"text": "Hah, funny awkward moment",
+						"time": 24.6847032,
+						"sentiment": 0.8,
+						"emotions": [
+							"joy",
+							"surprise"
+						]
+					},
+					{
+						"text": "A funny character",
+						"time": 31.995971,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"surprise"
+						]
+					},
+					{
+						"text": "Anxiety is weird.",
+						"time": 37.493244,
+						"sentiment": -0.2,
+						"emotions": [
+							"anxiety"
+						]
+					},
+					{
+						"text": "cool",
+						"time": 39.773582,
+						"sentiment": 0.4,
+						"emotions": [
+							"enjoyment"
+						]
+					},
+					{
+						"text": "This character looks out of this world. Maybe it is a good thing, but it is very different from others' styles",
+						"time": 41.8588279,
+						"sentiment": 0.4,
+						"emotions": [
+							"admiration",
+							"surprise"
+						]
+					},
+					{
+						"text": "I love disgust and envy too.",
+						"time": 42.894018,
+						"sentiment": -0.2,
+						"emotions": [
+							"disgust",
+							"envy"
+						]
+					},
+					{
+						"text": "why there is so many orange buttons?",
+						"time": 43.287929,
+						"sentiment": -0.7,
+						"emotions": [
+							"confusion"
+						]
+					},
+					{
+						"text": "Now I see almost all characters have \"noisy\" hair :D",
+						"time": 56.0025873,
+						"sentiment": -0.4,
+						"emotions": [
+							"joy",
+							"surprise"
+						]
+					},
+					{
+						"text": "kj",
+						"time": 67.313903,
+						"sentiment": 0,
+						"emotions": []
+					},
+					{
+						"text": "She's my favorite human character",
+						"time": 70.966361,
+						"sentiment": 0.6,
+						"emotions": [
+							"appreciation",
+							"optimism"
+						]
+					},
+					{
+						"text": "Wow, cool turn of events",
+						"time": 101.972927,
+						"sentiment": 0.9,
+						"emotions": [
+							"surprise",
+							"excitement"
+						]
+					},
+					{
+						"text": "Let's work on a light beams so they just won't pass the jar like there are no jar at all",
+						"time": 103.05962,
+						"sentiment": -0.5,
+						"emotions": []
+					},
+					{
+						"text": "love it so far! can't wait for a release 🫢",
+						"time": 105.798732,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"anticipation",
+							"excitement"
+						]
+					},
+					{
+						"text": "Too dramatic girl. Funny scene",
+						"time": 109.661179,
+						"sentiment": 0.1,
+						"emotions": [
+							"joy",
+							"surprise"
+						]
+					},
+					{
+						"text": "Love this guy :D :D :D",
+						"time": 121.5272819,
+						"sentiment": 0.9,
+						"emotions": [
+							"joy",
+							"admiration"
+						]
+					},
+					{
+						"text": "the aerial view has a different background than the ground view",
+						"time": 127.471601,
+						"sentiment": -0.4,
+						"emotions": []
+					}
+				],
+				"ratings": [
+					{
+						"time": 141.296116,
+						"value": 4,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 3,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.296116,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.330944,
+						"value": 5,
+						"max": 5
+					},
+					{
+						"time": 141.3309444,
+						"value": 3,
+						"max": 5
+					},
+					{
+						"time": 141.3309444,
+						"value": 4,
+						"max": 5
+					},
+					{
+						"time": 141.3309444,
+						"value": 5,
+						"max": 5
+					}
+				],
+				"fetchedAt": "2026-10-30T13:34:07.235Z"
 			}
 		}
 	}

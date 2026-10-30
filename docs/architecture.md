@@ -63,7 +63,7 @@ flowchart TB
 | Part          | Where                                                          | What it does                                                                                                                   |
 | ------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Pages         | `src/routes`                                                   | Projects page (tiles, Lumi, drop a video → new project), project page (card stack, focus, uploads), assets, settings, `/login` |
-| Cards         | `src/lib/cards`                                                | Video, Insights, Comparison, List, Quotes, Table, Text, Upload, Study; built from design-system components                     |
+| Cards         | `src/lib/cards`                                                | Video, Insights, Comparison, Sources, List, Quotes, Table, Text, Upload, Study; built from design-system components            |
 | Password gate | `src/hooks.server.ts`                                          | Production only: a session cookie from `SITE_PASSWORD`, otherwise `/login`                                                     |
 | Lumi          | `src/lib/server/agent.ts`, `workspace-agent.ts`                | Claude tool loops: read analysis and insights, browse the library across the user's teams, add/update/focus cards              |
 | Card data     | `src/lib/server/video-card.ts`, `insights.ts`, `comparison.ts` | Fill cards from Lumiere; insights cached for six hours                                                                         |
@@ -191,6 +191,38 @@ sequenceDiagram
     API->>S: save as the card's sample (enabled)
     API-->>SC: sample results
     SC->>SC: switch to results, badge "Sample data"
+```
+
+## Viewer data sources
+
+A video's viewer data comes from sources. **Lumiere**: its real viewers, wherever the video was shown (comments and
+ratings with their moments, from `insights.ts`, cached for a few hours). And each **study** in the project that shows
+the video (a video step, or a video in a channel) and has sample results: its made-up viewers' comments and star
+ratings at their moments, and the answers to questions popping up in the video (`viewer-sources.ts`, worked out in the
+browser from the project's cards, which the project page shares). The video card switches between them with
+**Source**; the sources card lays them over each other.
+
+```mermaid
+---
+config:
+  look: classic
+---
+flowchart LR
+    lumiere["Lumiere API<br/>feedback: comments, ratings"] --> insights["insights.ts<br/>(cached 6 h)"]
+    insights -->|"data.viewers"| video["Video card<br/>Source picker"]
+    insights -->|"data.viewers"| sources["Sources card<br/>overlaid curves, bars"]
+    studies["Study cards in the project<br/>sample results"] -->|"studySources()"| video
+    studies -->|"studySources()"| sources
+    lumi["Lumi (Claude)<br/>writes sample results"] --> studies
+
+    classDef ui stroke:#4c7dff,fill:#4c7dff33
+    classDef server stroke:#00bd32,fill:#00bd3233
+    classDef ai stroke:#f424ff,fill:#f424ff33
+    classDef external stroke:#f79205,fill:#f7920533
+    class video,sources,studies ui
+    class insights server
+    class lumi ai
+    class lumiere external
 ```
 
 ## How an upload flows

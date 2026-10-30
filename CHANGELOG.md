@@ -21,6 +21,11 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   sentiment under the summary; a **Comments** section with each comment at its moment (click to play from there), with
   its emotions and a sentiment dot; a dot per comment on the timeline under the video, in its sentiment's colour; and
   in Timeline view a **Sentiment** group with positive, neutral and negative lanes of comments (click one to go to it).
+- New card: **Sources**, one video's viewer data compared across its sources (Lumiere's real viewers and each study in
+  the project that shows the video and has sample results). A row per source in its colour with its key numbers
+  (viewers, rating, positive and negative shares, comments); then along the video, under its scenes, every source's
+  sentiment and rating curves laid over each other on one scale, and a lane of comments per source. Ask Lumi to
+  compare real and sample viewer data and she makes one.
 - Sample results (Share → Fake responses) treat a video like Lumiere's viewers do: each viewer's comment is left at a
   moment in the video (about what happens there) and comes with the star rating they gave it, 1 to 5. Their responses
   show both ("at 0:27 · 5 / 5 stars"), and on the video card, with the study as its source, they fill the timeline,

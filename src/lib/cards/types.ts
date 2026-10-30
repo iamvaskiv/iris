@@ -23,6 +23,7 @@ export type Card = {
 		| 'text'
 		| 'upload'
 		| 'study'
+		| 'sources'
 		| (string & {});
 	title: string;
 	subtitle?: string;
@@ -61,6 +62,16 @@ export type VideoCardData = {
  * and what is in them), with back-to-back moments joined into one.
  */
 export type Span = { start: number; end: number };
+
+/** Sources card data: one video, to compare its viewer data across sources (Lumiere's, and the project's studies). */
+export type SourcesData = {
+	videoId: string;
+	videoName?: string;
+	duration?: number;
+	scenes?: { title: string; start: number; end?: number }[];
+	/** Lumiere's viewer data, when it was shown to an audience there. */
+	viewers?: Insights;
+};
 
 /** Viewer insights card data: what an audience made of a video. */
 export type Insights = {
