@@ -14,6 +14,8 @@ export type Project = {
 	reply?: string;
 	/** Answers offered with the latest reply, still waiting for the user to pick one. */
 	choices?: string[];
+	/** Next steps Lumi offers at the end of each lane, by lane key (see `cards/suggestions.ts`). */
+	suggestions?: Record<string, string[]>;
 	/** Opaque LLM conversation history. */
 	history: unknown[];
 	createdAt: string;

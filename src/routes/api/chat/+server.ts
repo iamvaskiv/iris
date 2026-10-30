@@ -1,6 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { chat } from '#lib/server/agent.js';
 import { projects } from '#lib/server/projects.js';
+import { laneKey, topicOf } from '#lib/cards/lanes.js';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -24,8 +25,16 @@ export const POST: RequestHandler = async ({ request }) => {
 			latest.history = res.history;
 			latest.reply = res.text;
 			latest.choices = res.choices;
+			// A lane whose cards changed drops its old suggestions (back to the rules) unless Lumi wrote new ones.
+			const suggestions = { ...latest.suggestions };
+			for (const op of res.ops) if (op.op !== 'focus') delete suggestions[laneKey(topicOf(op.card, latest.cards))];
+			latest.suggestions = { ...suggestions, ...res.suggestions };
 		});
-		return json({ ...res, project: { name: saved!.name, summary: saved!.summary } });
+		return json({
+			...res,
+			suggestions: saved!.suggestions,
+			project: { name: saved!.name, summary: saved!.summary }
+		});
 	} catch (e) {
 		console.error(e);
 		return json({ text: 'Something went wrong on my side.', ops: [], history: project.history, error: String(e) });

@@ -17,6 +17,8 @@
 	import TooltipGroup from '#lib/components/TooltipGroup.svelte';
 	import { cardComponent, cardSize } from '#lib/cards/registry.js';
 	import { lanes, slotCardId, type Lane } from '#lib/cards/lanes.js';
+	import { laneSuggestions } from '#lib/cards/suggestions.js';
+	import LaneSuggestions from '#lib/components/LaneSuggestions.svelte';
 	import { experimental, loadExperimental } from '#lib/experimental.svelte.js';
 	import { shareProjectCards } from '#lib/cards/viewer-sources.js';
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
@@ -369,6 +371,8 @@
 
 	const lanesOn = $derived(experimental.lanes);
 	const laneList = $derived(lanes(project.cards));
+	/** What the user has asked so far: suggestions they already sent aren't offered again. */
+	const asked = $derived(messages.filter((m) => m.from === 'user').map((m) => m.text));
 	/** The focused slot (a card, or one side of a study); `project.focusedId` is its card. */
 	let focusedSlot = $state<string | undefined>(project.focusedId);
 	/** Each lane's current card: where it stays while another lane has focus. */
@@ -679,6 +683,8 @@
 	let scrollerWidth = $state(0);
 	let scrollerInnerWidth = $state(0);
 	const scrollbarWidth = $derived(Math.max(0, scrollerWidth - scrollerInnerWidth));
+	/** After a lane's last card, less the card's width: room so it too can come to the lane's left edge. */
+	const roomAfter = $derived(scrollerInnerWidth - rowStart - ROW_PAD - CARD_GAP);
 	let assetsOpen = $state(false);
 	let assetsPane = $state<HTMLElement | null>(null);
 	let assetsTab = $state<HTMLElement | null>(null);
@@ -728,6 +734,7 @@
 			const data: ChatResponse = await res.json();
 			project.reply = data.text;
 			project.choices = data.choices;
+			if (data.suggestions) project.suggestions = data.suggestions;
 			if (!data.error) messages = transcript(data.history);
 			error = data.error ?? '';
 			if (data.project) Object.assign(project, data.project);
@@ -956,16 +963,25 @@
 									{#if !birdsEye && slot.part !== 'insights'}{@render deleteButton(slot.card)}{/if}
 								</div>
 							{/each}
-							{#if !birdsEye && lane.slots.length > 1}
-								<!-- Room after the last card, so it too can come to the lane's left edge. -->
-								<div
-									aria-hidden="true"
-									class="shrink-0"
-									style:width="{Math.max(
-										0,
-										scrollerInnerWidth - rowStart - ROW_PAD - CARD_GAP - (cardWidths[last.key] ?? 0)
-									)}px"
-								></div>
+							{#if !birdsEye}
+								{@const next = laneSuggestions(lane, project.cards, project.suggestions, asked)}
+								<!-- After the last card: the lane's next steps, and room so the last card too can come to the lane's
+								     left edge. -->
+								{#if next.length || lane.slots.length > 1}
+									<div
+										class="shrink-0"
+										style:min-width={lane.slots.length > 1
+											? `${Math.max(0, roomAfter - (cardWidths[last.key] ?? 0))}px`
+											: undefined}
+									>
+										<LaneSuggestions
+											suggestions={next}
+											topic={lane.title}
+											disabled={thinking}
+											onselect={send}
+										/>
+									</div>
+								{/if}
 							{/if}
 						</div>
 						{#if !birdsEye}

@@ -28,11 +28,14 @@ export function topicOf(card: Card, cards: Card[]): string {
 	return video ? topicOf(video, cards) : card.title;
 }
 
+/** A lane's key: its topic, ignoring case. */
+export const laneKey = (topic: string) => topic.trim().toLowerCase();
+
 export function lanes(cards: Card[]): Lane[] {
 	const byKey = new Map<string, Lane>();
 	for (const card of cards) {
 		const title = topicOf(card, cards);
-		const key = title.toLowerCase();
+		const key = laneKey(title);
 		let lane = byKey.get(key);
 		if (!lane) byKey.set(key, (lane = { key, title, slots: [] }));
 		if (card.type === 'study')

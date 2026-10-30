@@ -27,6 +27,7 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 **Project page (experimental)**
 
+- Each lane ends with a few suggested next steps; click one to ask Lumi.
 - **Topic lanes**, on by default (Settings → Experimental, remembered on your device; off brings back the single
   column). A project's cards are grouped by topic into horizontal lanes stacked down the page, each named on its
   left: a study with its follow-ups, the videos side by side, and so on. Lumi gives every new card a topic (reusing
