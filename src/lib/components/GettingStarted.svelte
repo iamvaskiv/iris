@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Card, Popover, buttonVariants, cn } from '@latitudelabs/design-system';
+	import { Button, Card, cn } from '@latitudelabs/design-system';
 	import { CircleCheck, Icon } from '@latitudelabs/design-system/icons';
 	import { checklist, dismissChecklist, STEPS, type Checklist } from '#lib/checklist.svelte.js';
 	import { newProject } from '#lib/new-project.js';
@@ -28,11 +28,21 @@
 	// The tile's blobs play with the pointer: a glow follows it, the colours lean away from it at different depths, and
 	// they swell while it's pressed. Where it is, as a share of the card (0–1), centred when it's elsewhere.
 	let pointer = $state({ x: 0.5, y: 0.5, pressed: false });
+	/** The pill, opened with a click (touch, or to keep it open); hover and keyboard focus open it too. */
+	let open = $state(false);
+	let pill = $state<HTMLElement>();
 	function track(e: PointerEvent) {
 		const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		pointer.x = (e.clientX - r.left) / r.width;
 		pointer.y = (e.clientY - r.top) / r.height;
 	}
+	const playful = {
+		onpointermove: track,
+		onpointerenter: track,
+		onpointerleave: () => Object.assign(pointer, { x: 0.5, y: 0.5, pressed: false }),
+		onpointerdown: () => (pointer.pressed = true),
+		onpointerup: () => (pointer.pressed = false)
+	};
 </script>
 
 <!-- `fill`: in the tile, the steps spread out to fill the card's height. -->
@@ -77,6 +87,41 @@
 	</div>
 {/snippet}
 
+<!-- A click-opened pill closes on a click elsewhere, or Escape. -->
+<svelte:window
+	onpointerdown={(e) => open && !pill?.contains(e.target as Node) && (open = false)}
+	onkeydown={(e) => open && e.key === 'Escape' && (open = false)}
+/>
+
+{#snippet summary()}
+	<span>{next ? next.label : "You're all set"}</span>
+	<span class="text-muted-foreground">{doneCount}/{STEPS.length}</span>
+{/snippet}
+
+{#snippet colours()}
+	<!-- The brand colours (Lumi's orb) across the whole card: onboarding is a brand moment. They drift while the
+	     card is hovered, and stop where they are when it isn't. -->
+	<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+		<div
+			class="blob blob-1 absolute -top-32 -left-24 size-64 rounded-full bg-brand-3 blur-3xl"
+		></div>
+		<div
+			class="blob blob-2 absolute top-1/4 -right-36 size-64 rounded-full bg-brand-2 blur-3xl"
+		></div>
+		<div
+			class="blob blob-3 absolute -bottom-40 left-1/4 size-64 rounded-full bg-brand-1 blur-3xl"
+		></div>
+		<!-- Light in the middle, with the colours around the edges. -->
+		<div
+			class="center absolute top-1/2 left-1/2 size-56 -translate-1/2 rounded-full blur-3xl"
+		></div>
+		<!-- Follows the pointer while it's over the card. -->
+		<div class="glow absolute size-40 rounded-full bg-brand-3 blur-2xl"></div>
+		<!-- A little depth under the text. -->
+		<div class="absolute inset-0 bg-gradient-to-r from-background/40 to-transparent"></div>
+	</div>
+{/snippet}
+
 {#if !progress.dismissed}
 	{#if variant === 'tile'}
 		<!-- Light: a pastel wash with text tinted in the brand's dark red and purple. Dark: the brand colours at full
@@ -86,33 +131,9 @@
 			aria-labelledby="getting-started-title"
 			data-pressed={pointer.pressed || undefined}
 			style="--x: {pointer.x}; --y: {pointer.y}"
-			onpointermove={track}
-			onpointerenter={track}
-			onpointerleave={() => Object.assign(pointer, { x: 0.5, y: 0.5, pressed: false })}
-			onpointerdown={() => (pointer.pressed = true)}
-			onpointerup={() => (pointer.pressed = false)}
+			{...playful}
 		>
-			<!-- The brand colours (Lumi's orb) across the whole card: onboarding is a brand moment. They drift while the
-			     card is hovered, and stop where they are when it isn't. -->
-			<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-				<div
-					class="blob blob-1 absolute -top-32 -left-24 size-64 rounded-full bg-brand-3 blur-3xl"
-				></div>
-				<div
-					class="blob blob-2 absolute top-1/4 -right-36 size-64 rounded-full bg-brand-2 blur-3xl"
-				></div>
-				<div
-					class="blob blob-3 absolute -bottom-40 left-1/4 size-64 rounded-full bg-brand-1 blur-3xl"
-				></div>
-				<!-- Light in the middle, with the colours around the edges. -->
-				<div
-					class="center absolute top-1/2 left-1/2 size-56 -translate-1/2 rounded-full blur-3xl"
-				></div>
-				<!-- Follows the pointer while it's over the card. -->
-				<div class="glow absolute size-40 rounded-full bg-brand-3 blur-2xl"></div>
-				<!-- A little depth under the text. -->
-				<div class="absolute inset-0 bg-gradient-to-r from-background/40 to-transparent"></div>
-			</div>
+			{@render colours()}
 			<Card.Header>
 				<Card.Title id="getting-started-title"
 					>{allDone ? "You're all set" : 'Getting started'}</Card.Title
@@ -123,18 +144,49 @@
 			</Card.Content>
 		</Card.Root>
 	{:else}
-		<Popover.Root>
-			<Popover.Trigger
-				class={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'max-w-80', className)}
+		<!-- Pinned in a project's header: the next step and the count, in the tile's colours. Hovered or focused, it
+		     grows into a card with every step. The placeholder keeps its collapsed size in the header while the card
+		     itself floats over the page. -->
+		<div class={cn('relative h-9', className)}>
+			<span
+				class="invisible flex h-9 items-center gap-2 px-3 text-body font-medium"
+				aria-hidden="true"
 			>
-				<span class="truncate">{next ? `Next: ${next.label}` : "You're all set"}</span>
-				<span class="text-muted-foreground">{doneCount}/{STEPS.length}</span>
-			</Popover.Trigger>
-			<Popover.Content align="end" class="flex w-80 flex-col gap-4" aria-label="Getting started">
-				<p class="text-title">Getting started</p>
-				{#if allDone}{@render finished()}{:else}{@render list()}{/if}
-			</Popover.Content>
-		</Popover.Root>
+				{@render summary()}
+			</span>
+			<div
+				class="getting-started pill absolute top-0 right-0 isolate overflow-hidden bg-card text-card-foreground shadow-hairline"
+				bind:this={pill}
+				role="group"
+				aria-label="Getting started"
+				data-open={open || undefined}
+				data-pressed={pointer.pressed || undefined}
+				style="--x: {pointer.x}; --y: {pointer.y}"
+				{...playful}
+			>
+				{@render colours()}
+				<button
+					type="button"
+					class="flex h-9 w-full cursor-pointer items-center gap-2 px-3 text-left text-body font-medium whitespace-nowrap outline-none"
+					aria-expanded={open}
+					onclick={() => (open = !open)}
+				>
+					<span class="collapsed-only flex items-center gap-2">{@render summary()}</span>
+					<span class="expanded-only flex flex-1 items-center justify-between gap-2"
+						><span class="text-title">{allDone ? "You're all set" : 'Getting started'}</span><span
+							class="text-muted-foreground">{doneCount}/{STEPS.length}</span
+						></span
+					>
+				</button>
+				<div class="more grid">
+					<div class="min-h-0 overflow-hidden">
+						<div class="px-3 pt-2 pb-4">
+							{#if allDone}{@render finished()}{:else}{@render list()}{/if}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	{/if}
 {/if}
 
@@ -157,6 +209,51 @@
 	}
 	.blob {
 		opacity: 0.45;
+	}
+	/* The pinned pill: collapsed to one line, it grows into a card on hover or focus (width and height animate where
+	   the browser can interpolate to auto sizes). */
+	.pill {
+		interpolate-size: allow-keywords;
+		width: max-content;
+		border-radius: var(--radius-md-value);
+		transition:
+			width 0.3s ease-out,
+			border-radius 0.3s ease-out,
+			box-shadow 0.3s ease-out;
+	}
+	.pill .more {
+		grid-template-rows: 0fr;
+		transition: grid-template-rows 0.3s ease-out;
+	}
+	.pill .expanded-only {
+		display: none;
+	}
+	.pill:hover,
+	.pill:focus-within,
+	.pill[data-open] {
+		width: 20rem;
+		border-radius: var(--radius-xl-value);
+		box-shadow:
+			0 0 2px var(--elevation-raised-outline),
+			0 4px 32px var(--elevation-raised-drop);
+	}
+	.pill:hover .more,
+	.pill:focus-within .more,
+	.pill[data-open] .more {
+		grid-template-rows: 1fr;
+	}
+	.pill:hover .collapsed-only,
+	.pill:focus-within .collapsed-only,
+	.pill[data-open] .collapsed-only {
+		display: none;
+	}
+	.pill:hover .expanded-only,
+	.pill:focus-within .expanded-only,
+	.pill[data-open] .expanded-only {
+		display: flex;
+	}
+	.pill:has(button:focus-visible) {
+		outline: 3px solid color-mix(in oklab, var(--ring) 50%, transparent);
 	}
 	:global(.dark .getting-started) {
 		--card: var(--brand-4);

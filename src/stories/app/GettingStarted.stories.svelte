@@ -10,7 +10,8 @@
 			docs: {
 				description: {
 					component: `The "Getting started" checklist: the first tile on the projects page, and a pill pinned at the
-top right of every project page that opens the whole list. Steps tick off as people do them in their own projects;
+top right of every project page (the next step and the count) that grows into a card with every step on hover,
+focus or a click. Steps tick off as people do them in their own projects;
 restarting onboarding clears it.`
 				},
 				story: { inline: false, iframeHeight: 420 }
