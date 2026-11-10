@@ -1,30 +1,35 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import { Badge, Button, Orb } from '@latitudelabs/design-system';
 	import { ArrowUp, Icon } from '@latitudelabs/design-system/icons';
 	import Logo from './Logo.svelte';
 
 	/**
-	 * "How Iris works": a three-step intro shown over the projects page on someone's first visit, before Lumi's
-	 * welcome. Each step has a small looping animation; Skip (or Escape) closes it at any point.
+	 * "How Iris works": Lumi introduces herself and Iris in three steps, over the projects page on someone's first
+	 * visit, before her welcome. Her orb leads each step and her line types out like one of her replies; a small
+	 * looping scene below shows what she's describing. Skip (or Escape) closes it at any point.
 	 */
 	let { onclose }: { onclose: () => void } = $props();
 
+	/** What Lumi says at each step, in her own voice. `name` labels the step's dot. */
 	const STEPS = [
 		{
-			title: 'Ask Lumi anything',
-			body: 'Type a question about your videos, or drop a video in. There are no menus to learn.'
+			name: 'Ask anything',
+			line: "Hi, I'm Lumi. Ask me anything about your videos, or just drop one in. There are no menus to learn."
 		},
 		{
-			title: 'Lumi answers in cards',
-			body: "Each answer lands as a card: a video's scenes, what viewers said, side-by-side comparisons. Her reply stays short."
+			name: 'Answers in cards',
+			line: "I answer with cards: a video's scenes, what viewers said, side-by-side comparisons. My replies stay short."
 		},
 		{
-			title: 'Cards keep up with you',
-			body: "Ask a follow-up and Lumi updates the card you're looking at, instead of piling up another one."
+			name: 'Cards keep up',
+			line: "Ask a follow-up and I'll update the card you're looking at, instead of piling up another one."
 		}
 	];
+
+	const reducedMotion =
+		typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	let step = $state(0);
 	// null, not undefined: the design system's Button has a fallback for `ref`, and binding undefined to it throws.
@@ -39,10 +44,16 @@
 		nextButton?.focus();
 	}
 
+	// The intro owns the keyboard while it's up: keys handled here are marked done (preventDefault), so the page
+	// underneath (Lumi's dock picks choices with number keys and focuses its field on Enter) leaves them alone.
 	function onkeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') return onclose();
-		if (e.key === 'ArrowRight') go(step + 1);
-		if (e.key === 'ArrowLeft') go(step - 1);
+		const onControl = (e.target as HTMLElement | null)?.closest?.('button, a');
+		if (e.key === 'Escape') onclose();
+		else if (e.key === 'ArrowRight') go(step + 1);
+		else if (e.key === 'ArrowLeft') go(step - 1);
+		else if (e.key === 'Enter' && !onControl) go(step + 1);
+		else if (!/^[1-9]$/.test(e.key) && !(e.key === 'Enter')) return;
+		if (!(e.key === 'Enter' && onControl)) e.preventDefault();
 	}
 
 	// The page underneath doesn't scroll while the intro is up.
@@ -54,14 +65,27 @@
 		return () => void (html.style.overflow = before);
 	});
 
+	// Lumi's line types out like her replies, her orb speaking until it's done.
+	let said = $state('');
+	const speaking = $derived(said.length < STEPS[step].line.length);
+	$effect(() => {
+		const line = STEPS[step].line;
+		if (reducedMotion) return void (said = line);
+		said = '';
+		let i = 0;
+		const timer = setInterval(() => {
+			said = line.slice(0, ++i);
+			if (i >= line.length) clearInterval(timer);
+		}, 22);
+		return () => clearInterval(timer);
+	});
+
 	// Step 1 types questions into the field, one after another.
 	const QUESTIONS = [
 		'What did viewers think of the trailer?',
 		'Which scene landed best?',
 		'Compare it with the teaser'
 	];
-	const reducedMotion =
-		typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 	let typed = $state(reducedMotion ? QUESTIONS[0] : '');
 	let sent = $state(false);
 	$effect(() => {
@@ -99,7 +123,7 @@
 	role="dialog"
 	aria-modal="true"
 	aria-labelledby="intro-title"
-	aria-describedby="intro-body"
+	aria-describedby="intro-line"
 	out:fade={{ duration: 250 }}
 >
 	<header class="flex items-center justify-between px-8 py-8">
@@ -108,9 +132,25 @@
 	</header>
 
 	<main class="flex flex-1 flex-col items-center justify-center gap-8 px-4 pb-16">
+		<h1 id="intro-title" class="sr-only">How Iris works</h1>
+		<!-- Lumi, speaking. The whole line is there for screen readers at once; the typed copy is for the eyes. -->
+		<div class="flex max-w-lg flex-col items-center gap-6 text-center">
+			<Orb size={72} state={speaking ? 'speaking' : 'idle'} pulse={step} label="Lumi" />
+			<p id="intro-line" class="sr-only">{STEPS[step].line}</p>
+			<!-- The full line, invisible, holds the space so nothing below moves while it types out on top. -->
+			<p class="grid text-heading" aria-hidden="true">
+				<span class="invisible col-start-1 row-start-1">{STEPS[step].line}</span>
+				<span class="col-start-1 row-start-1"
+					>{said}{#if speaking}<span
+							class="caret ml-0.5 inline-block h-6 w-px bg-foreground align-middle"
+						></span>{/if}</span
+				>
+			</p>
+		</div>
+
 		<!-- The stage: one small looping scene per step. Decorative; the text below says the same. -->
 		<div
-			class="stage relative h-64 w-full max-w-md overflow-hidden rounded-xl bg-card shadow-hairline"
+			class="stage relative h-56 w-full max-w-md overflow-hidden rounded-xl bg-card shadow-hairline"
 			aria-hidden="true"
 		>
 			{#key step}
@@ -121,7 +161,6 @@
 				>
 					{#if step === 0}
 						<div class="flex h-full flex-col items-center justify-center gap-6 px-8">
-							<Orb size={48} state={sent ? 'speaking' : 'idle'} pulse={sent} />
 							<div class="flex h-12 w-full items-center gap-2 rounded-lg bg-input pr-2 pl-4">
 								<span class="min-w-0 flex-1 truncate text-body">
 									{typed}<span class="caret ml-px inline-block h-4 w-px bg-foreground align-middle"
@@ -191,31 +230,15 @@
 			{/key}
 		</div>
 
-		<div class="flex max-w-md flex-col items-center gap-2 text-center">
-			<p class="text-caption text-muted-foreground">Step {step + 1} of {STEPS.length}</p>
-			{#key step}
-				<h1 id="intro-title" class="text-heading" in:fly={{ y: 8, duration: 300 }}>
-					{STEPS[step].title}
-				</h1>
-				<p
-					id="intro-body"
-					class="text-body-lg text-muted-foreground"
-					in:fly={{ y: 8, duration: 300, delay: 60 }}
-				>
-					{STEPS[step].body}
-				</p>
-			{/key}
-		</div>
-
 		<div class="flex items-center gap-2">
-			{#each STEPS as s, i (s.title)}
+			{#each STEPS as s, i (s.name)}
 				<button
 					type="button"
 					class={[
 						'h-2 cursor-pointer rounded-full transition-all duration-300 outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
 						i === step ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/40 hover:bg-muted-foreground'
 					]}
-					aria-label="Step {i + 1}: {s.title}"
+					aria-label="Step {i + 1} of {STEPS.length}: {s.name}"
 					aria-current={i === step ? 'step' : undefined}
 					onclick={() => go(i)}
 				></button>
@@ -227,7 +250,7 @@
 				<Button variant="ghost" onclick={() => go(step - 1)}>Back</Button>
 			{/if}
 			<Button bind:ref={nextButton} onclick={() => go(step + 1)}
-				>{last ? 'Get started' : 'Next'}</Button
+				>{last ? "Let's go" : 'Next'}</Button
 			>
 		</div>
 	</main>

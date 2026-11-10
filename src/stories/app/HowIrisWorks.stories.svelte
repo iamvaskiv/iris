@@ -9,9 +9,10 @@
 			layout: 'fullscreen',
 			docs: {
 				description: {
-					component: `The three-step intro over the projects page on someone's first visit (and after restarting
-onboarding): Ask → Lumi answers in cards → cards keep updating, each with a small looping animation. Skip, Escape or
-Get started close it, and Lumi's welcome is waiting underneath. Arrow keys move between steps.`
+					component: `Lumi introduces herself and Iris in three steps over the projects page, on someone's first visit
+(and after restarting onboarding): her orb leads, her line types out, and a small looping scene shows what she
+describes (ask → cards → cards update). Skip, Escape or Let's go close it, and her welcome is waiting underneath.
+Arrow keys and Enter move between steps.`
 				}
 			}
 		},

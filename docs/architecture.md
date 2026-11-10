@@ -71,7 +71,8 @@ flowchart TB
 
 ## First visit
 
-Someone new first gets **How Iris works** (`HowIrisWorks.svelte`), a three-step intro over the projects page, shown
+Someone new first gets **How Iris works** (`HowIrisWorks.svelte`), Lumi introducing herself and Iris in three steps
+over the projects page (which is `inert` meanwhile), shown
 until it's finished or skipped once (the `iris_intro` cookie, so the server renders it straight away). Then they're
 greeted by Lumi on the projects page instead of the usual suggestions. The welcome is client-side (no
 model call) and remembered per device (`iris.welcomed` in localStorage). Restarting onboarding (Settings, or ⌥⇧O anywhere;
@@ -121,8 +122,8 @@ config:
 ---
 flowchart TB
     open(["Opens the projects page"]) --> introSeen{"Intro seen?<br/>(iris_intro cookie)"}
-    introSeen -- "no" --> intro["How Iris works:<br/>Ask → cards → cards update"]
-    intro -- "Skip · Escape · Get started" --> seen
+    introSeen -- "no" --> intro["How Iris works, told by Lumi:<br/>Ask → cards → cards update"]
+    intro -- "Skip · Escape · Let's go" --> seen
     introSeen -- "yes" --> seen{"Welcomed on<br/>this device?"}
     seen -- "yes" --> usual["Usual greeting<br/>and suggestions"]
     seen -- "no" --> welcome["Lumi's welcome<br/>with three choices"]

@@ -110,7 +110,9 @@
 
 {#if intro}<HowIrisWorks onclose={closeIntro} />{/if}
 
+<!-- Behind the intro, the page can't take focus or clicks. -->
 <div
+	inert={intro}
 	class="min-h-dvh bg-background"
 	role="region"
 	aria-label="Projects"
