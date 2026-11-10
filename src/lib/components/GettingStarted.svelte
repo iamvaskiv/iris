@@ -70,10 +70,10 @@
 
 {#if !state.dismissed}
 	{#if variant === 'tile'}
-		<!-- `dark` scopes the dark theme to the card: every role inside (text, hints, the button) turns light-on-dark,
-		     which reads on the brand colours in either theme. -->
+		<!-- Light: a pastel wash with text tinted in the brand's dark red and purple. Dark: the brand colours at full
+		     strength under the dark theme's light text. See the styles below. -->
 		<Card.Root
-			class={cn('getting-started dark relative isolate h-72 overflow-hidden bg-brand-4', className)}
+			class={cn('getting-started relative isolate h-72 overflow-hidden', className)}
 			aria-labelledby="getting-started-title"
 		>
 			<!-- The brand colours (Lumi's orb) across the whole card: onboarding is a brand moment. They drift while the
@@ -117,6 +117,33 @@
 {/if}
 
 <style>
+	/* Light: the card's roles retinted for the pastel wash, so the design-system parts inside (title, steps, hints,
+	   button) follow without per-element colours. Dark keeps the dark theme's roles on the full-strength colours.
+	   Candidate for the design system: an "on brand" tint. */
+	:global(.getting-started) {
+		--card: var(--neutral-0);
+		--foreground: var(--brand-4);
+		--card-foreground: var(--brand-4);
+		--muted-foreground: color-mix(in oklab, var(--brand-1) 80%, transparent);
+		--secondary: color-mix(in oklab, var(--brand-4) 10%, transparent);
+		--secondary-foreground: var(--brand-4);
+		--border: color-mix(in oklab, var(--brand-4) 25%, transparent);
+	}
+	.blob {
+		opacity: 0.45;
+	}
+	:global(.dark .getting-started) {
+		--card: var(--brand-4);
+		--foreground: var(--neutral-0);
+		--card-foreground: var(--neutral-0);
+		--muted-foreground: color-mix(in oklab, var(--neutral-0) 75%, transparent);
+		--secondary: color-mix(in oklab, var(--neutral-0) 15%, transparent);
+		--secondary-foreground: var(--neutral-0);
+		--border: color-mix(in oklab, var(--neutral-0) 40%, transparent);
+	}
+	:global(.dark) .blob {
+		opacity: 1;
+	}
 	.blob {
 		animation: 4s ease-in-out infinite alternate paused;
 		transition: scale 0.6s ease-out;
