@@ -29,8 +29,8 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   missing).
 - **Example project** ("Example: Inside Out 2"): one shared project with the Inside Out 2 trailer's video card,
   viewer insights and study already in it, so people see Lumi's cards before uploading anything. It opens with Lumi
-  explaining the cards and three questions to try; Lumi says what each new card is for while there. Its tile says
-  **Example**, it keeps its name, and it's made again on the next visit if someone deletes it. Lumi on the projects
+  explaining the cards and three questions to try; Lumi says what each new card is for while there. Its tile has a bright **Demo**
+  badge and glows in the brand colours, it keeps its name, and it's made again on the next visit if someone deletes it. Lumi on the projects
   page can open it too ("show me an example").
 
 ## 2026-10-30

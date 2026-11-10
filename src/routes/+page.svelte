@@ -140,7 +140,10 @@
 				{#each data.projects as project (project.id)}
 					<a
 						href="/projects/{project.id}"
-						class="group rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+						class={[
+							'group rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+							project.example && 'demo'
+						]}
 					>
 						<Card.Root class="relative h-72 overflow-hidden transition-shadow hover:shadow-raised">
 							<Card.Header>
@@ -151,7 +154,10 @@
 									<div class="mt-2"><Badge variant="success">Fielding in progress</Badge></div>
 								{/if}
 								{#if project.example}
-									<Card.Action><Badge variant="secondary">Example</Badge></Card.Action>
+									<!-- Bright like the checklist: the brand colours, with the dark theme's light text scoped to it. -->
+									<Card.Action
+										><Badge variant="secondary" class="dark bg-brand">Demo</Badge></Card.Action
+									>
 								{:else if project.status}
 									<Card.Action><Badge variant="secondary">{project.status}</Badge></Card.Action>
 								{/if}
@@ -200,3 +206,28 @@
 		</section>
 	</main>
 </div>
+
+<style>
+	/* The demo project glows in the brand colours, to stand out from the person's own projects. */
+	.demo {
+		box-shadow:
+			0 0 0 1px color-mix(in oklab, var(--brand-2) 22%, transparent),
+			0 0 28px -6px color-mix(in oklab, var(--brand-2) 55%, transparent);
+		transition: box-shadow 0.3s ease-out;
+	}
+	.demo:hover {
+		box-shadow:
+			0 0 0 1px color-mix(in oklab, var(--brand-2) 30%, transparent),
+			0 0 40px -4px color-mix(in oklab, var(--brand-3) 60%, transparent);
+	}
+	:global(.dark) .demo {
+		box-shadow:
+			0 0 0 1px color-mix(in oklab, var(--brand-2) 40%, transparent),
+			0 0 32px -4px color-mix(in oklab, var(--brand-2) 60%, transparent);
+	}
+	:global(.dark) .demo:hover {
+		box-shadow:
+			0 0 0 1px color-mix(in oklab, var(--brand-2) 50%, transparent),
+			0 0 44px -2px color-mix(in oklab, var(--brand-3) 65%, transparent);
+	}
+</style>
