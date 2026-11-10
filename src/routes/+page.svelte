@@ -9,7 +9,7 @@
 	import { onMount } from 'svelte';
 	import { isOnboarding, markIntroSeen } from '#lib/onboarding.js';
 	import IntroScene from '#lib/components/IntroScene.svelte';
-	import { INTRO_PAUSE, INTRO_STEPS } from '#lib/intro.js';
+	import { INTRO_STEPS } from '#lib/intro.js';
 	import {
 		markWelcomed,
 		maybeIntro,
@@ -41,17 +41,10 @@
 		if (maybeWelcome() && !data.onboarding) invalidateAll();
 	}
 
-	/** Moves through the intro: Lumi "thinks" for a moment before each next line, like a real reply; Back is instant. */
-	async function goIntro(to: number) {
-		const from = workspaceChat.introStep;
-		if (from === null || thinking || to < 0) return;
+	/** Moves through the intro. Scripted, so each step shows straight away (no thinking). */
+	function goIntro(to: number) {
+		if (workspaceChat.introStep === null || to < 0) return;
 		if (to >= INTRO_STEPS.length) return endIntro();
-		if (to > from) {
-			thinking = true;
-			await new Promise((r) => setTimeout(r, INTRO_PAUSE));
-			thinking = false;
-			if (workspaceChat.introStep !== from) return;
-		}
 		showIntroStep(to);
 	}
 
@@ -161,7 +154,7 @@
 				{:else}
 					<Button variant="ghost" onclick={endIntro}>Skip</Button>
 				{/if}
-				<Button disabled={thinking} onclick={() => goIntro(introStep + 1)}
+				<Button onclick={() => goIntro(introStep + 1)}
 					>{introStep === INTRO_STEPS.length - 1 ? 'Get started' : 'Next'}</Button
 				>
 			</div>

@@ -18,6 +18,3 @@ export const INTRO_STEPS = [
 			"**Cards keep up with you**\n\nAsk a follow-up and Lumi updates the card you're looking at, instead of piling up another one."
 	}
 ];
-
-/** How long Lumi "thinks" before each next line, like a real reply. */
-export const INTRO_PAUSE = 500;

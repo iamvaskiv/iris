@@ -9,8 +9,8 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 **Onboarding**
 
 - **How Iris works**: on your first visit (and after restarting onboarding), a fully scripted intro plays in Lumi's
-  own dock on the projects page, before her welcome, with her orb, reply animation and a moment of "thinking" before
-  each next step: **Ask Lumi anything**, **Lumi answers in cards** and **Cards keep up with you**, each with a line
+  own dock on the projects page, before her welcome, with her orb and reply animation, each step
+  showing straight away (no thinking, it's scripted): **Ask Lumi anything**, **Lumi answers in cards** and **Cards keep up with you**, each with a line
   explaining it. In place of her input: a small looping scene right under her line (a question typing itself, cards
   popping in, a card updating instead of a second one appearing; still with reduced motion), step dots, and **Skip**
   / **Back** and **Next** / **Get started**. Arrow keys move through it and Escape skips. Shown once per browser; her
