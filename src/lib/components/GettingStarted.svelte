@@ -26,8 +26,9 @@
 	const next = $derived(STEPS.find((s) => !state.done.includes(s.id)));
 </script>
 
-{#snippet list()}
-	<ol class="flex flex-col gap-2">
+<!-- `fill`: in the tile, the steps spread out to fill the card's height. -->
+{#snippet list(fill = false)}
+	<ol class={['flex flex-col', fill ? 'flex-1 justify-between' : 'gap-2']}>
 		{#each STEPS as step (step.id)}
 			{@const done = state.done.includes(step.id)}
 			<li class="flex gap-2">
@@ -78,8 +79,8 @@
 					>{allDone ? "You're all set" : 'Getting started'}</Card.Title
 				>
 			</Card.Header>
-			<Card.Content class="flex flex-col gap-4">
-				{#if allDone}{@render finished()}{:else}{@render list()}{/if}
+			<Card.Content class="flex flex-1 flex-col gap-4">
+				{#if allDone}{@render finished()}{:else}{@render list(true)}{/if}
 			</Card.Content>
 		</Card.Root>
 	{:else}
