@@ -30,3 +30,17 @@ export async function whileRestarting(navigate: () => Promise<unknown>) {
 		restarting = false;
 	}
 }
+
+/**
+ * "How Iris works" (HowIrisWorks.svelte): shown over the projects page until it's finished or skipped once, then
+ * Lumi's welcome is waiting underneath. A cookie too, so the server renders it straight away on a first visit.
+ */
+export const INTRO_COOKIE = 'iris_intro';
+
+export function markIntroSeen() {
+	document.cookie = `${INTRO_COOKIE}=seen; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+}
+
+export function resetIntro() {
+	document.cookie = `${INTRO_COOKIE}=; path=/; max-age=0; samesite=lax`;
+}

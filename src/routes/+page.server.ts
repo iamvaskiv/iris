@@ -3,7 +3,7 @@ import type { StudyData } from '#lib/cards/types.js';
 import { thumbnail } from '#lib/server/assets.js';
 import { refreshCardData } from '#lib/server/card-data.js';
 import { EXAMPLE_ID, ensureExample } from '#lib/server/example.js';
-import { ONBOARDING_COOKIE } from '#lib/onboarding.js';
+import { INTRO_COOKIE, ONBOARDING_COOKIE } from '#lib/onboarding.js';
 import { projects } from '#lib/server/projects.js';
 import type { PageServerLoad } from './$types';
 
@@ -17,6 +17,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	await ensureExample();
 	return {
 		onboarding,
+		/** First visit (or a restart): "How Iris works" comes before anything else. */
+		intro: cookies.get(INTRO_COOKIE) !== 'seen',
 		projects: await Promise.all(
 			(await projects.list())
 				.filter((p) => !onboarding || p.id === EXAMPLE_ID)

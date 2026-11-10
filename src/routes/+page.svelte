@@ -7,7 +7,8 @@
 	import CardPreview from '#lib/components/CardPreview.svelte';
 	import GettingStarted from '#lib/components/GettingStarted.svelte';
 	import { onMount } from 'svelte';
-	import { isOnboarding } from '#lib/onboarding.js';
+	import { isOnboarding, markIntroSeen } from '#lib/onboarding.js';
+	import HowIrisWorks from '#lib/components/HowIrisWorks.svelte';
 	import {
 		markWelcomed,
 		maybeWelcome,
@@ -22,6 +23,17 @@
 	let thinking = $state(false);
 	let error = $state('');
 	let draft = $state('');
+
+	// "How Iris works" over the page on a first visit (and after a restart, which reloads the data).
+	// svelte-ignore state_referenced_locally
+	let intro = $state(data.intro);
+	$effect(() => {
+		if (data.intro) intro = true;
+	});
+	function closeIntro() {
+		markIntroSeen();
+		intro = false;
+	}
 
 	/** What Iris is for, offered above the input until the conversation starts. */
 	const suggestions = [
@@ -95,6 +107,8 @@
 </script>
 
 <svelte:head><title>Projects · Iris</title></svelte:head>
+
+{#if intro}<HowIrisWorks onclose={closeIntro} />{/if}
 
 <div
 	class="min-h-dvh bg-background"

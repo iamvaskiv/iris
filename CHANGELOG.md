@@ -8,6 +8,11 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 **Onboarding**
 
+- **How Iris works**: on your first visit (and after restarting onboarding), a three-step intro covers the projects
+  page before Lumi's welcome: **Ask Lumi anything** (a question types itself), **Lumi answers in cards** (her short
+  reply, then cards pop in) and **Cards keep up with you** (a follow-up updates the one card instead of adding
+  another). Small looping animations (still with reduced motion). **Skip** or Escape closes it at any point; Next,
+  Back, the dots and the arrow keys move between steps; **Get started** ends it. Shown once per browser.
 - **Lumi's welcome**: the first time someone opens the projects page, Lumi says what she does (answers with cards)
   and offers three first steps: **Show me a demo**, **Upload my own video** (opens a new project to drop it into)
   and **What can you do?** Any answer or message ends it; it's remembered per device.

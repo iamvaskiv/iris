@@ -71,7 +71,9 @@ flowchart TB
 
 ## First visit
 
-Someone new is greeted by Lumi on the projects page instead of the usual suggestions. The welcome is client-side (no
+Someone new first gets **How Iris works** (`HowIrisWorks.svelte`), a three-step intro over the projects page, shown
+until it's finished or skipped once (the `iris_intro` cookie, so the server renders it straight away). Then they're
+greeted by Lumi on the projects page instead of the usual suggestions. The welcome is client-side (no
 model call) and remembered per device (`iris.welcomed` in localStorage). Restarting onboarding (Settings, or ⌥⇧O anywhere;
 `restartOnboarding`) clears it, deletes the example (`DELETE /api/onboarding`, rebuilt fresh by the projects page load, which makes it whenever it's missing) and
 shows the welcome again.
@@ -118,7 +120,10 @@ config:
   look: classic
 ---
 flowchart TB
-    open(["Opens the projects page"]) --> seen{"Welcomed on<br/>this device?"}
+    open(["Opens the projects page"]) --> introSeen{"Intro seen?<br/>(iris_intro cookie)"}
+    introSeen -- "no" --> intro["How Iris works:<br/>Ask → cards → cards update"]
+    intro -- "Skip · Escape · Get started" --> seen
+    introSeen -- "yes" --> seen{"Welcomed on<br/>this device?"}
     seen -- "yes" --> usual["Usual greeting<br/>and suggestions"]
     seen -- "no" --> welcome["Lumi's welcome<br/>with three choices"]
     welcome -- "Show me a demo" --> load["/projects/example<br/>page load"]
@@ -138,7 +143,7 @@ flowchart TB
     classDef server stroke:#00bd32,fill:#00bd3233
     classDef ai stroke:#f424ff,fill:#f424ff33
     classDef storage stroke:#918b98,fill:#918b9833
-    class open,seen,usual,welcome,draft,show ui
+    class open,introSeen,intro,seen,usual,welcome,draft,show ui
     class load,exists,build server
     class on,off ui
     class lumi ai

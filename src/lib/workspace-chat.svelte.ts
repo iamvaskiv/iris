@@ -2,7 +2,7 @@ import { goto, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import { readLocal, writeLocal } from './local.js';
 import { resetChecklist } from './checklist.svelte.js';
-import { startOnboarding, whileRestarting } from './onboarding.js';
+import { resetIntro, startOnboarding, whileRestarting } from './onboarding.js';
 
 /** Projects-page conversation, kept for the browser session so it survives visiting a project and coming back. */
 export const workspaceChat = $state({
@@ -58,6 +58,7 @@ export async function restartOnboarding() {
 	Object.assign(workspaceChat, { history: [], reply: '', choices: [] });
 	startOnboarding();
 	resetChecklist();
+	resetIntro();
 	await fetch('/api/onboarding', { method: 'DELETE' }).catch(() => {});
 	await whileRestarting(() => (page.url.pathname === '/' ? invalidateAll() : goto('/')));
 	// Already on the projects page, its onMount won't run again.
