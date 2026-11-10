@@ -32,10 +32,12 @@ export async function whileRestarting(navigate: () => Promise<unknown>) {
 }
 
 /**
- * "How Iris works" (HowIrisWorks.svelte): shown over the projects page until it's finished or skipped once, then
- * Lumi's welcome is waiting underneath. A cookie too, so the server renders it straight away on a first visit.
+ * "How Iris works" (intro.ts): played in Lumi's dock on the projects page until it's finished or skipped once,
+ * then her welcome follows. A cookie, so the server knows to leave the project tiles out on a first visit.
  */
 export const INTRO_COOKIE = 'iris_intro';
+
+export const isIntroSeen = () => document.cookie.includes(`${INTRO_COOKIE}=seen`);
 
 export function markIntroSeen() {
 	document.cookie = `${INTRO_COOKIE}=seen; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;

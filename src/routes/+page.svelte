@@ -8,10 +8,13 @@
 	import GettingStarted from '#lib/components/GettingStarted.svelte';
 	import { onMount } from 'svelte';
 	import { isOnboarding, markIntroSeen } from '#lib/onboarding.js';
-	import HowIrisWorks from '#lib/components/HowIrisWorks.svelte';
+	import IntroScene from '#lib/components/IntroScene.svelte';
+	import { INTRO_PAUSE, INTRO_STEPS, SKIP } from '#lib/intro.js';
 	import {
 		markWelcomed,
+		maybeIntro,
 		maybeWelcome,
+		showIntroStep,
 		WELCOME,
 		workspaceChat,
 		type WorkspaceResponse
@@ -24,15 +27,30 @@
 	let error = $state('');
 	let draft = $state('');
 
-	// "How Iris works" over the page on a first visit (and after a restart, which reloads the data).
-	// svelte-ignore state_referenced_locally
-	let intro = $state(data.intro);
-	$effect(() => {
-		if (data.intro) intro = true;
-	});
-	function closeIntro() {
+	// "How Iris works" plays in Lumi's dock (see intro.ts); its scene takes the project tiles' place meanwhile. On a
+	// first visit the server already leaves the tiles out, so they don't show for a moment before it starts.
+	const introStep = $derived(workspaceChat.introStep);
+	let introEnded = $state(false);
+	const tilesHidden = $derived(introStep !== null || (data.intro && !introEnded));
+
+	/** The intro's over (finished, skipped, or the person typed something else): the welcome follows it. */
+	function endIntro() {
 		markIntroSeen();
-		intro = false;
+		introEnded = true;
+		Object.assign(workspaceChat, { introStep: null, reply: '', choices: [] });
+		if (maybeWelcome() && !data.onboarding) invalidateAll();
+	}
+
+	/** An answer to one of the intro's steps: Lumi "thinks" for a moment, like a real reply, then says the next line. */
+	async function answerIntro(message: string) {
+		const step = workspaceChat.introStep!;
+		const next = step + 1;
+		if (message === SKIP || next >= INTRO_STEPS.length) return endIntro();
+		thinking = true;
+		workspaceChat.choices = [];
+		await new Promise((r) => setTimeout(r, INTRO_PAUSE));
+		thinking = false;
+		if (workspaceChat.introStep === step) showIntroStep(next);
 	}
 
 	/** What Iris is for, offered above the input until the conversation starts. */
@@ -60,12 +78,21 @@
 	// The list can also be stale the other way: links preload the page on hover, so leaving the example (which ends
 	// onboarding) can arrive with the short list fetched just before. Either way, fetch it again.
 	onMount(() => {
+		if (maybeIntro()) return;
 		const welcomed = maybeWelcome();
 		if (welcomed ? !data.onboarding : data.onboarding && !isOnboarding()) invalidateAll();
 	});
 
 	/** Chat at the projects level: quick answers above the input; the assistant creates/opens projects only when asked. */
 	async function send(message: string) {
+		if (workspaceChat.introStep !== null) {
+			// One of the intro's answers; anything else typed ends it and goes to Lumi as usual.
+			if (INTRO_STEPS[workspaceChat.introStep].choices.includes(message))
+				return answerIntro(message);
+			markIntroSeen();
+			introEnded = true;
+			Object.assign(workspaceChat, { introStep: null, reply: '', choices: [] });
+		}
 		markWelcomed();
 		// The welcome's first two answers go straight where they say, without a round trip to Lumi.
 		if (message === WELCOME.example) {
@@ -108,11 +135,7 @@
 
 <svelte:head><title>Projects · Iris</title></svelte:head>
 
-{#if intro}<HowIrisWorks onclose={closeIntro} />{/if}
-
-<!-- Behind the intro, the page can't take focus or clicks. -->
 <div
-	inert={intro}
 	class="min-h-dvh bg-background"
 	role="region"
 	aria-label="Projects"
@@ -146,81 +169,90 @@
 			/>
 		</section>
 
-		<section class="flex flex-col gap-4" aria-labelledby="projects-title">
-			<h1 id="projects-title" class="text-center text-title text-muted-foreground">
-				Previously on Lumiere
-			</h1>
-			<div class="grid grid-cols-1 gap-8 sm:grid-cols-2">
-				<!-- First, until it's hidden: the steps from someone's first video to viewer feedback. -->
-				<GettingStarted variant="tile" />
-				{#each data.projects as project (project.id)}
-					<a
-						href="/projects/{project.id}"
-						class={[
-							'group rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
-							project.example && 'demo'
-						]}
-					>
-						<Card.Root class="relative h-72 overflow-hidden transition-shadow hover:shadow-raised">
-							<Card.Header>
-								<Card.Title>{project.name}</Card.Title>
-								{#if project.summary}<Card.Description>{project.summary}</Card.Description>{/if}
-								{#if project.fielding && !project.example}
-									<!-- Under the description: a quiz in the project is fielding (see isFielding). Not on the demo, whose study
-									     only shows sample answers. -->
-									<div class="mt-2"><Badge variant="success">Fielding in progress</Badge></div>
-								{/if}
-								{#if project.example}
-									<!-- Bright like the checklist: the brand colours, with the dark theme's light text scoped to it. -->
-									<Card.Action
-										><Badge variant="secondary" class="dark bg-brand">Demo</Badge></Card.Action
-									>
-								{:else if project.status}
-									<Card.Action><Badge variant="secondary">{project.status}</Badge></Card.Action>
-								{/if}
-							</Card.Header>
-							<!-- The latest cards peek out of the bottom, fanned like the thumbnails (the newest on top); on hover
-							     (or focus) they lift a little and fan out further. A project without cards shows its video
-							     thumbnails. -->
-							{#each project.cards as card, i (card.id)}
-								<CardPreview
-									{card}
-									project={project.studies}
-									class={[
-										'absolute top-40 shadow-raised transition-[translate,rotate] duration-300 ease-out motion-safe:group-hover:-translate-y-2 motion-safe:group-focus-visible:-translate-y-2',
-										project.cards.length === 1 &&
-											'left-1/2 -translate-x-1/2 rotate-3 motion-safe:group-hover:rotate-5 motion-safe:group-focus-visible:rotate-5',
-										project.cards.length === 2 &&
-											(i === 0
-												? 'left-1/6 -rotate-6 motion-safe:group-hover:-rotate-9 motion-safe:group-focus-visible:-rotate-9'
-												: 'left-2/5 rotate-3 motion-safe:group-hover:rotate-5 motion-safe:group-focus-visible:rotate-5')
-									]}
-								/>
-							{/each}
-							{#each project.thumbnails as src, i (src)}
-								<img
-									{src}
-									alt=""
-									class={[
-										'absolute -bottom-10 aspect-video w-48 rounded-md object-cover shadow-raised',
-										project.thumbnails.length === 1 && 'left-1/2 -translate-x-1/2 rotate-3',
-										project.thumbnails.length === 2 &&
-											(i === 0 ? 'left-1/4 -rotate-6' : 'left-1/2 rotate-3')
-									]}
-								/>
-							{/each}
-						</Card.Root>
-					</a>
-				{/each}
+		{#if introStep !== null}
+			<!-- What Lumi is describing, in a small looping scene. -->
+			<section class="flex justify-center" aria-label="How Iris works">
+				<IntroScene step={introStep} />
+			</section>
+		{:else if !tilesHidden}
+			<section class="flex flex-col gap-4" aria-labelledby="projects-title">
+				<h1 id="projects-title" class="text-center text-title text-muted-foreground">
+					Previously on Lumiere
+				</h1>
+				<div class="grid grid-cols-1 gap-8 sm:grid-cols-2">
+					<!-- First, until it's hidden: the steps from someone's first video to viewer feedback. -->
+					<GettingStarted variant="tile" />
+					{#each data.projects as project (project.id)}
+						<a
+							href="/projects/{project.id}"
+							class={[
+								'group rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+								project.example && 'demo'
+							]}
+						>
+							<Card.Root
+								class="relative h-72 overflow-hidden transition-shadow hover:shadow-raised"
+							>
+								<Card.Header>
+									<Card.Title>{project.name}</Card.Title>
+									{#if project.summary}<Card.Description>{project.summary}</Card.Description>{/if}
+									{#if project.fielding && !project.example}
+										<!-- Under the description: a quiz in the project is fielding (see isFielding). Not on the demo, whose study
+										     only shows sample answers. -->
+										<div class="mt-2"><Badge variant="success">Fielding in progress</Badge></div>
+									{/if}
+									{#if project.example}
+										<!-- Bright like the checklist: the brand colours, with the dark theme's light text scoped to it. -->
+										<Card.Action
+											><Badge variant="secondary" class="dark bg-brand">Demo</Badge></Card.Action
+										>
+									{:else if project.status}
+										<Card.Action><Badge variant="secondary">{project.status}</Badge></Card.Action>
+									{/if}
+								</Card.Header>
+								<!-- The latest cards peek out of the bottom, fanned like the thumbnails (the newest on top); on hover
+								     (or focus) they lift a little and fan out further. A project without cards shows its video
+								     thumbnails. -->
+								{#each project.cards as card, i (card.id)}
+									<CardPreview
+										{card}
+										project={project.studies}
+										class={[
+											'absolute top-40 shadow-raised transition-[translate,rotate] duration-300 ease-out motion-safe:group-hover:-translate-y-2 motion-safe:group-focus-visible:-translate-y-2',
+											project.cards.length === 1 &&
+												'left-1/2 -translate-x-1/2 rotate-3 motion-safe:group-hover:rotate-5 motion-safe:group-focus-visible:rotate-5',
+											project.cards.length === 2 &&
+												(i === 0
+													? 'left-1/6 -rotate-6 motion-safe:group-hover:-rotate-9 motion-safe:group-focus-visible:-rotate-9'
+													: 'left-2/5 rotate-3 motion-safe:group-hover:rotate-5 motion-safe:group-focus-visible:rotate-5')
+										]}
+									/>
+								{/each}
+								{#each project.thumbnails as src, i (src)}
+									<img
+										{src}
+										alt=""
+										class={[
+											'absolute -bottom-10 aspect-video w-48 rounded-md object-cover shadow-raised',
+											project.thumbnails.length === 1 && 'left-1/2 -translate-x-1/2 rotate-3',
+											project.thumbnails.length === 2 &&
+												(i === 0 ? 'left-1/4 -rotate-6' : 'left-1/2 rotate-3')
+										]}
+									/>
+								{/each}
+							</Card.Root>
+						</a>
+					{/each}
 
-				<button
-					class="flex h-72 cursor-pointer items-center justify-center gap-2 rounded-xl bg-card text-title text-muted-foreground shadow-hairline transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
-					onclick={() => newProject()}
-				>
-					<Plus class="size-4" />New
-				</button>
-			</div>
-		</section>
+					<button
+						class="flex h-72 cursor-pointer items-center justify-center gap-2 rounded-xl bg-card text-title text-muted-foreground shadow-hairline transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+						onclick={() => newProject()}
+					>
+						<Plus class="size-4" />New
+					</button>
+				</div>
+			</section>
+		{/if}
 	</main>
 </div>
 

@@ -8,14 +8,14 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 **Onboarding**
 
-- **How Iris works**: on your first visit (and after restarting onboarding), Lumi introduces herself and Iris in
-  three steps over the projects page, before her welcome. Her orb leads each step and her line types out like one of
-  her replies ("Hi, I'm Lumi. Ask me anything about your videos…", "I answer with cards…", "Ask a follow-up and I'll
-  update the card…"), with a small looping scene below: a question typing itself, cards popping in, a card updating
-  instead of a second one appearing (still with reduced motion). **Skip** or Escape closes it at any point; Next, Back,
-  the dots, the arrow keys and Enter move through it; **Let's go** ends it. The page behind can't be reached while
-  it's up. Shown once per browser. Her welcome then picks up from there: "Let's start with a video. Want to see a
-  demo first, or bring your own?"
+- **How Iris works**: on your first visit (and after restarting onboarding), Lumi introduces herself and Iris in her
+  own dock on the projects page, before her welcome: her orb, her reply animation and a moment of "thinking" before
+  each line ("Hi, I'm Lumi. Ask me anything about your videos…", "I answer with cards…", "Ask a follow-up and I'll
+  update the card…"). Answer with her choices (**Tell me more**, **Go on**, **Got it**, or **Skip the intro**; number
+  keys work as usual), or type anything to ask her straight away. A small looping scene sits where the project tiles
+  go meanwhile: a question typing itself, cards popping in, a card updating instead of a second one appearing (still
+  with reduced motion). Shown once per browser. Her welcome then picks up from there: "Let's start with a video. Want
+  to see a demo first, or bring your own?"
 - **Lumi's welcome**: the first time someone opens the projects page, Lumi says what she does (answers with cards)
   and offers three first steps: **Show me a demo**, **Upload my own video** (opens a new project to drop it into)
   and **What can you do?** Any answer or message ends it; it's remembered per device.

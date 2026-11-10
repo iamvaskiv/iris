@@ -71,9 +71,9 @@ flowchart TB
 
 ## First visit
 
-Someone new first gets **How Iris works** (`HowIrisWorks.svelte`), Lumi introducing herself and Iris in three steps
-over the projects page (which is `inert` meanwhile), shown
-until it's finished or skipped once (the `iris_intro` cookie, so the server renders it straight away). Then they're
+Someone new first gets **How Iris works** (`src/lib/intro.ts`): Lumi's lines and answers scripted through her own
+dock on the projects page, with a looping scene (`IntroScene.svelte`) where the project tiles go. It plays until it's
+finished or skipped once (the `iris_intro` cookie, so the server leaves the tiles out on a first visit). Then they're
 greeted by Lumi on the projects page instead of the usual suggestions. The welcome is client-side (no
 model call) and remembered per device (`iris.welcomed` in localStorage). Restarting onboarding (Settings, or ⌥⇧O anywhere;
 `restartOnboarding`) clears it, deletes the example (`DELETE /api/onboarding`, rebuilt fresh by the projects page load, which makes it whenever it's missing) and
@@ -122,8 +122,8 @@ config:
 ---
 flowchart TB
     open(["Opens the projects page"]) --> introSeen{"Intro seen?<br/>(iris_intro cookie)"}
-    introSeen -- "no" --> intro["How Iris works, told by Lumi:<br/>Ask → cards → cards update"]
-    intro -- "Skip · Escape · Let's go" --> seen
+    introSeen -- "no" --> intro["How Iris works, scripted in Lumi's dock:<br/>Ask → cards → cards update"]
+    intro -- "Got it · Skip the intro · typed question" --> seen
     introSeen -- "yes" --> seen{"Welcomed on<br/>this device?"}
     seen -- "yes" --> usual["Usual greeting<br/>and suggestions"]
     seen -- "no" --> welcome["Lumi's welcome<br/>with three choices"]
