@@ -10,6 +10,15 @@
 .dark {
 	--category-blue: #6b97ff; /* audit-ignore: channel blue for dark themes */
 }
+/* Bright marks for charts (bars, dots, curves), never text: a blue for characters' lanes and a red for negative
+   sentiment, as vivid as the category green, orange and magenta (the text-safe blue and the destructive red read
+   dark and muddy as marks). The same in both themes. Candidates for the design system. */
+:root {
+	--chart-blue: #4c7dff; /* audit-ignore: bright blue for chart marks, not in the design system yet */
+	--chart-red: #ff4757; /* audit-ignore: bright red for chart marks, not in the design system yet */
+}
 @theme inline {
 	--color-category-blue: var(--category-blue);
+	--color-chart-blue: var(--chart-blue);
+	--color-chart-red: var(--chart-red);
 }

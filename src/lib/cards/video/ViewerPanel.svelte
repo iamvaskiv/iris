@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Label, Select, SentimentCounts, Stat } from '@latitudelabs/design-system';
+	import { askable } from '#lib/ask-lumi.js';
 	import type { ViewerSource } from '../viewer-sources';
+	import type { VideoQuestions } from './questions';
 
 	/**
 	 * What viewers made of a video, under its summary: with more than one source, a Source picker (Lumiere's real
@@ -11,12 +13,15 @@
 		id,
 		sources,
 		source,
+		ask,
 		onpick
 	}: {
 		/** Prefix for the picker's id (the card's id). */
 		id: string;
 		sources: ViewerSource[];
 		source: ViewerSource | undefined;
+		/** Each number can ask Lumi about itself. */
+		ask?: VideoQuestions;
 		onpick: (sourceId: string) => void;
 	} = $props();
 
@@ -43,16 +48,19 @@
 {#if viewers}
 	<div class="mt-3 flex flex-wrap gap-5">
 		{#if viewers.views}<Stat
+				{@attach askable(ask?.stat('views'))}
 				variant="plain"
 				value={viewers.views.toLocaleString()}
 				label={fromStudy ? 'Views' : 'Views, last 12 months'}
 			/>{/if}
 		<Stat
+			{@attach askable(ask?.stat('responses'))}
 			variant="plain"
 			value={viewers.responses.toLocaleString()}
 			label={fromStudy ? 'Watched' : 'Responses'}
 		/>
 		{#if viewers.rating}<Stat
+				{@attach askable(ask?.stat('rating', `${viewers.rating.average} / ${viewers.rating.max}`))}
 				variant="plain"
 				value="{viewers.rating.average} / {viewers.rating.max}"
 				label="Rating, {viewers.rating.count} {fromStudy && viewers.rating.max === 10
@@ -60,7 +68,16 @@
 					: 'votes'}"
 			/>{/if}
 		{#if viewers.sentiment}
-			<Stat variant="plain" label={fromStudy ? 'Reactions' : 'Comment sentiment'}>
+			<Stat
+				{@attach askable(
+					ask?.stat(
+						'sentiment',
+						`${viewers.sentiment.positive} positive, ${viewers.sentiment.neutral} neutral and ${viewers.sentiment.negative} negative`
+					)
+				)}
+				variant="plain"
+				label={fromStudy ? 'Reactions' : 'Comment sentiment'}
+			>
 				<SentimentCounts {...viewers.sentiment} />
 			</Stat>
 		{/if}

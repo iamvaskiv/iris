@@ -11,8 +11,9 @@
 		parameters: {
 			docs: {
 				description: {
-					component: `A video with its analysis, as a wide card: the video across it, then its title and summary,
-then Scenes, Characters, Themes and Brands (all open; each closes), each a design-system \`Card.Section\`. In the app
+					component: `A video with its analysis, as a wide card: its title, summary and viewer numbers on the left
+and a smaller video on the right, then Overview's Scenes, Characters, Themes and Brands (all open; each closes), each a
+design-system \`Card.Section\`. In the app
 the server fills \`card.data\` (see \`src/lib/server/video-card.ts\`); here it's a captured project. The stream is
 left out, so there's no Play button.
 
@@ -20,13 +21,19 @@ Under the video, a timeline of its scenes (click or drag to go to a moment). Pic
 where it's on screen (from Lumiere's moments, about ten seconds each) and watch from its first appearance; pick it
 again, or use the arrows, for the next one. While the video plays, its current scene is outlined.
 
-**Timeline view** (the switch under the summary) makes the card full size, with the title beside a smaller video, and
-shows everything as lanes along the video: the scenes across the top, then each character, theme and brand on its
-own lane with bars where it's on screen and its share of screen time, longest first, coloured by kind.
+Two tabs under the header (remembered on this device): **Overview**, the sections, and **Timeline**, everything as
+lanes along the video: the scenes across the top, then each character, theme and brand on its own lane with bars
+where it's on screen and its share of screen time, longest first, coloured by kind. A box beside the playhead sums up
+that moment: the scene, what's on screen, nearby comments and the rating around then; hover over the lanes to move
+it to the moment under the pointer.
+
+**Ask Lumi**: over a scene, a comment, a stat, a lane or a point on a curve, a glow follows the cursor; right-click to
+ask Lumi about that thing (the question is worded from the card's data, e.g. why sentiment dips there). Rest the
+pointer and a hint says so. Here the question shows under the card instead of being sent. The card stays wide either way.
 
 When the video was shown to an audience (\`data.viewers\`, the insights card's data): its key numbers under the
 summary (views, responses, rating, comment sentiment), a **Comments** section with each comment at its moment (click
-to play from there), and a dot per comment on the timeline in its sentiment's colour. In Timeline view, a
+to play from there), and a dot per comment on the timeline in its sentiment's colour. In the Timeline tab, a
 **Sentiment** group (a curve of how positive the comments are along the video, then lanes of positive, neutral and
 negative comments) and a **Rating** group with a curve of the average rating where ratings were given. **Source**
 switches it between Lumiere (real viewers) and each of the project's studies that shows the video and has sample
@@ -74,8 +81,8 @@ comments at their moments) and slider answers there (as ratings out of 10).`
 	>
 </Story>
 
-<Story name="Timeline view">
-	<CardFrame full
+<Story name="Timeline">
+	<CardFrame wide
 		><VideoCard
 			card={womenTalking}
 			initial={{ lanes: true, pick: { kind: 'character', index: 0 } }}
@@ -87,12 +94,12 @@ comments at their moments) and slider answers there (as ratings out of 10).`
 	<CardFrame wide><VideoCard card={withViewers} /></CardFrame>
 </Story>
 
-<Story name="Timeline view with viewer data">
-	<CardFrame full><VideoCard card={withViewers} initial={{ lanes: true }} /></CardFrame>
+<Story name="Timeline with viewer data">
+	<CardFrame wide><VideoCard card={withViewers} initial={{ lanes: true }} /></CardFrame>
 </Story>
 
 <Story name="Viewer data from a study">
-	<CardFrame full
+	<CardFrame wide
 		><VideoCard
 			card={withViewers}
 			studies={[study]}
@@ -102,7 +109,7 @@ comments at their moments) and slider answers there (as ratings out of 10).`
 </Story>
 
 <Story name="Rating along the video">
-	<CardFrame full><VideoCard card={spreadRatings} initial={{ lanes: true }} /></CardFrame>
+	<CardFrame wide><VideoCard card={spreadRatings} initial={{ lanes: true }} /></CardFrame>
 </Story>
 
 <Story name="Short clip">

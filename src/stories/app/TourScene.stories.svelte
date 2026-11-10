@@ -17,7 +17,7 @@
 	});
 </script>
 
-<Story name="1 · Video analysis" args={{ step: 1 }} />
-<Story name="2 · Viewer studies" args={{ step: 2 }} />
-<Story name="3 · Insights" args={{ step: 3 }} />
-<Story name="4 · Comparison" args={{ step: 4 }} />
+<Story name="1 · Video analysis" exportName="Step1VideoAnalysis" args={{ step: 1 }} />
+<Story name="2 · Viewer studies" exportName="Step2ViewerStudies" args={{ step: 2 }} />
+<Story name="3 · Insights" exportName="Step3Insights" args={{ step: 3 }} />
+<Story name="4 · Comparison" exportName="Step4Comparison" args={{ step: 4 }} />

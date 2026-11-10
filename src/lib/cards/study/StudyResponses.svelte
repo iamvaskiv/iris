@@ -1,21 +1,29 @@
 <script lang="ts">
 	import { Button, Kbd } from '@latitudelabs/design-system';
 	import { X } from '@latitudelabs/design-system/icons';
-	import { SCALE_MAX, stepTitle, timecode } from './question-types';
-	import type { Question, SampleResults } from '../types';
+	import { askable } from '#lib/ask-lumi.js';
+	import { SCALE_MAX, stepTitle, timecode, type FlatStep } from './question-types';
+	import type { StudyAsk } from './questions';
+	import type { SampleResults } from '../types';
 
 	/** One question's individual responses, newest first; filtered to an option when one is picked. */
 	let {
-		question,
+		step,
 		answers,
 		filter,
+		ask,
 		onclearfilter
 	}: {
-		question: Question;
+		/** The question, and where it sits (a video it pops up in). */
+		step: FlatStep;
 		answers: SampleResults['questions'][string];
 		filter: number | null;
+		/** What the responses can ask Lumi (see ask-lumi.ts). */
+		ask?: StudyAsk;
 		onclearfilter: () => void;
 	} = $props();
+
+	const question = $derived(step.q);
 
 	const people = $derived(
 		(answers.people ?? []).filter((p) => filter === null || p.option === filter)
@@ -29,7 +37,7 @@
 </script>
 
 <div class="flex items-start justify-between gap-4">
-	<div class="flex flex-col">
+	<div class="flex flex-col" {@attach askable(ask?.responses(step, filter))}>
 		<h3 class="text-body-lg font-medium">{stepTitle(question)}</h3>
 		{#if question.type === 'channel'}
 			<!-- A channel has no answers of its own: what people did there is which videos they opened. -->
@@ -57,7 +65,7 @@
 	<ul class="flex flex-col gap-5">
 		{#each people as person (person.respondent)}
 			<!-- Who answered and when, above their answer. -->
-			<li class="flex flex-col gap-1">
+			<li class="flex flex-col gap-1" {@attach askable(ask?.person(step, person))}>
 				<div class="flex justify-between gap-4 text-caption text-muted-foreground">
 					<!-- A video's viewers also say where they commented and how many stars they gave it. -->
 					<span

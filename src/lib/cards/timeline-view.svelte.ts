@@ -4,7 +4,8 @@ import type { Card, VideoCardData } from './types';
 const KEY = 'iris.video.timeline-view';
 
 /**
- * Video cards' Timeline view, on or off for all of them at once and remembered on this device.
+ * Video cards' tab: Timeline (`on`, the lanes) or Overview (the sections), for all of them at once and remembered on
+ * this device.
  */
 export const timelineView = $state({ on: false });
 
@@ -30,6 +31,3 @@ export function hasLanes(card: Card) {
 			))
 	);
 }
-
-/** How wide a video card is: full size while it shows Timeline view's lanes, wide otherwise. */
-export const videoCardSize = (card: Card) => (timelineView.on && hasLanes(card) ? 'full' : 'wide');

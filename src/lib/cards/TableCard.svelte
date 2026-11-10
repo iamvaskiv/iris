@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Table } from '@latitudelabs/design-system';
+	import { askable, quoted } from '#lib/ask-lumi.js';
 	import CardShell from './CardShell.svelte';
 	import type { Card } from './types';
 
@@ -15,6 +16,26 @@
 			)
 		)
 	);
+
+	/** What the table can ask Lumi (see ask-lumi.ts): about a row, from its cells, or how the rows compare on a column. */
+	const table = $derived(quoted(card.title));
+	function rowQuestion(row: (string | number)[]) {
+		const name = String(row[0] ?? '').trim();
+		if (!name) return null;
+		const cells = row
+			.slice(1)
+			.map((cell, c) =>
+				cell === '' || cell === undefined ? '' : `${columns[c + 1] ?? ''} ${cell}`.trim()
+			)
+			.filter(Boolean);
+		return cells.length && numeric.slice(1).some(Boolean)
+			? `In ${table}, ${quoted(name)} has ${cells.join(', ')}. What's behind those numbers?`
+			: `Tell me more about ${quoted(name)} in ${table}.`;
+	}
+	const columnQuestion = (c: number) =>
+		c > 0 && columns[c] && rows.length > 1
+			? `How do the rows in ${table} compare on ${quoted(columns[c])}, and why?`
+			: null;
 </script>
 
 <CardShell {card}>
@@ -23,13 +44,15 @@
 		<Table.Header>
 			<Table.Row>
 				{#each columns as column, c (c)}
-					<Table.Head numeric={numeric[c] && c > 0}>{column}</Table.Head>
+					<Table.Head numeric={numeric[c] && c > 0} {@attach askable(columnQuestion(c))}
+						>{column}</Table.Head
+					>
 				{/each}
 			</Table.Row>
 		</Table.Header>
 		<Table.Body>
 			{#each rows as row, r (r)}
-				<Table.Row>
+				<Table.Row {@attach askable(rowQuestion(row))}>
 					{#each row as cell, c (c)}
 						<Table.Cell rowHeader={c === 0} numeric={numeric[c] && c > 0}>{cell}</Table.Cell>
 					{/each}

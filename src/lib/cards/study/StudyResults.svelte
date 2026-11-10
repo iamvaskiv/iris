@@ -3,7 +3,9 @@
 	import StudyOverview from './StudyOverview.svelte';
 	import StudyQuestions from './StudyQuestions.svelte';
 	import StudyResponses from './StudyResponses.svelte';
+	import { askable } from '#lib/ask-lumi.js';
 	import { flatSteps } from './question-types';
+	import { studyQuestions } from './questions';
 	import type { Question, SampleResults } from '../types';
 
 	/**
@@ -11,7 +13,14 @@
 	 * slides the overview off to the left (a sliver stays, to come back) and shows that question's individual responses
 	 * on the right; picking an option filters them.
 	 */
-	let { questions, results }: { questions: Question[]; results: SampleResults } = $props();
+	let {
+		title,
+		questions,
+		results
+	}: { title: string; questions: Question[]; results: SampleResults } = $props();
+
+	/** What the results can ask Lumi (see ask-lumi.ts). */
+	const ask = $derived(studyQuestions(title, results));
 
 	let focused = $state<string | null>(null);
 	let filter = $state<number | null>(null);
@@ -28,7 +37,8 @@
 		filter = null;
 	}
 
-	const question = $derived(flatSteps(questions).find((s) => s.q.id === shown)?.q);
+	const step = $derived(flatSteps(questions).find((s) => s.q.id === shown));
+	const question = $derived(step?.q);
 	const answers = $derived(shown ? results.questions[shown] : undefined);
 
 	// The panes fill the whole card (Card.Root is their positioned parent) and start their content below the header and
@@ -53,12 +63,22 @@
 />
 
 <div bind:this={stats} class="relative z-20 flex flex-wrap gap-5">
-	<Stat variant="plain" value={results.views} label="Views" />
-	<Stat variant="plain" label="Sentiment">
+	<Stat variant="plain" value={results.views} label="Views" {@attach askable(ask.stat('views'))} />
+	<Stat variant="plain" label="Sentiment" {@attach askable(ask.stat('sentiment'))}>
 		<SentimentCounts {...results.sentiment} unit="%" />
 	</Stat>
-	<Stat variant="plain" value="{results.rating}%" label="Rating, avg." />
-	<Stat variant="plain" value="{results.completion}%" label="Completion" />
+	<Stat
+		variant="plain"
+		value="{results.rating}%"
+		label="Rating, avg."
+		{@attach askable(ask.stat('rating'))}
+	/>
+	<Stat
+		variant="plain"
+		value="{results.completion}%"
+		label="Completion"
+		{@attach askable(ask.stat('completion'))}
+	/>
 </div>
 
 <!-- Three half-width panes on a track: overview | questions | responses. Focusing a question slides the track left by
@@ -81,12 +101,12 @@
 			class="flex h-full w-1/2 shrink-0 flex-col gap-4 overflow-y-auto pt-(--top) pr-4 pb-24 pl-4"
 			inert={!!focused}
 		>
-			<StudyOverview {results} />
+			<StudyOverview {results} {ask} />
 		</div>
 
 		<!-- Steps pad their own items, which lines the numbers up with the key numbers above. -->
 		<div class="h-full w-1/2 shrink-0 overflow-y-auto pt-(--top) pb-24">
-			<StudyQuestions {questions} {results} {focused} {filter} onpick={pick} />
+			<StudyQuestions {questions} {results} {focused} {filter} {ask} onpick={pick} />
 		</div>
 
 		<section
@@ -94,8 +114,8 @@
 			aria-label="Responses"
 			inert={!focused}
 		>
-			{#if question && answers}
-				<StudyResponses {question} {answers} {filter} onclearfilter={() => (filter = null)} />
+			{#if step && question && answers}
+				<StudyResponses {step} {answers} {filter} {ask} onclearfilter={() => (filter = null)} />
 			{/if}
 		</section>
 	</div>

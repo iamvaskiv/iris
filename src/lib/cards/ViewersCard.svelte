@@ -2,11 +2,13 @@
 	import { Button, Card, Label, Select, Stat } from '@latitudelabs/design-system';
 	import { Play, X } from '@latitudelabs/design-system/icons';
 	import { untrack } from 'svelte';
+	import { askable } from '#lib/ask-lumi.js';
 	import { along, ratingCurve, sentimentCurves } from './curve';
 	import { timecode } from './format';
 	import CurveChart from './timeline/CurveChart.svelte';
 	import SceneLines from './timeline/SceneLines.svelte';
 	import { TONE_DOT, toneOf } from './viewer';
+	import { viewersQuestions, type Metric } from './viewer-questions';
 	import { projectCards, viewerSources } from './viewer-sources';
 	import type { Card as CardData, ViewerData, ViewersData } from './types';
 
@@ -53,13 +55,14 @@
 		})
 	);
 	type Video = (typeof videos)[number];
+	const ask = $derived(viewersQuestions(videos));
 
 	// The key numbers, per video (from its source).
 	const total = (d: ViewerData) =>
 		d.sentiment ? d.sentiment.positive + d.sentiment.neutral + d.sentiment.negative : 0;
 	const shareText = (d: ViewerData, k: 'positive' | 'negative') =>
 		total(d) ? `${Math.round(((d.sentiment?.[k] ?? 0) / total(d)) * 100)}%` : '–';
-	const metrics: { label: string; text: (v: Video) => string }[] = [
+	const metrics: { label: Metric; text: (v: Video) => string }[] = [
 		{ label: 'Viewers', text: (v) => v.source!.viewers.responses.toLocaleString() },
 		{
 			label: 'Rating',
@@ -153,7 +156,9 @@
 							{/if}
 						</span>
 						<span class="flex min-w-0 flex-1 flex-col gap-1">
-							<span class="truncate text-body" title={v.name}>{v.name}</span>
+							<span class="truncate text-body" title={v.name} {@attach askable(ask.video(v))}
+								>{v.name}</span
+							>
 							{#if v.sources.length > 1}
 								<Label for="source-{card.id}-{i}" class="sr-only">Source for {v.name}</Label>
 								<Select.Root
@@ -192,7 +197,12 @@
 					{#if v.source}
 						<div class="grid flex-1 grid-cols-5 gap-4">
 							{#each metrics as m (m.label)}
-								<Stat variant="plain" value={m.text(v)} label={m.label} />
+								<Stat
+									variant="plain"
+									value={m.text(v)}
+									label={m.label}
+									{@attach askable(ask.stat(v, m.label))}
+								/>
 							{/each}
 						</div>
 					{:else}
@@ -258,6 +268,7 @@
 						)}
 						label="Comment sentiment along each video, by video"
 						duration={100}
+						ask={ask.sentiment}
 						midline
 					/>
 				</div>
@@ -274,13 +285,14 @@
 							)}
 							label="Average rating along each video, by video"
 							duration={100}
+							ask={ask.rating}
 						/>
 					</div>
 				{/if}
 
 				<!-- Each video's comments, a dot at each in its sentiment's colour. -->
 				{#each videos as v, i (i)}
-					<div class="flex h-10 items-center">
+					<div class="flex h-10 items-center" {@attach askable(ask.comments(v))}>
 						<span class="flex w-48 shrink-0 items-center gap-2 pr-2">
 							<span class={['size-2 shrink-0 rounded-full', v.colour.bg]} aria-hidden="true"></span>
 							<span class="truncate text-caption">{v.name}</span>
@@ -295,6 +307,7 @@
 									]}
 									style:left="{c.at}%"
 									title="{timecode(c.time)} · {c.text}"
+									{@attach askable(ask.comment(v, c))}
 								></span>
 							{/each}
 						</div>

@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { Badge, SentimentBar, Table, type Sentiment } from '@latitudelabs/design-system';
+	import { askable, quoted } from '#lib/ask-lumi.js';
 	import CardShell from './CardShell.svelte';
 	import { timecode } from './format';
-	import type { Card, ComparedVideo, ComparisonData, Insights } from './types';
+	import type { Card, ComparedVideo, ComparisonData, InsightComment, Insights } from './types';
 
 	let { card }: { card: Card } = $props();
 	const data = $derived(card.data as ComparisonData | undefined);
@@ -15,9 +16,13 @@
 	 * must match for the two to be comparable.
 	 */
 	type Diff = { of: number; format: (d: number) => string; neutral?: boolean; scale?: number };
-	/** `value` ranks numeric cells: the highest one in a row is emphasised. */
-	type Cell = { text: string; value?: number; diff?: Diff; sentiment?: Sentiment } | undefined;
-	type Row = { label: string; cells: Cell[]; empty: (v: ComparedVideo) => string };
+	/** `value` ranks numeric cells: the highest one in a row is emphasised. `comment` is a quoted comment's own. */
+	type Cell =
+		| { text: string; value?: number; diff?: Diff; sentiment?: Sentiment; comment?: InsightComment }
+		| undefined;
+	/** `kind` is what the row holds, for its questions to Lumi (see `question` below). */
+	type Kind = 'number' | 'names' | 'sentiment' | 'liked' | 'disliked' | 'question' | 'custom';
+	type Row = { label: string; cells: Cell[]; empty: (v: ComparedVideo) => string; kind: Kind };
 
 	const notAnalysed = (v: ComparedVideo) => (v.analysed ? '—' : 'Not analysed');
 	const noAudience = (v: ComparedVideo) => (v.audience ? '—' : 'No viewers yet');
@@ -40,12 +45,20 @@
 	const durationDiff = (d: number) => signed(d, timecode(Math.abs(d)));
 
 	/** A row is only shown when at least one video has a value for it. */
-	function row(label: string, cell: (v: ComparedVideo) => Cell, empty: Row['empty']): Row[] {
+	function row(
+		label: string,
+		cell: (v: ComparedVideo) => Cell,
+		empty: Row['empty'],
+		kind: Kind = 'number'
+	): Row[] {
 		const cells = videos.map(cell);
-		return cells.some((c) => c !== undefined) ? [{ label, cells, empty }] : [];
+		return cells.some((c) => c !== undefined) ? [{ label, cells, empty, kind }] : [];
 	}
-	const audience = (label: string, cell: (a: Insights, v: ComparedVideo) => Cell) =>
-		row(label, (v) => v.audience && cell(v.audience, v), noAudience);
+	const audience = (
+		label: string,
+		cell: (a: Insights, v: ComparedVideo) => Cell,
+		kind: Kind = 'number'
+	) => row(label, (v) => v.audience && cell(v.audience, v), noAudience, kind);
 
 	/** Questions asked in more than one of the videos, by their wording. */
 	const sharedQuestions = $derived.by(() => {
@@ -56,8 +69,8 @@
 		return [...asked].filter(([, n]) => n > 1).map(([question]) => question);
 	});
 
-	const quote = (c: { text: string; time: number } | undefined): Cell =>
-		c && { text: `“${c.text}” ${timecode(c.time)}` };
+	const quote = (c: InsightComment | undefined): Cell =>
+		c && { text: `“${c.text}” ${timecode(c.time)}`, comment: c };
 
 	const contentRows = $derived([
 		...row(
@@ -82,9 +95,9 @@
 					: undefined,
 			notAnalysed
 		),
-		...row('Characters', (v) => names(v.characters), notAnalysed),
-		...row('Themes', (v) => names(v.themes), notAnalysed),
-		...row('Brands', (v) => names(v.brands), notAnalysed)
+		...row('Characters', (v) => names(v.characters), notAnalysed, 'names'),
+		...row('Themes', (v) => names(v.themes), notAnalysed, 'names'),
+		...row('Brands', (v) => names(v.brands), notAnalysed, 'names')
 	]);
 
 	const audienceRows = $derived([
@@ -116,13 +129,16 @@
 					diff: { of: a.rating.average, format: decimalDiff, scale: a.rating.max }
 				}
 		),
-		...audience('Sentiment', (a) =>
-			a.sentiment && total(a.sentiment)
-				? {
-						text: `${a.sentiment.positive} · ${a.sentiment.neutral} · ${a.sentiment.negative}`,
-						sentiment: a.sentiment
-					}
-				: undefined
+		...audience(
+			'Sentiment',
+			(a) =>
+				a.sentiment && total(a.sentiment)
+					? {
+							text: `${a.sentiment.positive} · ${a.sentiment.neutral} · ${a.sentiment.negative}`,
+							sentiment: a.sentiment
+						}
+					: undefined,
+			'sentiment'
 		),
 		...audience('Positive comments', (a) =>
 			a.sentiment && total(a.sentiment)
@@ -134,22 +150,26 @@
 				: undefined
 		),
 		...sharedQuestions.flatMap((question) =>
-			audience(question, (a) => {
-				const q = a.questions.find((x) => x.question === question);
-				if (!q) return undefined;
-				if (q.average !== undefined && q.max)
-					return {
-						text: `${q.average} / ${q.max} (${q.responses})`,
-						value: q.average / q.max,
-						diff: { of: q.average, format: decimalDiff, scale: q.max }
-					};
-				const top = q.options?.[0];
-				const all = q.options?.reduce((sum, o) => sum + o.count, 0) ?? 0;
-				return top && { text: `${top.label} ${percent(top.count / all)} (${q.responses})` };
-			})
+			audience(
+				question,
+				(a) => {
+					const q = a.questions.find((x) => x.question === question);
+					if (!q) return undefined;
+					if (q.average !== undefined && q.max)
+						return {
+							text: `${q.average} / ${q.max} (${q.responses})`,
+							value: q.average / q.max,
+							diff: { of: q.average, format: decimalDiff, scale: q.max }
+						};
+					const top = q.options?.[0];
+					const all = q.options?.reduce((sum, o) => sum + o.count, 0) ?? 0;
+					return top && { text: `${top.label} ${percent(top.count / all)} (${q.responses})` };
+				},
+				'question'
+			)
 		),
-		...audience('Most liked', (a) => quote(a.liked[0])),
-		...audience('Top criticism', (a) => quote(a.disliked[0]))
+		...audience('Most liked', (a) => quote(a.liked[0]), 'liked'),
+		...audience('Top criticism', (a) => quote(a.disliked[0]), 'disliked')
 	]);
 
 	// The assistant's own rows: [label, one value per video].
@@ -157,7 +177,8 @@
 		(card.rows ?? []).map(([label, ...cells]) => ({
 			label: String(label),
 			cells: cells.map((c) => ({ text: String(c) })),
-			empty: () => '—'
+			empty: () => '—',
+			kind: 'custom' as const
 		}))
 	);
 
@@ -194,6 +215,91 @@
 		const best = Math.max(...known);
 		return known.filter((v) => v === best).length === 1 ? values.indexOf(best) : -1;
 	}
+
+	// Questions for Lumi (see ask-lumi.ts), worded from the table: each names the videos it's about.
+	const listed = (items: string[]) =>
+		items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
+	const allVideos = $derived(listed(videos.map((v) => quoted(v.name))));
+
+	/** A video's column: how it compares with the others. */
+	function videoQuestion(i: number) {
+		const others = videos.filter((_, j) => j !== i).map((v) => quoted(v.name));
+		return others.length
+			? `How does ${quoted(videos[i].name)} compare with ${listed(others)}, and what stands out?`
+			: `What stands out about ${quoted(videos[i].name)}?`;
+	}
+
+	/** A row's label: how the videos compare on it. */
+	function rowQuestion(r: Row) {
+		if (videos.length < 2) return null;
+		switch (r.kind) {
+			case 'question':
+				return `How did viewers of ${allVideos} answer ${quoted(r.label)}, and why do they differ?`;
+			case 'liked':
+				return `What did viewers like most about ${allVideos}?`;
+			case 'disliked':
+				return `What did viewers criticise most in ${allVideos}?`;
+			case 'sentiment':
+				return `How do viewers feel about ${allVideos}, and why do they differ?`;
+			default:
+				return `How do ${allVideos} compare on ${r.label.toLowerCase()}, and why?`;
+		}
+	}
+
+	/** A cell: why this video's value is what it is, against the others in its row (or the baseline). */
+	function cellQuestion(r: Row, i: number) {
+		const cell = r.cells[i];
+		if (!cell) return null;
+		const video = quoted(videos[i].name);
+		const others = videos
+			.map((v, j) => ({ v, cell: r.cells[j], j }))
+			.filter((o) => o.j !== i && o.cell) as { v: ComparedVideo; cell: NonNullable<Cell> }[];
+		const against = others.length
+			? `, against ${listed(others.map((o) => `${o.cell.text} for ${quoted(o.v.name)}`))}`
+			: '';
+		switch (r.kind) {
+			case 'liked':
+			case 'disliked': {
+				const c = cell.comment;
+				if (!c) return null;
+				return r.kind === 'liked'
+					? `The most positive comment on ${video} is ${quoted(c.text)} (at ${timecode(c.time)}). What were viewers reacting to?`
+					: `The top criticism of ${video} is ${quoted(c.text)} (at ${timecode(c.time)}). What put viewers off, and do others agree?`;
+			}
+			case 'names':
+				return others.length
+					? `How do the ${r.label.toLowerCase()} in ${video} (${cell.text}) differ from those in ${listed(others.map((o) => quoted(o.v.name)))}?`
+					: `What part do ${cell.text} play in ${video}?`;
+			case 'sentiment': {
+				const s = cell.sentiment!;
+				return `Comments on ${video} are ${s.positive} positive, ${s.neutral} neutral and ${s.negative} negative. What did viewers like and dislike${
+					others.length ? `, compared with ${listed(others.map((o) => quoted(o.v.name)))}` : ''
+				}?`;
+			}
+			case 'question':
+				return `Viewers of ${video} answered ${quoted(r.label)} with ${cell.text}${against}. Why?`;
+		}
+		const diff = difference(r, i);
+		const label = r.kind === 'custom' ? r.label : r.label.toLowerCase();
+		if (diff)
+			return `The ${label} of ${video} is ${cell.text}, ${diff.text} against ${quoted(videos[baseline].name)}. Why?`;
+		if (!others.length) return `Why is the ${label} of ${video} ${cell.text}?`;
+		const best = leader(r.cells);
+		const values = r.cells.map((c) => c?.value).filter((v) => v !== undefined);
+		const why =
+			cell.value === undefined
+				? 'What makes the difference?'
+				: i === best
+					? others.length > 1
+						? 'Why is it the highest?'
+						: 'Why is it higher?'
+					: cell.value === Math.min(...values) && values.length > 1
+						? others.length > 1
+							? 'Why is it the lowest?'
+							: 'Why is it lower?'
+						: 'What makes the difference?';
+		return `The ${label} of ${video} is ${cell.text}${against}. ${why}`;
+	}
 </script>
 
 <CardShell {card}>
@@ -214,6 +320,7 @@
 					<Table.Head class="align-top">
 						<button
 							type="button"
+							{@attach askable(videoQuestion(i))}
 							aria-pressed={i === baseline}
 							aria-label="Compare the others against {v.name}"
 							onclick={() => (chosen = i === baseline ? undefined : v.videoId)}
@@ -242,10 +349,10 @@
 			{#each rows as r (r.label)}
 				{@const best = leader(r.cells)}
 				<Table.Row>
-					<Table.Cell rowHeader>{r.label}</Table.Cell>
+					<Table.Cell rowHeader {@attach askable(rowQuestion(r))}>{r.label}</Table.Cell>
 					{#each videos as v, i (v.videoId)}
 						{@const cell = r.cells[i]}
-						<Table.Cell class="align-top">
+						<Table.Cell class="align-top" {@attach askable(cellQuestion(r, i))}>
 							{#if !cell}
 								<span class="text-muted-foreground">{r.empty(v)}</span>
 							{:else if cell.sentiment}

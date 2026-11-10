@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Card, Label, Switch } from '@latitudelabs/design-system';
+	import { Button, Card, SegmentedControl } from '@latitudelabs/design-system';
 	import { ChevronLeft, ChevronRight, Play, X } from '@latitudelabs/design-system/icons';
 	import { onMount, untrack } from 'svelte';
 	import {
@@ -12,6 +12,8 @@
 	import VideoTimeline from './VideoTimeline.svelte';
 	import VideoSections from './video/VideoSections.svelte';
 	import ViewerPanel from './video/ViewerPanel.svelte';
+	import { videoQuestions } from './video/questions';
+	import { askable, fractionAlong } from '#lib/ask-lumi.js';
 	import { toneOf } from './viewer';
 	import { projectCards, viewerSources } from './viewer-sources';
 	import { timecode } from './format';
@@ -19,7 +21,7 @@
 
 	/**
 	 * For Storybook: `studies` stands in for the project's other cards (the page shares them otherwise), and `initial`
-	 * sets how it starts: a character, theme or brand picked, Timeline view on or off (instead of what was
+	 * sets how it starts: a character, theme or brand picked, the Timeline tab or Overview (instead of what was
 	 * remembered), and which viewer data source.
 	 */
 	let {
@@ -112,17 +114,23 @@
 	}
 	const isPicked = (kind: Kind, index: number) => picked?.kind === kind && picked.index === index;
 
-	// Timeline view: everything on the card as lanes along the video, in place of its sections (remembered on this
-	// device). Coloured by kind: characters blue, themes magenta, brands orange.
+	// The Timeline tab: everything on the card as lanes along the video, in place of the Overview's sections
+	// (remembered on this device). Coloured by kind: characters blue, themes magenta, brands orange.
 	onMount(() => {
 		if (initial.lanes === undefined) loadTimelineView();
 	});
-	const lanesOn = $derived(initial.lanes ?? timelineView.on);
+	/** Storybook's starting tab, switched locally (not remembered) once someone clicks; otherwise the shared choice. */
+	let localTab = $state(untrack(() => initial.lanes));
+	const lanesOn = $derived(localTab ?? timelineView.on);
+	function pickTab(timeline: boolean) {
+		if (localTab === undefined) setTimelineView(timeline);
+		else localTab = timeline;
+	}
 	const laneGroups = $derived<LaneGroup[]>([
 		{
 			kind: 'character',
 			title: 'Characters',
-			bar: 'bg-category-blue',
+			bar: 'bg-chart-blue',
 			lanes: characters.map((c, index) => ({ ...c, sub: c.actor ?? c.role, index }))
 		},
 		{
@@ -139,7 +147,7 @@
 		}
 	]);
 	// Viewer data, when the video was shown to an audience: its key numbers under the summary, and every comment, at
-	// its moment (a section of them, dots on the timeline, and lanes in Timeline view). It comes from Lumiere (real
+	// its moment (a section of them, dots on the timeline, and lanes in the Timeline tab). It comes from Lumiere (real
 	// viewers), or one of the project's studies that shows this video (its sample results), picked with Source.
 	const sharedCards = projectCards();
 	const sources = $derived(
@@ -157,19 +165,23 @@
 	);
 
 	const hasLanes = $derived(lanesIn(card));
-	/** Timeline view is showing (it's on, and there's something to put in lanes). */
+	/** What each part of the card can ask Lumi (see ask-lumi.ts). */
+	const ask = $derived(
+		videoQuestions(card.title, data.duration ?? 0, scenes, comments, viewers?.ratings ?? [])
+	);
+	/** Go to a moment: play from there, or just move the playhead when there's no stream. */
+	const seek = (t: number) => (data.streamUrl ? play(t) : (time = t));
+	/** The Timeline tab is showing (it's picked, and there's something to put in lanes). */
 	const lanesView = $derived(lanesOn && hasLanes);
 	const appearsLabel = (item?: { appearances?: Span[] }) =>
 		presence(item?.appearances).replace(/^o/, 'O') || undefined;
 </script>
 
-<!-- Regular view: a wide card at its natural height, the video across it, then its title and summary and the
-     sections. Timeline view: full size (as tall as the page allows, below the header and behind Lumi's dock), the
-     title and summary at the top left beside a smaller video, and the lanes scrolling below them, with room at the
-     bottom (pb-32) to scroll the last ones clear of Lumi's dock. -->
-<Card.Root class={['relative', lanesView && 'h-(--card-height) min-h-100']}>
-	<Card.Content class={['flex flex-col gap-6', lanesView && 'min-h-0 flex-1']}>
-		<div class={['flex shrink-0', lanesView ? 'gap-6' : 'flex-col-reverse gap-5']}>
+<!-- The title, summary and viewer numbers on the left, a smaller video on the right with its timeline and what's
+     picked under it. Below, two tabs: Overview (the sections) and Timeline (the lanes), remembered on this device. -->
+<Card.Root>
+	<Card.Content class="flex flex-col gap-6">
+		<div class="flex flex-col-reverse gap-5 md:flex-row md:gap-6">
 			<div class="flex min-w-0 flex-1 flex-col gap-1">
 				<Card.Title>{card.title}</Card.Title>
 				{#if card.subtitle || data.duration}
@@ -178,16 +190,10 @@
 					</p>
 				{/if}
 				{#if card.body}<p class="line-clamp-6 text-body text-muted-foreground">{card.body}</p>{/if}
-				<ViewerPanel id={card.id} {sources} {source} onpick={(id) => (sourceId = id)} />
-				{#if hasLanes}
-					<div class="mt-3 flex items-center gap-2">
-						<Switch id="lanes-{card.id}" checked={lanesOn} onCheckedChange={setTimelineView} />
-						<Label for="lanes-{card.id}" class="text-caption">Timeline view</Label>
-					</div>
-				{/if}
+				<ViewerPanel id={card.id} {sources} {source} {ask} onpick={(id) => (sourceId = id)} />
 			</div>
 			<!-- The video, with its timeline and what's picked under it. -->
-			<div class={['flex shrink-0 flex-col gap-2', lanesView ? 'w-2/5 max-w-lg' : 'w-full']}>
+			<div class="flex w-full shrink-0 flex-col gap-2 md:w-2/5 md:max-w-sm">
 				{#if playing && data.streamUrl}
 					<!-- svelte-ignore a11y_media_has_caption -->
 					<video
@@ -214,6 +220,7 @@
 						{#if data.streamUrl}
 							<Button
 								variant="secondary"
+								size="sm"
 								onclick={() => play()}
 								class="absolute top-1/2 left-1/2 -translate-1/2 shadow-raised"
 							>
@@ -224,7 +231,8 @@
 				{/if}
 				{#if data.duration}
 					<div class="flex flex-col gap-1">
-						{#if !lanesView}
+						<!-- Ask about the moment under the pointer. -->
+						<div {@attach askable((e, el) => ask.moment(fractionAlong(e, el) * data.duration!))}>
 							<VideoTimeline
 								duration={data.duration}
 								{time}
@@ -233,9 +241,9 @@
 								marks={comments}
 								label={pickedItem &&
 									`${pickedItem.name}: ${appearsLabel(pickedItem)?.toLowerCase()}`}
-								onseek={(t) => (data.streamUrl ? play(t) : (time = t))}
+								onseek={seek}
 							/>
-						{/if}
+						</div>
 						<!-- What's picked, and stepping through where it appears. -->
 						{#if pickedItem}
 							<div class="flex items-center gap-1 text-caption">
@@ -273,36 +281,46 @@
 			</div>
 		</div>
 
-		<div
-			class={[
-				'flex flex-col gap-5',
-				lanesView && '-mx-1 min-h-0 flex-1 overflow-y-auto px-1 pb-32'
-			]}
-		>
-			{#if lanesView}
-				<VideoLanes
-					duration={data.duration!}
-					{time}
-					{scenes}
-					groups={laneGroups}
-					{comments}
-					ratings={viewers?.ratings}
-					{picked}
-					onseek={(t) => (data.streamUrl ? play(t) : (time = t))}
-					onpick={pick}
-				/>
-			{:else}
-				<VideoSections
-					{data}
-					{comments}
-					{reactions}
-					{currentScene}
-					{isPicked}
-					{appearsLabel}
-					onplay={play}
-					onpick={pick}
-				/>
-			{/if}
-		</div>
+		<!-- Overview (the sections) or Timeline (everything as lanes along the video), when there's something to put in
+		     lanes. -->
+		{#if hasLanes}
+			<SegmentedControl
+				aria-label="View"
+				class="-mb-2"
+				options={[
+					{ value: 'overview', label: 'Overview' },
+					{ value: 'timeline', label: 'Timeline' }
+				]}
+				value={lanesView ? 'timeline' : 'overview'}
+				onValueChange={(v) => pickTab(v === 'timeline')}
+			/>
+		{/if}
+
+		{#if lanesView}
+			<VideoLanes
+				duration={data.duration!}
+				{time}
+				{scenes}
+				groups={laneGroups}
+				{comments}
+				ratings={viewers?.ratings}
+				{picked}
+				{ask}
+				onseek={seek}
+				onpick={pick}
+			/>
+		{:else}
+			<VideoSections
+				{data}
+				{comments}
+				{reactions}
+				{currentScene}
+				{isPicked}
+				{appearsLabel}
+				{ask}
+				onplay={play}
+				onpick={pick}
+			/>
+		{/if}
 	</Card.Content>
 </Card.Root>

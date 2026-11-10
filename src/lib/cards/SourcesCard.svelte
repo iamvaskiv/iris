@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { Card, Stat } from '@latitudelabs/design-system';
+	import { askable } from '#lib/ask-lumi.js';
 	import { along, ratingCurve, sceneSegments, sentimentCurves } from './curve';
 	import { timecode } from './format';
 	import CurveChart from './timeline/CurveChart.svelte';
 	import SceneBlocks from './timeline/SceneBlocks.svelte';
 	import SceneLines from './timeline/SceneLines.svelte';
 	import { TONE_DOT, toneOf } from './viewer';
+	import { sourcesQuestions, type Metric } from './viewer-questions';
 	import { projectCards, viewerSources, type ViewerSource } from './viewer-sources';
 	import type { Card as CardData, SourcesData } from './types';
 
@@ -46,7 +48,7 @@
 		const v = share(s, k);
 		return v === undefined ? '–' : `${Math.round(v)}%`;
 	};
-	const metrics: { label: string; text: (s: Source) => string }[] = [
+	const metrics: { label: Metric; text: (s: Source) => string }[] = [
 		{ label: 'Viewers', text: (s) => s.viewers.responses.toLocaleString() },
 		{
 			label: 'Rating',
@@ -70,6 +72,7 @@
 	);
 	const ratings = $derived(sources.map((s) => ratingCurve(s.viewers.ratings ?? [], duration)));
 	const segments = $derived(sceneSegments(data.scenes ?? [], duration));
+	const ask = $derived(sourcesQuestions(data.videoName ?? card.title, segments, sources));
 </script>
 
 <Card.Root>
@@ -98,7 +101,7 @@
 					<span class="flex w-48 shrink-0 items-start gap-2 pt-0.5">
 						<span class={['mt-1.5 size-2.5 shrink-0 rounded-full', s.colour.bg]} aria-hidden="true"
 						></span>
-						<span class="flex min-w-0 flex-col">
+						<span class="flex min-w-0 flex-col" {@attach askable(ask.source(s))}>
 							<span class="truncate text-body">{s.name}</span>
 							<span class="text-caption text-muted-foreground"
 								>{s.kind === 'lumiere' ? 'Real viewers' : 'Sample data'}</span
@@ -107,7 +110,12 @@
 					</span>
 					<div class="grid flex-1 grid-cols-5 gap-4">
 						{#each metrics as m (m.label)}
-							<Stat variant="plain" value={m.text(s)} label={m.label} />
+							<Stat
+								variant="plain"
+								value={m.text(s)}
+								label={m.label}
+								{@attach askable(ask.stat(s, m.label))}
+							/>
 						{/each}
 					</div>
 				</li>
@@ -121,7 +129,7 @@
 
 				<div class="flex h-10 items-center">
 					<span class="w-48 shrink-0 text-caption text-muted-foreground">Scenes</span>
-					<SceneBlocks {segments} {duration} />
+					<SceneBlocks {segments} {duration} ask={ask.scene} />
 				</div>
 
 				<div class="flex h-24 items-center">
@@ -133,6 +141,7 @@
 						curves={sentiment.map((paths, i) => ({ paths, stroke: sources[i].colour.stroke }))}
 						label="Comment sentiment along the video, by source"
 						{duration}
+						ask={ask.sentiment}
 						midline
 					/>
 				</div>
@@ -149,13 +158,14 @@
 							)}
 							label="Average rating along the video, by source"
 							{duration}
+							ask={ask.rating}
 						/>
 					</div>
 				{/if}
 
 				<!-- Each source's comments, a dot at each in its sentiment's colour. -->
 				{#each sources as s (s.id)}
-					<div class="flex h-10 items-center">
+					<div class="flex h-10 items-center" {@attach askable(ask.comments(s))}>
 						<span class="flex w-48 shrink-0 items-center gap-2">
 							<span class={['size-2 shrink-0 rounded-full', s.colour.bg]} aria-hidden="true"></span>
 							<span class="truncate text-caption">{s.name}</span>
@@ -172,6 +182,7 @@
 									]}
 									style:left="{percent(c.time)}%"
 									title="{timecode(c.time)} · {c.text}"
+									{@attach askable(ask.comment(s, c))}
 								></span>
 							{/each}
 						</div>

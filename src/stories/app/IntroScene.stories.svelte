@@ -18,6 +18,6 @@ a question typing itself, her cards popping in, a card updating instead of a sec
 	});
 </script>
 
-<Story name="1 · Ask anything" args={{ step: 0 }} />
-<Story name="2 · Answers in cards" args={{ step: 1 }} />
-<Story name="3 · Cards keep up" args={{ step: 2 }} />
+<Story name="1 · Ask anything" exportName="Step1AskAnything" args={{ step: 0 }} />
+<Story name="2 · Answers in cards" exportName="Step2AnswersInCards" args={{ step: 1 }} />
+<Story name="3 · Cards keep up" exportName="Step3CardsKeepUp" args={{ step: 2 }} />

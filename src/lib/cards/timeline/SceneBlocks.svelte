@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { askable } from '#lib/ask-lumi.js';
 	import { along } from '../curve';
 	import { timecode } from '../format';
 
@@ -6,10 +7,13 @@
 	let {
 		segments,
 		duration,
+		ask,
 		onseek
 	}: {
 		segments: { title: string; start: number; end: number }[];
 		duration: number;
+		/** The question for Lumi about a scene, by its index (see ask-lumi.ts). */
+		ask?: (index: number) => string | null | undefined;
 		onseek?: (time: number) => void;
 	} = $props();
 </script>
@@ -18,6 +22,7 @@
 	{#each segments as s, i (i)}
 		<svelte:element
 			this={onseek ? 'button' : 'div'}
+			{@attach askable(ask?.(i))}
 			type={onseek ? 'button' : undefined}
 			role={onseek ? undefined : 'presentation'}
 			class={[

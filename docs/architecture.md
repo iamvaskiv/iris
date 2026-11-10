@@ -196,6 +196,49 @@ sequenceDiagram
 
 Signed media URLs expire, so page loads rebuild video and comparison card data; insights come from the cache.
 
+## Ask Lumi from a card
+
+Anything on a card can offer Lumi a question about itself. Cards mark elements with
+`{@attach askable((e, el) => question)}` (`src/lib/ask-lumi.ts`); the question is worked out from the card's own data
+at the right-click, so a chart asks about the moment under the pointer ("Viewers' comments turn negative around 1:00
+(in “Meet the New Emotions”) in “Inside Out 2 trailer”. What happened there, and why…?"). The video card's wording
+lives in `src/lib/cards/video/questions.ts`. One `AskLumi` layer per page (`src/lib/components/AskLumi.svelte`)
+watches the pointer, shows the glow (and, once the pointer rests, a "Right-click to ask Lumi" hint), and on a
+right-click hands the question to the page's `ask`, the same path as a typed message. Storybook's card frame has the layer too and shows the question instead of sending it.
+
+```mermaid
+---
+config:
+  look: classic
+---
+sequenceDiagram
+    participant U as User
+    box rgba(76,125,255,0.15) Browser
+        participant E as Marked element (on a card)
+        participant L as AskLumi layer
+        participant P as Project page
+    end
+    box rgba(0,189,50,0.15) SvelteKit server
+        participant C as /api/chat
+    end
+    box rgba(244,36,255,0.15) AI
+        participant A as Lumi
+    end
+    U->>L: pointer moves over the card
+    L->>E: innermost askable element under the pointer?
+    L-->>U: soft glow by the cursor
+    opt pointer rests (1.4 s)
+        L-->>U: hint "Right-click to ask Lumi"
+    end
+    U->>L: right-click
+    L->>E: question at this pointer position
+    E-->>L: question worded from the card's data
+    L->>P: ask(question) (no browser menu)
+    P->>C: message, as if typed
+    C->>A: chat turn
+    A-->>P: reply and card operations
+```
+
 ## Editing a study
 
 A study's steps are questions (open, multiple choice, slider), videos and channels. A video step holds its own

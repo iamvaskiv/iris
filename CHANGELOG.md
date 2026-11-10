@@ -51,6 +51,30 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   badge and glows in the brand colours, it keeps its name (renamed from "Example" to "Demo" everywhere people read it), and it's made again on the next visit if someone deletes it. Lumi on the projects
   page can open it too ("show me a demo").
 
+**Cards**
+
+- **Video card, one layout**: the title, summary and viewer numbers sit on the left and a smaller video (with its
+  timeline and what's picked) on the right, instead of the video stretching across the card. The **Timeline view**
+  switch is now two tabs under the header, **Overview** (the sections) and **Timeline** (the lanes), and the card
+  stays wide in both instead of going full size. Still remembered on this device.
+- **Brighter timeline colours**: in a video card's Timeline tab, the sentiment curve is green above the line and red
+  below it, the average rating is a magenta curve, comment dots are a bright green, grey and red (on the video's
+  timeline bar and the viewers and sources cards too), and characters' lanes a brighter blue.
+- **What's happening now, in the Timeline tab**: a small box beside the playhead sums up that moment: the time and
+  scene, which characters, themes and brands are on screen, viewers' comments within five seconds (how many, by
+  sentiment, and the nearest one quoted) and the rating given around then. It follows the line as the video plays or
+  you click a lane, flips to the line's left past the middle, and moves down with you as you scroll the lanes.
+  Hovering anywhere over the lanes moves the line (and the box, next to the pointer) to the moment under it, with a
+  faint line where the video really is; click to go there. The names column beside the lanes is a fifth wider.
+- **Ask Lumi from a card**: over something on a card you can ask about (a scene, a dip in the sentiment curve, a
+  comment, a character's lane, a rating), a soft glow in Lumi's colours follows the cursor; right-click to ask Lumi
+  about it (instead of the browser's menu). Rest the pointer for a moment and a hint says so. The question comes from
+  what you're pointing at: on the sentiment curve where comments
+  turn negative, "Viewers' comments turn negative around 1:00 (in “Meet the New Emotions”) in “Inside Out 2 trailer”.
+  What happened there, and why did they react that way?" Clicking the thing itself still does what it did (jump the
+  video, pick a character). On the video card's Timeline and Overview tabs and its viewer numbers, and the other
+  cards. The Timeline's summary box now hangs just below the pointer, leaving room for the hint above.
+
 ## 2026-10-30
 
 **Cards**

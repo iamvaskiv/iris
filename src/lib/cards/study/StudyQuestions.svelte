@@ -9,6 +9,8 @@
 		stepTitle,
 		typeColor
 	} from './question-types';
+	import { askable } from '#lib/ask-lumi.js';
+	import { childAt, type StudyAsk } from './questions';
 	import type { Question, SampleResults } from '../types';
 
 	/**
@@ -20,6 +22,7 @@
 		results,
 		focused,
 		filter,
+		ask,
 		onpick
 	}: {
 		questions: Question[];
@@ -27,6 +30,8 @@
 		/** The open question's id, and the option its responses are filtered to. */
 		focused: string | null;
 		filter: number | null;
+		/** What the answers can ask Lumi (see ask-lumi.ts). */
+		ask?: StudyAsk;
 		onpick: (id: string, option?: number) => void;
 	} = $props();
 
@@ -55,6 +60,13 @@
 <Steps
 	aria-label="Answers per question"
 	{@attach extendSteps(steps)}
+	{@attach askable(
+		ask &&
+			((e, el) => {
+				const step = steps[childAt(e, el)];
+				return step && ask.resultStep(step);
+			})
+	)}
 	class="gap-4"
 	current={steps.findIndex((s) => s.q.id === focused)}
 	onselect={(i: number) => onpick(steps[i].q.id)}
@@ -77,13 +89,26 @@
 				shares={(q.options ?? []).map((_, k) => percent(a?.counts?.[k] ?? 0, a?.responses ?? 0))}
 				selected={focused === q.id ? filter : null}
 				onselect={(_: string, k: number) => onpick(q.id, k)}
+				{@attach askable(
+					ask &&
+						((e, el) => {
+							const k = childAt(e, el, '[data-slot="choice"]');
+							return k >= 0 && ask.option(steps[i], k);
+						})
+				)}
 			/>
 		{:else if q.type === 'video'}
 			{@const [positive = 0, neutral = 0, negative = 0] = a?.counts ?? []}
-			<SentimentBar {positive} {neutral} {negative} label="Reactions:" />
+			<SentimentBar
+				{positive}
+				{neutral}
+				{negative}
+				label="Reactions:"
+				{@attach askable(ask?.reactions(steps[i]))}
+			/>
 		{:else if q.type === 'scale'}
 			{@const avg = average(a?.counts)}
-			<div class="flex items-center gap-4">
+			<div class="flex items-center gap-4" {@attach askable(ask?.scale(steps[i]))}>
 				<Progress
 					class="flex-1"
 					value={avg - SCALE_MIN}
@@ -97,7 +122,12 @@
 		{:else if a?.people?.length}
 			<ul class="flex flex-col gap-1" aria-label="Some answers to question {steps[i].number}">
 				{#each a.people.slice(0, 3) as person (person.respondent)}
-					<li class="text-body text-muted-foreground">“{person.text}”</li>
+					<li
+						class="text-body text-muted-foreground"
+						{@attach askable(ask?.person(steps[i], person))}
+					>
+						“{person.text}”
+					</li>
 				{/each}
 			</ul>
 		{/if}

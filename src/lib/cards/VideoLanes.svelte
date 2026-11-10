@@ -34,14 +34,18 @@
 	import { timecode } from './format';
 	import CurveChart from './timeline/CurveChart.svelte';
 	import SceneBlocks from './timeline/SceneBlocks.svelte';
+	import PlayheadSummary from './timeline/PlayheadSummary.svelte';
 	import SceneLines from './timeline/SceneLines.svelte';
 	import { TONE_DOT, initials } from './viewer';
+	import { askable, fractionAlong } from '#lib/ask-lumi.js';
+	import type { VideoQuestions } from './video/questions';
 
 	/**
-	 * The video as lanes (Timeline view): the scenes across the top, viewers' comments by sentiment (positive, neutral and negative,
+	 * The video as lanes (the card's Timeline tab): the scenes across the top, viewers' comments by sentiment (positive, neutral and negative,
 	 * when it was shown to an audience; click one to go to it), then a lane for each character, theme and brand
 	 * with bars where it's on screen, longest screen time first. Scene boundaries and the playhead run through every
-	 * lane. Click a lane to go to that moment (`onseek`); click a name to pick it (`onpick`, as on the card).
+	 * lane, with a box beside the playhead summing up that moment. Click a lane to go to that moment (`onseek`); click a
+	 * name to pick it (`onpick`, as on the card).
 	 */
 	let {
 		duration,
@@ -51,6 +55,7 @@
 		comments = [],
 		ratings = [],
 		picked,
+		ask,
 		onseek,
 		onpick
 	}: {
@@ -62,6 +67,8 @@
 		/** Star ratings, where in the video they were given. */
 		ratings?: { time: number; value: number; max: number; min?: number }[];
 		picked: { kind: LaneGroup['kind']; index: number } | null;
+		/** What each part can ask Lumi (see ask-lumi.ts). */
+		ask?: VideoQuestions;
 		onseek: (time: number) => void;
 		onpick: (kind: LaneGroup['kind'], index: number) => void;
 	} = $props();
@@ -99,6 +106,57 @@
 		{ key: 'negative', label: 'Negative', dot: TONE_DOT.negative }
 	] as const;
 
+	// Hovering over the lanes moves the playhead (and its summary) to the moment under the pointer, the box just below
+	// the pointer (Ask Lumi's hint goes above it); the real position stays as a faint line, and clicking goes there. Otherwise the box stays near the top
+	// of whatever part of the lanes is in view as they scroll.
+	let root = $state<HTMLElement>();
+	let track = $state<HTMLElement>();
+	let hover = $state<{ time: number; y: number } | null>(null);
+	/** How far the lanes' top has scrolled above the top of their scrolling area (0 while it's in view). */
+	let scrolledPast = $state(0);
+	const shownTime = $derived(hover?.time ?? time);
+	const boxTop = $derived(hover ? hover.y + 20 : Math.max(80, scrolledPast + 16));
+
+	/** The nearest scrolling ancestor's top edge (the page scrolls the window: 0). */
+	function viewTop(el: HTMLElement) {
+		for (let p = el.parentElement; p; p = p.parentElement) {
+			const { overflowY } = getComputedStyle(p);
+			if (/(auto|scroll)/.test(overflowY) && p.scrollHeight > p.clientHeight)
+				return p.getBoundingClientRect().top;
+		}
+		return 0;
+	}
+	$effect(() => {
+		if (!root) return;
+		const el = root;
+		const measure = () =>
+			(scrolledPast = Math.max(0, viewTop(el) - el.getBoundingClientRect().top));
+		measure();
+		window.addEventListener('scroll', measure, { capture: true, passive: true });
+		window.addEventListener('resize', measure);
+		return () => {
+			window.removeEventListener('scroll', measure, { capture: true });
+			window.removeEventListener('resize', measure);
+		};
+	});
+
+	function onpointermove(e: PointerEvent) {
+		if (e.pointerType === 'touch' || !track || !root) return;
+		const box = track.getBoundingClientRect();
+		if (e.clientX < box.left) return (hover = null);
+		hover = {
+			time: Math.min(1, Math.max(0, (e.clientX - box.left) / box.width)) * duration,
+			y: e.clientY - root.getBoundingClientRect().top
+		};
+	}
+
+	/** A lane's question for Lumi: about the character, theme or brand, at a moment when there is one. */
+	function laneQuestion(kind: LaneGroup['kind'], lane: Lane, t?: number) {
+		if (!ask) return null;
+		if (kind === 'character') return ask.character({ ...lane, actor: lane.sub }, t);
+		return kind === 'theme' ? ask.theme(lane, t) : ask.brand(lane, t);
+	}
+
 	/** Clicking a lane goes to that moment. */
 	function seek(e: MouseEvent) {
 		const box = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -106,17 +164,44 @@
 	}
 </script>
 
-<!-- Labels on the left (w-48), lanes on the right; the overlay of scene lines and the playhead covers the lanes. -->
+<!-- Labels on the left (w-58), lanes on the right; the overlay of scene lines and the playhead covers the lanes. -->
 <!-- Isolated, so the overlay stays above the lanes but under Lumi's dock. -->
-<div class="relative isolate flex flex-col" role="group" aria-label="Timeline view">
-	<SceneLines {segments} {duration} {time} />
+<div
+	bind:this={root}
+	class="relative isolate flex flex-col"
+	role="group"
+	aria-label="Timeline"
+	{onpointermove}
+	onpointerleave={() => (hover = null)}
+>
+	<!-- The lanes column, measured for hovering. -->
+	<div bind:this={track} class="pointer-events-none absolute inset-y-0 right-0 left-58"></div>
+	<SceneLines
+		{segments}
+		{duration}
+		time={shownTime}
+		ghost={hover ? time : undefined}
+		class="left-58"
+	/>
+	<!-- What's happening where the playhead is (or the pointer, while hovering), in a box beside it. -->
+	<PlayheadSummary
+		time={shownTime}
+		{duration}
+		{segments}
+		{groups}
+		{comments}
+		{ratings}
+		top={boxTop}
+		tracking={!!hover}
+		class="left-58"
+	/>
 
 	{@render toggle('scenes', 'Scenes', segments.length)}
 	<!-- The scenes: a block each, titled; click one to go to its start. -->
 	{#if open.scenes}
 		<div class="flex h-12 items-center">
-			<span class="w-48 shrink-0"></span>
-			<SceneBlocks {segments} {duration} {onseek} />
+			<span class="w-58 shrink-0"></span>
+			<SceneBlocks {segments} {duration} ask={ask?.scene} {onseek} />
 		</div>
 	{/if}
 
@@ -124,7 +209,7 @@
 		{@render toggle('rating', 'Rating', ratings.length)}
 		{#if open.rating}
 			<div class="flex h-20 items-center">
-				<span class="flex w-48 shrink-0 flex-col">
+				<span class="flex w-58 shrink-0 flex-col">
 					<span class="text-caption">Average rating</span>
 					<span class="text-caption text-muted-foreground"
 						>{ratingAverage.toFixed(1)} / {ratings[0].max} · {ratings.length}
@@ -132,9 +217,12 @@
 					>
 				</span>
 				<CurveChart
-					curves={[ratingCurve && { paths: ratingCurve, fill: true }]}
+					curves={[
+						ratingCurve && { paths: ratingCurve, fill: true, color: 'text-category-magenta' }
+					]}
 					label="Average rating along the video"
 					{duration}
+					ask={ask?.rating}
 					{onseek}
 				/>
 			</div>
@@ -145,7 +233,7 @@
 		{@render toggle('viewers', 'Sentiment', comments.length)}
 		{#if open.viewers}
 			<div class="flex h-20 items-center">
-				<span class="flex w-48 shrink-0 flex-col">
+				<span class="flex w-58 shrink-0 flex-col">
 					<span class="text-caption">Over time</span>
 					<span class="text-caption text-muted-foreground">Above the line: positive</span>
 				</span>
@@ -153,6 +241,7 @@
 					curves={[{ paths: sentimentCurve, fill: true }]}
 					label="Comment sentiment along the video"
 					{duration}
+					ask={ask?.sentiment}
 					midline
 					{onseek}
 				/>
@@ -160,8 +249,8 @@
 		{/if}
 		{#each open.viewers ? TONES : [] as tone (tone.key)}
 			{@const own = comments.filter((c) => c.tone === tone.key)}
-			<div class="flex h-12 items-center">
-				<span class="flex w-48 shrink-0 flex-col">
+			<div class="flex h-12 items-center" {@attach askable(ask?.tone(tone.key, own.length))}>
+				<span class="flex w-58 shrink-0 flex-col">
 					<span class="text-caption">{tone.label}</span>
 					<span class="text-caption text-muted-foreground"
 						>{own.length} {own.length === 1 ? 'comment' : 'comments'}</span
@@ -170,6 +259,7 @@
 				<div class="relative h-full flex-1">
 					{#each own as c, i (i)}
 						<button
+							{@attach askable(ask?.comment(c))}
 							type="button"
 							class={[
 								'absolute top-1/2 size-2.5 -translate-1/2 rounded-full outline-none hover:scale-150 focus-visible:ring-2 focus-visible:ring-ring',
@@ -192,10 +282,11 @@
 			{@const on = isPicked(group.kind, lane)}
 			<div class={['flex h-12 items-center rounded-sm', on && 'bg-accent']}>
 				<button
+					{@attach askable(ask && laneQuestion(group.kind, lane))}
 					type="button"
 					aria-pressed={on}
 					onclick={() => onpick(group.kind, lane.index)}
-					class="flex w-48 shrink-0 items-center gap-2 rounded-sm pr-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+					class="flex w-58 shrink-0 items-center gap-2 rounded-sm pr-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				>
 					{#if group.kind === 'character'}
 						<Avatar.Root class="size-7 shrink-0 overflow-hidden">
@@ -215,7 +306,13 @@
 					</span>
 				</button>
 				<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-				<div class="relative h-full flex-1 cursor-pointer" onclick={seek}>
+				<div
+					class="relative h-full flex-1 cursor-pointer"
+					onclick={seek}
+					{@attach askable(
+						ask && ((e, el) => laneQuestion(group.kind, lane, fractionAlong(e, el) * duration))
+					)}
+				>
 					{#each lane.appearances ?? [] as s, i (i)}
 						<div
 							class={[

@@ -30,6 +30,7 @@
 	import { shareProjectCards } from '#lib/cards/viewer-sources.js';
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 	import { takePendingVideo } from '#lib/new-project.js';
+	import AskLumi from '#lib/components/AskLumi.svelte';
 	import { transcript, type TranscriptMessage } from '#lib/transcript.js';
 	import type { PageProps } from './$types';
 
@@ -1286,6 +1287,12 @@
 		/>
 	</div>
 </div>
+
+<!-- Ask Lumi: over anything on a card that offers a question, a glow by the cursor; right-click to ask it (not
+     during the intro, or in bird's-eye view). -->
+{#if introStep === null && !birdsEye}
+	<AskLumi onask={ask} />
+{/if}
 
 <!-- The assets pane, over the page, sliding in from the right edge: flush with the top, right and bottom,
      square-cornered. Its pull tab rides on its left edge, so it sits on the window's edge while the pane is closed and

@@ -8,5 +8,5 @@
 
 <CardShell {card}>
 	{#if card.body}<p class="text-body text-muted-foreground">{card.body}</p>{/if}
-	<ItemList items={card.items ?? []} />
+	<ItemList items={card.items ?? []} about={card.title} />
 </CardShell>

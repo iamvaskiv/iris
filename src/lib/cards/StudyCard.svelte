@@ -27,6 +27,7 @@
 	import { tick, untrack } from 'svelte';
 	import { cubicOut } from 'svelte/easing';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { askable } from '#lib/ask-lumi.js';
 	import { readLocal, writeLocal } from '#lib/local.js';
 	import { projectCardUpdate } from './viewer-sources';
 	import ChannelGrid from './study/ChannelGrid.svelte';
@@ -39,6 +40,7 @@
 	import type { VideoAsset } from './study/VideoPicker.svelte';
 	import { feedSlide } from './study/slide';
 	import { dragSteps, type StepMove } from './study/drag-steps';
+	import { childAt, studyQuestions } from './study/questions';
 	import {
 		QUESTION_TYPES,
 		SCALE_MAX,
@@ -107,6 +109,8 @@
 	const parent = $derived(steps[selected]?.parent);
 	/** Whether the selected question pops up in a video (rather than being a channel's video, or a step of its own). */
 	const inVideo = $derived(popsUp(steps[selected]));
+	/** What the steps can ask Lumi (see ask-lumi.ts). */
+	const askLumi = $derived(studyQuestions(card.title));
 	$effect.pre(() => {
 		if (!select) return;
 		const at = untrack(() => steps.findIndex((s) => s.q.id === select));
@@ -548,7 +552,7 @@
 	</Card.Header>
 	{#if shownResults}
 		<Card.Content class="flex min-h-0 flex-1">
-			<StudyResults {questions} results={shownResults} />
+			<StudyResults title={card.title} {questions} results={shownResults} />
 		</Card.Content>
 	{:else if part === 'insights'}
 		<!-- No answers yet: they'd come in from sharing, which isn't built; fake ones can stand in. -->
@@ -581,6 +585,10 @@
 						aria-label="Questions"
 						{@attach extendSteps(steps)}
 						{@attach dragSteps(steps, moveStep)}
+						{@attach askable((e, el) => {
+							const step = steps[childAt(e, el)];
+							return step && askLumi.setupStep(step);
+						})}
 						steps={[
 							...steps.map((s) => ({
 								title: stepTitle(s.q),
@@ -681,6 +689,7 @@
 									streamUrl={m?.streamUrl}
 									poster={m?.poster}
 									time={question.time ?? 0}
+									ask={askLumi.moment(steps[selected])}
 									oncontinue={carryOn}
 								/>
 							{/if}

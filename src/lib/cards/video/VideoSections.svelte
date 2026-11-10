@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Avatar, Card, Tile } from '@latitudelabs/design-system';
+	import { askable } from '#lib/ask-lumi.js';
 	import { timecode } from '../format';
+	import type { VideoQuestions } from './questions';
 	import { TONE_DOT, initials, type Tone } from '../viewer';
 	import type { InsightComment, Span, VideoCardData } from '../types';
 
@@ -18,6 +20,7 @@
 		currentScene,
 		isPicked,
 		appearsLabel,
+		ask,
 		onplay,
 		onpick
 	}: {
@@ -29,6 +32,8 @@
 		isPicked: (kind: Kind, index: number) => boolean;
 		/** "On screen 0:42, 3 times", on hover. */
 		appearsLabel: (item: { appearances?: Span[] }) => string | undefined;
+		/** What each tile can ask Lumi. */
+		ask?: VideoQuestions;
 		onplay: (time: number) => void;
 		onpick: (kind: Kind, index: number) => void;
 	} = $props();
@@ -46,6 +51,7 @@
 			<li class="w-36">
 				<!-- The scene playing now is outlined. -->
 				<button
+					{@attach askable(ask?.scene(i))}
 					type="button"
 					disabled={!canPlay}
 					aria-current={currentScene === i ? 'time' : undefined}
@@ -75,7 +81,12 @@
 	<Card.Section title="Comments" count={comments.length + reactions.length}>
 		{#each comments as c, i (i)}
 			<li class="w-56">
-				<Tile class="h-full w-full" disabled={!canPlay} onclick={() => onplay(c.time)}>
+				<Tile
+					{@attach askable(ask?.comment(c))}
+					class="h-full w-full"
+					disabled={!canPlay}
+					onclick={() => onplay(c.time)}
+				>
 					<span class="line-clamp-3 text-caption">“{c.text}”</span>
 					<span class="flex items-center gap-1.5 text-caption text-muted-foreground">
 						<span class={['size-1.5 shrink-0 rounded-full', TONE_DOT[c.tone]]} aria-hidden="true"
@@ -88,7 +99,7 @@
 		{/each}
 		{#each reactions as r, i (i)}
 			<li class="w-56">
-				<Tile class="h-full w-full">
+				<Tile {@attach askable(ask?.comment(r))} class="h-full w-full">
 					<span class="line-clamp-3 text-caption">“{r.text}”</span>
 					<span class="flex items-center gap-1.5 text-caption text-muted-foreground">
 						<span class={['size-1.5 shrink-0 rounded-full', TONE_DOT[r.tone]]} aria-hidden="true"
@@ -107,6 +118,7 @@
 		{#each characters as person, i (i)}
 			<li class="w-28">
 				<button
+					{@attach askable(ask?.character(person))}
 					type="button"
 					aria-pressed={isPicked('character', i)}
 					title={appearsLabel(person)}
@@ -139,6 +151,7 @@
 		{#each themes as theme, i (i)}
 			<li class="w-56">
 				<Tile
+					{@attach askable(ask?.theme(theme))}
 					class={['h-full w-full', isPicked('theme', i) && 'ring-2 ring-primary']}
 					aria-pressed={isPicked('theme', i)}
 					title={appearsLabel(theme)}
@@ -159,6 +172,7 @@
 		{#each brands as brand, i (i)}
 			<li class="w-44">
 				<Tile
+					{@attach askable(ask?.brand(brand))}
 					class={['h-full w-full', isPicked('brand', i) && 'ring-2 ring-primary']}
 					aria-pressed={isPicked('brand', i)}
 					title={appearsLabel(brand)}

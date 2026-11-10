@@ -5,9 +5,9 @@ export const toneOf = (sentiment: number): Tone =>
 
 /** A comment's dot, in its tone's colour. */
 export const TONE_DOT: Record<Tone, string> = {
-	positive: 'bg-success',
-	neutral: 'bg-muted-foreground',
-	negative: 'bg-destructive'
+	positive: 'bg-category-green',
+	neutral: 'bg-control',
+	negative: 'bg-chart-red'
 };
 
 /** A name's initials, for an avatar without a picture ("Otto Anderson" → "OA"). */

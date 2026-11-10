@@ -1,7 +1,6 @@
 import type { Component } from 'svelte';
 import type { Card } from './types';
 import type { Part } from './lanes';
-import { videoCardSize } from './timeline-view.svelte';
 import ComparisonCard from './ComparisonCard.svelte';
 import InsightsCard from './InsightsCard.svelte';
 import ListCard from './ListCard.svelte';
@@ -34,15 +33,14 @@ export const cardComponent = (type: string) => registry[type] ?? TextCard;
 /**
  * How much room a card takes: the reading width (max-w-3xl); `wide` (max-w-5xl) for video, sources and viewers cards,
  * comparisons of three or more videos and tables with many columns; `full` (the page's width, from below the header to
- * behind Lumi's input) for studies (a question list beside a preview) and video cards in Timeline view (the video
- * beside its title, its lanes scrolling below). In lanes a study's insights, beside its setup, are full size too.
+ * behind Lumi's input) for studies (a question list beside a preview). In lanes a study's insights, beside its setup,
+ * are full size too.
  */
 export function cardSize(card: Card): 'normal' | 'wide' | 'full' {
 	if (card.type === 'study') return 'full';
-	// Its own module knows: full size in Timeline view, wide otherwise.
-	if (card.type === 'video') return videoCardSize(card);
 	const videos = (card.data?.videoIds as string[] | undefined)?.length ?? 0;
 	if (
+		card.type === 'video' ||
 		card.type === 'sources' ||
 		card.type === 'viewers' ||
 		(card.type === 'comparison' && videos >= 3) ||

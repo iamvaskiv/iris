@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button } from '@latitudelabs/design-system';
 	import { Play } from '@latitudelabs/design-system/icons';
+	import { askable } from '#lib/ask-lumi.js';
 	import { timecode } from './question-types';
 
 	/**
@@ -11,11 +12,14 @@
 		streamUrl,
 		poster,
 		time,
+		ask,
 		oncontinue
 	}: {
 		streamUrl?: string | null;
 		poster?: string | null;
 		time: number;
+		/** What the moment can ask Lumi (see ask-lumi.ts). */
+		ask?: string | null;
 		oncontinue: () => void;
 	} = $props();
 
@@ -29,7 +33,7 @@
 	});
 </script>
 
-<div class="relative mb-4 w-56 overflow-hidden rounded-sm bg-muted">
+<div class="relative mb-4 w-56 overflow-hidden rounded-sm bg-muted" {@attach askable(ask)}>
 	<video
 		bind:this={video}
 		class="aspect-video w-full object-cover"
