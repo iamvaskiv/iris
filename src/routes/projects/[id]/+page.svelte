@@ -810,6 +810,15 @@
 	{#if introStep !== null}
 		<div class="flex w-full flex-col items-center gap-6">
 			<IntroScene step={introStep} />
+			<p class="sr-only" aria-live="polite">Step {introStep + 1} of {INTRO_STEPS.length}</p>
+			<div class="flex items-center gap-2">
+				{#if introStep > 0}
+					<Button variant="ghost" onclick={() => goIntro(introStep! - 1)}>Back</Button>
+				{/if}
+				<Button onclick={() => goIntro(introStep! + 1)}
+					>{introStep === INTRO_STEPS.length - 1 ? INTRO_DONE : 'Next'}</Button
+				>
+			</div>
 			<div class="flex items-center gap-2" aria-hidden="true">
 				{#each INTRO_STEPS as _, i (i)}
 					<span
@@ -819,15 +828,6 @@
 						]}
 					></span>
 				{/each}
-			</div>
-			<p class="sr-only" aria-live="polite">Step {introStep + 1} of {INTRO_STEPS.length}</p>
-			<div class="flex items-center gap-2">
-				{#if introStep > 0}
-					<Button variant="ghost" onclick={() => goIntro(introStep! - 1)}>Back</Button>
-				{/if}
-				<Button onclick={() => goIntro(introStep! + 1)}
-					>{introStep === INTRO_STEPS.length - 1 ? INTRO_DONE : 'Next'}</Button
-				>
 			</div>
 		</div>
 	{/if}

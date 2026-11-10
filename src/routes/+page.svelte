@@ -137,6 +137,15 @@
 	{#if tourStep !== null}
 		<div class="flex w-full flex-col items-center gap-6">
 			<TourScene step={tourStep} />
+			<p class="sr-only" aria-live="polite">Step {tourStep + 1} of {TOUR_STEPS.length}</p>
+			<div class="flex items-center gap-2">
+				{#if tourStep > 0}
+					<Button variant="ghost" onclick={() => goTour(tourStep - 1)}>Back</Button>
+				{/if}
+				<Button onclick={() => goTour(tourStep + 1)}
+					>{tourStep === TOUR_STEPS.length - 1 ? TOUR_DONE : 'Next'}</Button
+				>
+			</div>
 			<div class="flex items-center gap-2" aria-hidden="true">
 				{#each TOUR_STEPS as _, i (i)}
 					<span
@@ -146,15 +155,6 @@
 						]}
 					></span>
 				{/each}
-			</div>
-			<p class="sr-only" aria-live="polite">Step {tourStep + 1} of {TOUR_STEPS.length}</p>
-			<div class="flex items-center gap-2">
-				{#if tourStep > 0}
-					<Button variant="ghost" onclick={() => goTour(tourStep - 1)}>Back</Button>
-				{/if}
-				<Button onclick={() => goTour(tourStep + 1)}
-					>{tourStep === TOUR_STEPS.length - 1 ? TOUR_DONE : 'Next'}</Button
-				>
 			</div>
 		</div>
 	{/if}
