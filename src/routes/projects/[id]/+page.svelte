@@ -846,7 +846,8 @@
 		<!-- Sticky inside the scroll area (so the scrollbar stays outside the blur); the negative margin lets
 		     cards scroll up underneath it instead of the header taking space in the flow. -->
 		<AppHeader class="-mb-25" crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]}>
-			{#snippet end()}<GettingStarted variant="pill" />{/snippet}
+			<!-- The checklist is about the person's own projects, so not in the demo. -->
+			{#snippet end()}{#if !project.example}<GettingStarted variant="pill" />{/if}{/snippet}
 		</AppHeader>
 		{#if project.cards.length > 0 && lanesOn}
 			<!-- Lanes (experimental): one per topic, its title (and arrows) on the left, its cards in a row that scrolls

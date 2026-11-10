@@ -17,7 +17,7 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   in light mode, the full colours with light text in dark mode. The colours drift while you hover it: a glow
   follows the pointer, the colours lean away from it at different depths, and they swell while you press. It's the first tile on
   the projects page, with **Start a project** on the first step, and a pill at the top right of every project page
-  in the same colours (the next step and "2/5") that grows into a card with every step on hover, focus or a click. Steps tick off by themselves as you do them in your own projects (the
+  in the same colours (the next step and "2/5") that grows into a card with every step on hover, focus or a click. (not in the demo project) Steps tick off by themselves as you do them in your own projects (the
   demo doesn't count). Once all five are done, **Hide checklist** removes it; restarting onboarding brings it back
   empty. Per browser.
 - **Onboarding sequence**: from Lumi's welcome until you've been into the demo project and out again, or opened
