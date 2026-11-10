@@ -105,18 +105,43 @@ type WrittenAnswer = {
 	/** Videos: when in it the comment was left, and the viewer's star rating (null otherwise). */
 	time: number | null;
 	rating: number | null;
+	/** Open questions: which of the question's themes it belongs to (index), null otherwise. */
+	theme: number | null;
 };
 
 /** What Lumi writes; the app turns it into counts that add up (see sampleResults). */
 type Written = {
+	intent: string;
 	summary: string;
-	insights: { title: string; body: string }[];
-	quote: { text: string; who: string };
+	headline: string;
+	keyQuestions: {
+		question: string;
+		answer: string;
+		figure: string;
+		verdict: string;
+		evidence: { index: number; text: string; figure: string }[];
+		confidence: 'high' | 'medium' | 'low';
+	}[];
+	recommendations: { title: string; body: string }[];
+	followUps: string[];
+	quote: { text: string; who: string; questionIndex: number | null; theme: number | null };
 	sentiment: { positive: number; neutral: number; negative: number };
 	rating: number;
 	completion: number;
-	questions: { index: number; shares?: number[]; answers?: WrittenAnswer[] }[];
+	questions: {
+		index: number;
+		label?: string;
+		takeaway?: string;
+		ageNote?: string;
+		themes?: { label: string; share: number; sentiment: 'positive' | 'neutral' | 'negative' }[];
+		stars?: number;
+		shares?: number[];
+		answers?: WrittenAnswer[];
+	}[];
 };
+
+import { RESULTS_VERSION } from '#lib/cards/study/insights.js';
+export { RESULTS_VERSION };
 
 const AGES = ['18–23', '24–32', '33–44', '45+'];
 
@@ -127,22 +152,97 @@ const obj = (properties: Record<string, unknown>) => ({
 	required: Object.keys(properties),
 	additionalProperties: false
 });
+const TONE = { type: 'string', enum: ['positive', 'neutral', 'negative'] };
 const writtenSchema = obj({
+	intent: {
+		type: 'string',
+		description:
+			'One short sentence: what the study\'s author is trying to find out, judging by how it\'s built (its videos, the questions and when they pop up). E.g. "Whether the trailer lands, and which new emotion to lead the marketing with."'
+	},
 	summary: {
 		type: 'string',
 		description: 'Two or three sentences: what the (made-up) audience thought overall.'
 	},
-	insights: {
+	headline: {
+		type: 'string',
+		description:
+			'The whole story in at most twelve words, plain and punchy, no numbers needed: "Trailer lands; lead the marketing with Anxiety."'
+	},
+	keyQuestions: {
 		type: 'array',
-		description: 'Exactly two key insights.',
+		description:
+			'Two to four questions the author built the study to answer (their intent, in plain words, e.g. "Does the trailer land?", "Which new emotion should lead?", "Is version A or B better?"), each answered from these results. Order by importance.',
 		items: obj({
-			title: { type: 'string', description: 'A few words.' },
-			body: { type: 'string', description: 'One or two sentences.' }
+			question: { type: 'string', description: 'The question behind the study, short.' },
+			answer: {
+				type: 'string',
+				description:
+					'A direct one-sentence verdict with the deciding number, e.g. "Yes: 4.2 of 5 stars, and 68% gave the new emotions 7 or more."'
+			},
+			figure: {
+				type: 'string',
+				description:
+					'The one deciding figure, as short as possible, shown big: "4.2 ★", "73%", "Anxiety", "Version B".'
+			},
+			verdict: {
+				type: 'string',
+				description:
+					'The verdict in at most six words, leading with the answer and NOT repeating the figure: "Yes, 72% positive", "Mostly, scoring 7+", "Clearly, ahead of Ennui", "Partly: a third uneasy".'
+			},
+			evidence: {
+				type: 'array',
+				description: 'One to three study questions that back the answer.',
+				items: obj({
+					index: { type: 'integer', description: 'Question number, from 1.' },
+					text: {
+						type: 'string',
+						description: 'The finding there, a few words with its number: "41% picked Anxiety".'
+					},
+					figure: {
+						type: 'string',
+						description: 'Just its number, as short as possible: "41%", "4.2 ★", "7.1 / 10".'
+					}
+				})
+			},
+			confidence: {
+				type: 'string',
+				enum: ['high', 'medium', 'low'],
+				description:
+					'How sure the sample makes the answer: high when the margin is clear and many answered, low when it is close or few answered.'
+			}
 		})
 	},
+	recommendations: {
+		type: 'array',
+		description: 'Two or three things to do next, given the results.',
+		items: obj({
+			title: { type: 'string', description: 'A few words, as an action.' },
+			body: { type: 'string', description: 'One sentence: why, from the results.' }
+		})
+	},
+	followUps: {
+		type: 'array',
+		items: { type: 'string' },
+		description:
+			'Three short questions the author might ask next about these results, written as their own request to an assistant (e.g. "Why do people feel Joy is sidelined?").'
+	},
 	quote: obj({
-		text: { type: 'string', description: 'One telling answer from a respondent.' },
-		who: { type: 'string', description: 'e.g. "Respondent, 24–32"' }
+		text: {
+			type: 'string',
+			description:
+				'One telling answer from a respondent, backing the main finding, under 25 words. Prefer one of the open answers you wrote.'
+		},
+		who: { type: 'string', description: 'e.g. "Respondent, 24–32"' },
+		questionIndex: {
+			type: ['integer', 'null'],
+			description:
+				"When it is one of the open answers: that question's number (from 1). Null otherwise."
+		},
+		theme: {
+			type: ['integer', 'null'],
+			description:
+				"When it is one of the open answers: its theme's index (from 0) in that question. Null otherwise."
+		}
 	}),
 	sentiment: obj({
 		positive: { type: 'number' },
@@ -159,6 +259,36 @@ const writtenSchema = obj({
 		description: 'One entry per question.',
 		items: obj({
 			index: { type: 'integer', description: 'Question number, from 1.' },
+			label: {
+				type: 'string',
+				description:
+					'Two to four words naming what this question measures, for a headline number: "Trailer rating", "Like the new emotions", "Lead pick", "Most opened".'
+			},
+			takeaway: {
+				type: 'string',
+				description:
+					'One short sentence: what the answers to this question say, with its key number.'
+			},
+			ageNote: {
+				type: 'string',
+				description:
+					'When one age band (18–23, 24–32, 33–44, 45+) answered noticeably differently, one short sentence on how; otherwise empty.'
+			},
+			stars: {
+				type: 'number',
+				description:
+					"Videos: everyone's average star rating, 1 to 5 with one decimal (the one you quote). 0 for every other kind."
+			},
+			themes: {
+				type: 'array',
+				description:
+					'Open questions: three to five themes the answers share, each with its share of answers (percentages adding up to 100) and its tone. Empty for every other kind.',
+				items: obj({
+					label: { type: 'string', description: 'Two to four words.' },
+					share: { type: 'number' },
+					sentiment: TONE
+				})
+			},
 			shares: {
 				type: 'array',
 				items: { type: 'number' },
@@ -182,6 +312,11 @@ const writtenSchema = obj({
 						type: ['integer', 'null'],
 						description:
 							'Videos: the star rating this viewer gave the video, 1 to 5, in line with their comment. Null otherwise.'
+					},
+					theme: {
+						type: ['integer', 'null'],
+						description:
+							"Open questions: the index (from 0) of the question's theme this answer belongs to, in line with the themes' shares. Null otherwise."
 					}
 				})
 			}
@@ -199,7 +334,8 @@ async function videoLengths(questions: Question[]) {
 async function write(
 	title: string,
 	questions: Question[],
-	lengths: Map<string, number | undefined>
+	lengths: Map<string, number | undefined>,
+	intent?: string
 ): Promise<Written> {
 	// Numbered in list order, a channel's videos and a video's questions right after it (and marked as such).
 	const steps = flatSteps(questions);
@@ -229,7 +365,7 @@ async function write(
 		messages: [
 			{
 				role: 'user',
-				content: `Invent believable results for this study, as if about a hundred people had answered it. It's for a product demo: make the results varied and plausible (not all positive), specific to these questions, with a clear story. Sentiment is the percentage of positive, neutral and negative answers.\n\nStudy: ${title}\n${list}`
+				content: `Invent believable results for this study, as if about a hundred people had answered it. It's for a product demo: make the results varied and plausible (not all positive), specific to these questions, with a clear story. Sentiment is the percentage of positive, neutral and negative answers.\n\nFirst work out what the author wants to learn from how the study is built: what each video is for, why each question is asked where it is (a question popping up at a moment in a video is about that moment), what comparing several videos or offering a channel says about their goal. Then answer those questions directly from the results, keeping every number you mention consistent with the shares you give.${intent?.trim() ? `\n\nThe author says the study is for: ${intent.trim()}. Start from that (put it in your own words as the intent), adding anything else the study's build shows they want to know.` : ''}\n\nStudy: ${title}\n${list}`
 			}
 		]
 	});
@@ -241,12 +377,29 @@ async function write(
 
 /** Generic results when Lumi can't be reached, so the toggle still works. */
 const filler = (questions: Question[], lengths: Map<string, number | undefined>): Written => ({
+	intent: 'How people respond to what the study shows them.',
 	summary: 'Most people responded well, with a clear minority who were unconvinced.',
-	insights: [
-		{ title: 'Strong first impression', body: 'Early answers were the most positive.' },
-		{ title: 'Interest fades', body: 'Fewer people answered the later questions.' }
+	headline: 'Mostly well received, with a few unconvinced.',
+	keyQuestions: [
+		{
+			question: 'Did it land?',
+			answer: 'Mostly: a clear majority responded well.',
+			figure: 'Mostly',
+			verdict: 'a clear majority responded well',
+			evidence: [{ index: 1, text: 'Mostly positive', figure: 'Mostly positive' }],
+			confidence: 'medium'
+		}
 	],
-	quote: { text: 'Not what I expected, in a good way.', who: 'Respondent' },
+	recommendations: [
+		{ title: 'Ask a follow-up', body: 'Find out what the unconvinced minority missed.' }
+	],
+	followUps: ['What did the unconvinced minority dislike?'],
+	quote: {
+		text: 'Not what I expected, in a good way.',
+		who: 'Respondent',
+		questionIndex: null,
+		theme: null
+	},
 	sentiment: { positive: 56, neutral: 24, negative: 20 },
 	rating: 78,
 	completion: 85,
@@ -259,6 +412,14 @@ const filler = (questions: Question[], lengths: Map<string, number | undefined>)
 					? { index: i + 1, shares: [1, 1, 2, 3, 5, 8, 12, 18, 22, 16, 12] }
 					: {
 							...(q.type === 'video' ? { shares: [60, 25, 15] } : {}),
+							...(q.type === 'open'
+								? {
+										themes: [
+											{ label: 'Liked it', share: 60, sentiment: 'positive' as const },
+											{ label: 'Unsure', share: 40, sentiment: 'neutral' as const }
+										]
+									}
+								: {}),
 							index: i + 1,
 							answers: (
 								[
@@ -275,7 +436,8 @@ const filler = (questions: Question[], lengths: Map<string, number | undefined>)
 									sentiment,
 									age,
 									time: length ? ((k + 1) / 5) * length : null,
-									rating: q.type === 'video' ? stars : null
+									rating: q.type === 'video' ? stars : null,
+									theme: q.type === 'open' ? (sentiment === 'positive' ? 0 : 1) : null
 								};
 							})
 						}
@@ -291,6 +453,7 @@ const clamp = (n: unknown, min: number, max: number, fallback: number) =>
 
 /** Splits `total` across `weights` so the parts are whole numbers that add up to it. */
 function split(total: number, weights: number[]) {
+	if (!weights.length) return [];
 	const sum = weights.reduce((a, b) => a + Math.max(0, b), 0) || 1;
 	const exact = weights.map((w) => (Math.max(0, w) / sum) * total);
 	const parts = exact.map(Math.floor);
@@ -301,13 +464,18 @@ function split(total: number, weights: number[]) {
 }
 
 /** Made-up results for a study: Lumi writes the story and the shares; counts are worked out here so they add up. */
-export async function sampleResults(title: string, questions: Question[]): Promise<SampleResults> {
+export async function sampleResults(
+	title: string,
+	questions: Question[],
+	/** What the author says the study is for (shown under its title): the reading starts from it. */
+	intent?: string
+): Promise<SampleResults> {
 	let written: Written;
 	let by: SampleResults['by'] = 'lumi';
 	const lengths = await videoLengths(questions);
 	try {
 		if (!env.ANTHROPIC_API_KEY) throw new Error('No Anthropic key');
-		written = await write(title, questions, lengths);
+		written = await write(title, questions, lengths, intent);
 	} catch (e) {
 		console.error('[study] Lumi could not write sample results, using filler:', e);
 		written = filler(questions, lengths);
@@ -354,13 +522,22 @@ export async function sampleResults(title: string, questions: Question[]): Promi
 			opened.get(q.id) ?? (watched === undefined ? reached : Math.round((watched || 0) * 0.9));
 		const w = written.questions?.find((x) => x.index === i + 1);
 		const used = new Set<number>();
+		// Lumi's reading of it: a label for headline numbers, a takeaway and, when one age band stood out, a note.
+		const reading = {
+			...(q.type === 'video' && typeof w?.stars === 'number' && w.stars >= 1
+				? { stars: Math.round(clamp(w.stars, 1, 5, 4) * 10) / 10 }
+				: {}),
+			...(w?.label ? { label: String(w.label) } : {}),
+			...(w?.takeaway ? { takeaway: String(w.takeaway) } : {}),
+			...(w?.ageNote?.trim() ? { ageNote: String(w.ageNote) } : {})
+		};
 		if (q.type === 'channel') {
 			// How many opened each of its videos, from the share Lumi gave it (people open several, so not a split).
 			const counts = (q.videos ?? []).map((_, k) =>
 				Math.round((responses * clamp(w?.shares?.[k], 0, 100, 30)) / 100)
 			);
 			q.videos?.forEach((v, k) => opened.set(v.id, counts[k]));
-			results[q.id] = { responses, counts, people: [] };
+			results[q.id] = { responses, counts, people: [], ...reading };
 		} else if (q.type === 'choice' || q.type === 'scale') {
 			// Buckets: the options, or each slider value from 0 to 10.
 			const buckets = q.type === 'choice' ? (q.options ?? []).length : SCALE_MAX - SCALE_MIN + 1;
@@ -387,11 +564,38 @@ export async function sampleResults(title: string, questions: Question[]): Promi
 						...who(used, i * 7),
 						...(q.type === 'choice' ? { option: k } : { value: SCALE_MIN + k })
 					}))
-				)
+				),
+				...reading
 			};
 		} else {
+			// Open questions: their themes, each share worked out from whole answers so they add up.
+			const themes = (q.type === 'open' ? (w?.themes ?? []) : []).slice(0, 5).map((t) => ({
+				label: String(t.label),
+				sentiment: (['positive', 'neutral', 'negative'] as const).includes(t.sentiment)
+					? t.sentiment
+					: ('neutral' as const),
+				share: clamp(t.share, 0, 100, 0)
+			}));
+			const themeCounts = themes.length
+				? split(
+						responses,
+						themes.map((t) => t.share)
+					)
+				: [];
 			results[q.id] = {
 				responses,
+				...reading,
+				...(themes.length
+					? {
+							themes: themes.map((t, k) => ({
+								...t,
+								share: Math.round((themeCounts[k] / Math.max(1, responses)) * 100)
+							}))
+						}
+					: {}),
+				...(q.type === 'video' && lengths.get(q.videoId ?? '')
+					? { duration: lengths.get(q.videoId ?? '') }
+					: {}),
 				// Videos: how the reactions split, positive / neutral / negative.
 				...(q.type === 'video'
 					? {
@@ -414,6 +618,12 @@ export async function sampleResults(title: string, questions: Question[]): Promi
 							: {}),
 						...(q.type === 'video' && typeof a.rating === 'number'
 							? { rating: Math.round(clamp(a.rating, 1, 5, 3)) }
+							: {}),
+						...(themes.length &&
+						typeof a.theme === 'number' &&
+						a.theme >= 0 &&
+						a.theme < themes.length
+							? { theme: a.theme }
 							: {})
 					}))
 				)
@@ -421,19 +631,53 @@ export async function sampleResults(title: string, questions: Question[]): Promi
 		}
 	});
 
+	// Evidence points at study questions by number; the card links them by id.
+	const idAt = (index: number) => every[index - 1]?.q.id;
+	const confidence = (c: unknown) =>
+		c === 'high' || c === 'medium' || c === 'low' ? c : ('medium' as const);
 	return {
 		basis: basisOf(questions),
+		version: RESULTS_VERSION,
 		views,
 		completion,
 		rating: Math.round(clamp(written.rating, 0, 100, 75)),
 		sentiment: { positive, neutral, negative },
+		intent: String(written.intent ?? ''),
 		summary: String(written.summary ?? ''),
-		insights: (written.insights ?? [])
-			.slice(0, 2)
-			.map((x) => ({ title: String(x.title), body: String(x.body) })),
+		...(written.headline ? { headline: String(written.headline) } : {}),
+		answers: (written.keyQuestions ?? []).slice(0, 4).map((k) => ({
+			question: String(k.question),
+			answer: String(k.answer),
+			...(k.figure ? { figure: String(k.figure) } : {}),
+			...(k.verdict ? { verdict: String(k.verdict) } : {}),
+			evidence: (k.evidence ?? [])
+				.map((e) => ({
+					id: idAt(e.index) ?? '',
+					text: String(e.text),
+					...(e.figure ? { figure: String(e.figure) } : {})
+				}))
+				.filter((e) => e.id)
+				.slice(0, 3),
+			confidence: confidence(k.confidence)
+		})),
+		recommendations: (written.recommendations ?? [])
+			.slice(0, 3)
+			.map((r) => ({ title: String(r.title), body: String(r.body) })),
+		followUps: (written.followUps ?? []).slice(0, 3).map(String),
 		quote: {
 			text: String(written.quote?.text ?? ''),
-			who: String(written.quote?.who ?? 'Respondent')
+			who: String(written.quote?.who ?? 'Respondent'),
+			// Which open question and theme it comes from, when those exist.
+			...(() => {
+				const id = idAt(written.quote?.questionIndex ?? 0);
+				const theme = written.quote?.theme;
+				return id &&
+					typeof theme === 'number' &&
+					(results[id]?.themes?.length ?? 0) > theme &&
+					theme >= 0
+					? { from: { id, theme } }
+					: {};
+			})()
 		},
 		questions: results,
 		by

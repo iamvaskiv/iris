@@ -17,6 +17,22 @@
 	--chart-blue: #4c7dff; /* audit-ignore: bright blue for chart marks, not in the design system yet */
 	--chart-red: #ff4757; /* audit-ignore: bright red for chart marks, not in the design system yet */
 }
+/* Lumi's own surfaces (her input and dock, the Ask Lumi hint, the brand button): their ink, a softer ink for
+   placeholders, a tinted edge (and a fainter one) and a warm glow, from the brand colours. The one place they're mixed,
+   so those surfaces stay in step. Dark themes get a warm white ink and light edges. */
+:root {
+	--lumi-ink: var(--brand-4);
+	--lumi-ink-soft: color-mix(in oklab, var(--lumi-ink) 55%, transparent);
+	--lumi-edge: color-mix(in oklab, var(--brand-4) 22%, transparent);
+	--lumi-edge-faint: color-mix(in oklab, var(--brand-4) 12%, transparent);
+	--lumi-glow: color-mix(in oklab, var(--brand-2) 40%, transparent);
+}
+.dark {
+	--lumi-ink: color-mix(in oklab, var(--neutral-0) 90%, var(--brand-2));
+	--lumi-edge: color-mix(in oklab, var(--neutral-0) 25%, transparent);
+	--lumi-edge-faint: color-mix(in oklab, var(--neutral-0) 12%, transparent);
+	--lumi-glow: color-mix(in oklab, var(--brand-2) 35%, transparent);
+}
 @theme inline {
 	--color-category-blue: var(--category-blue);
 	--color-chart-blue: var(--chart-blue);

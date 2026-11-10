@@ -21,9 +21,29 @@ or closed as you move between questions. **New** adds a step without a type yet,
 its preview offers the types, and picking one makes it that step; opening another step instead drops it. Drag a step to reorder it, with what's inside it;
 a channel's videos reorder within it (questions inside a video keep their time order). Lumi drafts the first questions; edits save to the project (not in Storybook).
 
+Under the title, the study's **Intent** (what it's trying to find out), edited in place: Lumi drafts it with the study,
+her reading of the results starts from it, and without one it shows the intent she read from the results.
+
 **Share** can't share yet: it offers **Fake responses**, which swaps the setup for (made-up) results Lumi writes from
-the questions, labelled **Sample data**, with a green **Fielding in progress** badge beside Share. Pick a question there to slide the overview aside and read its individual
-responses; pick an option to see who chose it.
+the questions, labelled **Sample data**, with a green **Fielding in progress** badge beside Share. **Refresh sample
+results** there writes them again.
+
+The results come in two tabs. **Overview** reads in four blocks, each fact once: the verdict in a line; a tile per
+question the study set out to answer (its deciding figure big, a few words of verdict, "from 1.1" linking to that
+question, and how clear it is); what to do next beside a viewer's quote
+in full, linked to its theme; and the videos compared or a channel's most opened videos, only when the study has them.
+Who took part sits under the title. **Questions** lists the answers per question beside the picked one's responses. Lumi works it out from how the study is built (its videos, its
+questions and where they pop up) and answers it: **headline numbers** in the study's own terms (a video's stars, the
+share giving a slider 7 or more, the lead pick, a channel's most opened video), with who took part in a quieter line;
+then what it **set out to learn**, the story in short, and an **answer card** per question behind the study (a verdict,
+evidence chips that open the question, and how sure the sample makes it); **Videos compared** when it shows several
+one after another, **Most opened** for a channel; **What to do next**, and a quote. Each question on the right has Lumi's
+**takeaway** and an **age** note when a band stood out: multiple choice its leader and lead, a slider its spread (7+ in
+full colour, flagged when opinion is split), an open question its **themes** (click one to read its answers), a video
+its stars and how reactions move along it, with the questions popping up in it marked, and a note where noticeably
+fewer people got. The follow-ups Lumi suggests become the lane's next steps. Pick a question to slide the overview aside
+and read its individual responses; pick an option or theme to see who chose it. Older results (before answers) show
+their two insights and the four generic numbers.
 
 With **topic lanes** on (Settings → Experimental), a study takes two places in its lane: its setup (\`part="setup"\`,
 shown even while fielding) and, to the right of it, its insights (\`part="insights"\`): the results, or until there are
@@ -152,6 +172,40 @@ some, an empty state with the **Fake responses** switch.`
 	};
 	const empty = { ...study, id: 'study-empty', title: 'New study', data: { questions: [] } };
 	const sampled = fixture('Women Talking Study · Women Talking trailer: short version');
+
+	// The demo's study with results in the current shape: what it set out to learn, answered.
+	const answered = fixture('Demo: Inside Out 2 · Inside Out 2 trailer study');
+	// The same, as if it compared the trailer with a second cut shown after it (weaker reactions, fewer stars).
+	const answeredData = answered.data as StudyData;
+	const trailer = answeredData.questions.find((q) => q.type === 'video')!;
+	const compared = {
+		...answered,
+		id: 'study-compared',
+		data: {
+			questions: [
+				...answeredData.questions,
+				{ ...trailer, id: 'cut-b', videoName: 'Inside Out 2 | Teaser', questions: [] }
+			],
+			sample: {
+				enabled: true,
+				results: {
+					...answeredData.sample!.results!,
+					questions: {
+						...answeredData.sample!.results!.questions,
+						'cut-b': {
+							responses: 109,
+							counts: [52, 33, 24],
+							stars: 3.4,
+							label: 'Teaser rating',
+							takeaway:
+								'The teaser lands softer: 3.4 stars, with under half of reactions positive.',
+							people: []
+						}
+					}
+				}
+			}
+		}
+	};
 </script>
 
 <Story name="Multiple choice">
@@ -198,6 +252,14 @@ some, an empty state with the **Fake responses** switch.`
 
 <Story name="Lanes: insights, no responses yet">
 	<CardFrame full><StudyCard card={study} part="insights" /></CardFrame>
+</Story>
+
+<Story name="Answers first">
+	<CardFrame full><StudyCard card={answered} part="insights" /></CardFrame>
+</Story>
+
+<Story name="Two videos compared">
+	<CardFrame full><StudyCard card={compared} part="insights" /></CardFrame>
 </Story>
 
 <Story name="Lanes: insights">

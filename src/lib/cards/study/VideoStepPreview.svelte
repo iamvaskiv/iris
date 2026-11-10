@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { along } from '../curve';
+	import { fractionAlong } from '#lib/pointer.js';
 	import { Button } from '@latitudelabs/design-system';
 	import { Pause, Play } from '@latitudelabs/design-system/icons';
 	import { onMount } from 'svelte';
@@ -55,7 +57,7 @@
 			onreach(due, due.time ?? 0);
 		}
 	}
-	const percent = (t: number) => (duration ? Math.min(100, (t / duration) * 100) : 0);
+	const percent = (t: number) => along(t, duration ?? 0);
 
 	function toggle() {
 		if (!video) return;
@@ -66,10 +68,8 @@
 	// Seeking on our timeline: press, drag, release; arrow keys step 5 seconds.
 	let seeking = false;
 	function seekTo(e: PointerEvent) {
-		const track = e.currentTarget as HTMLElement;
-		const box = track.getBoundingClientRect();
-		const at = Math.min(1, Math.max(0, (e.clientX - box.left) / box.width));
-		if (video && duration) video.currentTime = at * duration;
+		if (video && duration)
+			video.currentTime = fractionAlong(e, e.currentTarget as HTMLElement) * duration;
 	}
 	function seekStart(e: PointerEvent) {
 		seeking = true;

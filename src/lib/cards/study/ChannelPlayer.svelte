@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { along } from '../curve';
 	import { Button } from '@latitudelabs/design-system';
 	import { ChevronDown, ChevronUp, Pause, Play, X } from '@latitudelabs/design-system/icons';
 	import { fade } from 'svelte/transition';
@@ -91,7 +92,7 @@
 	const reduce =
 		typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 	let screen = $state<HTMLElement | null>(null);
-	const percent = (t: number) => (duration ? Math.min(100, (t / duration) * 100) : 0);
+	const percent = (t: number) => along(t, duration ?? 0);
 </script>
 
 <svelte:window {onkeydown} />

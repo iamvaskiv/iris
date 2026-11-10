@@ -6,6 +6,7 @@ import { sourcesData } from './sources.js';
 import { viewersData } from './viewers.js';
 import { videoCardData } from './video-card.js';
 import { insights } from './insights.js';
+import { sliderSpread } from '#lib/cards/study/insights.js';
 import { comparisonData } from './comparison.js';
 import { assets, describeAssets } from './assets.js';
 import { cleanQuestions, nameVideos } from './study.js';
@@ -106,17 +107,13 @@ function describeCards(cards: Card[], focusedId?: string) {
 			? ` | columns: ${c.columns.join(', ')} | rows: ${(c.rows ?? []).map((r) => r[0]).join('; ').slice(0, 300)}`
 			: '';
 		// A study's questions in full (as JSON), since update_card replaces the whole list.
-		const study = c.type === 'study' ? ` | questions: ${JSON.stringify((c.data as StudyData | undefined)?.questions ?? [])}${describeSample(c.data as StudyData | undefined)}` : '';
+		const study = c.type === 'study' ? `${(c.data as StudyData | undefined)?.intent ? ` | intent: ${(c.data as StudyData).intent}` : ''} | questions: ${JSON.stringify((c.data as StudyData | undefined)?.questions ?? [])}${describeSample(c.data as StudyData | undefined)}` : '';
 		return `- [${c.id}] ${c.type} "${c.title}"${c.subtitle ? ` (${c.subtitle})` : ''}${c.type === 'upload' ? '' : ` topic "${topicOf(c, cards)}"`}${c.id === focusedId ? ' (in focus)' : ''}${items}${table}${body}${study}`;
 	});
 	return `Cards on screen, oldest first:\n${lines.join('\n')}`;
 }
 
 /** Mean of a 0–10 slider from its counts per value. */
-const average = (counts: number[]) => {
-	const n = counts.reduce((a, b) => a + b, 0);
-	return n ? counts.reduce((sum, c, value) => sum + c * value, 0) / n : 0;
-};
 
 /** A study's made-up results, when the card shows them (Share → Fake responses). */
 function describeSample(data: StudyData | undefined) {
@@ -131,13 +128,17 @@ function describeSample(data: StudyData | undefined) {
 			: q.type === 'video' && a.counts
 			? `watched by ${a.responses}; reactions ${a.counts.join('/')} positive/neutral/negative: ${(a.people ?? []).slice(0, 4).map((r) => `"${r.text}"`).join(' ')}`
 			: q.type === 'scale' && a.counts
-			? `average ${average(a.counts).toFixed(1)} / 10`
+			? `average ${sliderSpread(a.counts).average.toFixed(1)} / 10`
 			: a.counts
 			? (q.options ?? []).map((o, k) => `${o}: ${a.counts![k] ?? 0}`).join(', ')
+			: a.themes?.length
+			? `themes: ${a.themes.map((t) => `${t.label} ${t.share}%`).join(', ')}; e.g. ${(a.people ?? []).slice(0, 3).map((r) => `"${r.text}"`).join(' ')}`
 			: (a.people ?? []).slice(0, 5).map((r) => `"${r.text}"`).join(' ');
-		return `${label} ${a.responses} ${q.type === 'channel' || q.type === 'video' ? 'views' : 'answers'}; ${detail}`;
+		const reading = [a.takeaway, a.ageNote].filter(Boolean).join(' ');
+		return `${label} ${a.responses} ${q.type === 'channel' || q.type === 'video' ? 'views' : 'answers'}; ${detail}${reading ? `; reading: ${reading}` : ''}`;
 	});
-	return ` | SHOWING SAMPLE RESULTS (made up, not real answers): ${r.views} views, ${r.completion}% completion, rating ${r.rating}%, sentiment ${r.sentiment.positive}/${r.sentiment.neutral}/${r.sentiment.negative}% positive/neutral/negative; summary: ${r.summary}; ${perQuestion.join('; ')}`;
+	const answered = (r.answers ?? []).map((a) => `"${a.question}" → ${a.answer} (${a.confidence} confidence)`).join('; ');
+	return ` | SHOWING SAMPLE RESULTS (made up, not real answers): ${r.views} views, ${r.completion}% completion, rating ${r.rating}%, sentiment ${r.sentiment.positive}/${r.sentiment.neutral}/${r.sentiment.negative}% positive/neutral/negative; ${r.intent ? `set out to learn: ${r.intent}; ` : ''}summary: ${r.summary}; ${answered ? `answers: ${answered}; ` : ''}${perQuestion.join('; ')}`;
 }
 
 /** Card types the assistant can create (upload cards are the app's own). */
@@ -313,7 +314,7 @@ const allTools: Anthropic.Tool[] = [
 - "quotes": lines spoken by someone. items: title = the quote, subtitle = speaker, time = seconds.
 - "table": numbers or short facts across a few dimensions (metrics per video, counts per character, side-by-side comparisons). Pass columns (headings; the first labels the rows) and rows (arrays of cells, same length as columns). Keep cells short; use numbers for numeric cells.
 - "text": anything else; put the content in body (plain text, line breaks allowed).
-- "study": questions to share with people (a study, survey, quiz or questionnaire). Pass questions: a few short, clear drafts the user can edit on the card (they add, remove and rewrite questions there). Title: what the study is about. Sharing and collecting answers aren't available yet; say so if asked.`,
+- "study": questions to share with people (a study, survey, quiz or questionnaire). Pass questions: a few short, clear drafts the user can edit on the card (they add, remove and rewrite questions there). Pass intent: one short sentence on what the study is trying to find out (e.g. "Whether the trailer lands, and which new emotion to lead the marketing with"); shown under its title, editable there. Title: what the study is about. Sharing and collecting answers aren't available yet; say so if asked.`,
 		input_schema: {
 			type: 'object',
 			properties: {
@@ -328,6 +329,7 @@ const allTools: Anthropic.Tool[] = [
 				tab: { type: 'string', enum: VIDEO_TABS, description: 'Video cards: the tab to open it on ("viewers" for how it landed, "timeline" for when things happen).' },
 				items: itemsSchema,
 				questions: questionsSchema,
+				intent: { type: 'string', description: 'Study cards: what the study is trying to find out, one short sentence.' },
 				...tableSchema
 			},
 			required: ['type', 'title']
@@ -348,6 +350,7 @@ const allTools: Anthropic.Tool[] = [
 				body: { type: 'string' },
 				items: itemsSchema,
 				questions: { ...questionsSchema, description: 'Study cards: the whole list of questions (replaces it).' },
+				intent: { type: 'string', description: 'Study cards: what the study is trying to find out (replaces it).' },
 				...tableSchema
 			},
 			required: ['id']
@@ -386,12 +389,17 @@ type CardInput = Omit<Card, 'id' | 'data'> & {
 	videoIds?: string[];
 	focus?: ComparisonData['focus'];
 	questions?: unknown[];
+	intent?: string;
 };
 
 async function makeCard(input: CardInput): Promise<Card> {
-	const { videoId, videoIds, focus, questions, ...rest } = input;
+	const { videoId, videoIds, focus, questions, intent, ...rest } = input;
 	const card: Card = { id: crypto.randomUUID().slice(0, 8), ...rest, data: videoId ? { videoId } : undefined };
-	if (card.type === 'study') card.data = { questions: await nameVideos(cleanQuestions(questions ?? [])) };
+	if (card.type === 'study')
+		card.data = {
+			questions: await nameVideos(cleanQuestions(questions ?? [])),
+			...(typeof intent === 'string' && intent.trim() ? { intent: intent.trim() } : {})
+		};
 	if (card.type === 'video' && videoId) card.data = await videoCardData(videoId);
 	if (card.type === 'sources') {
 		if (!videoId) throw new Error('A sources card needs the videoId.');
@@ -444,7 +452,7 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 			return { shown: true, id: card.id };
 		}
 		case 'update_card': {
-			const { id: _, questions, ...changes } = input;
+			const { id: _, questions, intent, ...changes } = input;
 			const card = find();
 			// Converting to another type: the old content doesn't belong to the new template.
 			if (changes.type && changes.type !== card.type) {
@@ -455,6 +463,7 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 			}
 			Object.assign(card, changes);
 			if (card.type === 'study' && Array.isArray(questions)) card.data = { ...card.data, questions: await nameVideos(cleanQuestions(questions)) };
+			if (card.type === 'study' && typeof intent === 'string') card.data = { ...card.data, intent: intent.trim() };
 			ops.push({ op: 'update', card: { ...card } });
 			return { updated: true };
 		}

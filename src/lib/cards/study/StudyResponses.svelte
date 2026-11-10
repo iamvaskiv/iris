@@ -4,9 +4,13 @@
 	import { askable } from '#lib/ask-lumi.js';
 	import { SCALE_MAX, stepTitle, timecode, type FlatStep } from './question-types';
 	import type { StudyAsk } from './questions';
+	import { TONE_DOT } from '../viewer';
 	import type { SampleResults } from '../types';
 
-	/** One question's individual responses, newest first; filtered to an option when one is picked. */
+	/**
+	 * One question's individual responses, newest first; filtered to an option when one is picked (or, for an open
+	 * question, to one of its themes).
+	 */
 	let {
 		step,
 		answers,
@@ -25,15 +29,16 @@
 
 	const question = $derived(step.q);
 
+	const byTheme = $derived(question.type === 'open' && !!answers.themes?.length);
 	const people = $derived(
-		(answers.people ?? []).filter((p) => filter === null || p.option === filter)
+		(answers.people ?? []).filter(
+			(p) => filter === null || (byTheme ? p.theme === filter : p.option === filter)
+		)
 	);
-	const optionLabel = (k: number) => question.options?.[k] || `Option ${k + 1}`;
-	const sentimentDot = {
-		positive: 'bg-success',
-		neutral: 'bg-muted-foreground',
-		negative: 'bg-destructive'
-	};
+	const optionLabel = (k: number) =>
+		byTheme
+			? (answers.themes?.[k]?.label ?? `Theme ${k + 1}`)
+			: question.options?.[k] || `Option ${k + 1}`;
 </script>
 
 <div class="flex items-start justify-between gap-4">
@@ -48,7 +53,9 @@
 			<p class="text-caption text-muted-foreground">
 				Showing {people.length} of {filter === null
 					? answers.responses
-					: (answers.counts?.[filter] ?? 0)}
+					: byTheme
+						? Math.round(((answers.themes?.[filter]?.share ?? 0) * answers.responses) / 100)
+						: (answers.counts?.[filter] ?? 0)}
 				{question.type === 'video' ? 'reactions' : 'responses'}
 			</p>
 		{/if}
@@ -94,7 +101,7 @@
 						<span
 							class={[
 								'mt-1.5 size-2 shrink-0 rounded-full',
-								sentimentDot[person.sentiment ?? 'neutral']
+								TONE_DOT[person.sentiment ?? 'neutral']
 							]}
 							aria-hidden="true"
 						></span>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { fractionAlong } from '#lib/pointer.js';
 	import { along, sceneSegments } from './curve';
 	import { timecode } from './format';
 	import { TONE_DOT, type Tone } from './viewer';
@@ -38,8 +39,7 @@
 
 	let dragging = false;
 	function seekTo(e: PointerEvent) {
-		const box = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		onseek(Math.min(1, Math.max(0, (e.clientX - box.left) / box.width)) * duration);
+		onseek(fractionAlong(e, e.currentTarget as HTMLElement) * duration);
 	}
 	function onkeydown(e: KeyboardEvent) {
 		const by = { ArrowLeft: -5, ArrowRight: 5 }[e.key];

@@ -140,7 +140,7 @@
 	/* The Getting started card's look (brand colours washed over white, text in the brand's purple), toned down further:
 	   fainter colours and a lighter edge, so it whispers rather than calls. Dark: a muted brand purple. */
 	.hint {
-		color: var(--brand-4);
+		color: var(--lumi-ink);
 		background:
 			radial-gradient(
 				circle at 0% 0%,
@@ -153,12 +153,11 @@
 				transparent 70%
 			),
 			var(--neutral-0);
-		outline: 1px solid color-mix(in oklab, var(--brand-4) 12%, transparent);
+		outline: 1px solid var(--lumi-edge-faint);
 		outline-offset: -1px;
 		box-shadow: 0 2px 12px color-mix(in oklab, var(--brand-2) 14%, transparent);
 	}
 	:global(.dark) .hint {
-		color: color-mix(in oklab, var(--neutral-0) 90%, transparent);
 		background:
 			radial-gradient(
 				circle at 0% 0%,
@@ -171,7 +170,6 @@
 				transparent 70%
 			),
 			color-mix(in oklab, var(--brand-4) 45%, var(--neutral-900));
-		outline-color: color-mix(in oklab, var(--neutral-0) 12%, transparent);
 		box-shadow: 0 2px 12px color-mix(in oklab, var(--brand-4) 30%, transparent);
 	}
 	/* As Lumi's replies (AiDock): each word fades in out of a slight blur, one after another. */

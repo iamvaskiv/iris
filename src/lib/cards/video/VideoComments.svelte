@@ -2,7 +2,7 @@
 	import { Card, Tile } from '@latitudelabs/design-system';
 	import { askable } from '#lib/ask-lumi.js';
 	import { timecode } from '../format';
-	import { TONE_DOT, type Tone } from '../viewer';
+	import { TONE_DOT, TONE_TINT, type Tone } from '../viewer';
 	import type { InsightComment } from '../types';
 	import type { VideoQuestions } from './questions';
 
@@ -23,13 +23,6 @@
 		ask?: VideoQuestions;
 		onplay: (time: number) => void;
 	} = $props();
-
-	/** A light tint of the comment's tone, so the row reads at a glance. */
-	const TINT: Record<Tone, string> = {
-		positive: 'bg-category-green/8',
-		neutral: 'bg-muted',
-		negative: 'bg-chart-red/8'
-	};
 </script>
 
 {#if comments.length || reactions.length}
@@ -38,7 +31,7 @@
 			<li class="w-56">
 				<Tile
 					{@attach askable(ask?.comment(c))}
-					class={['h-full w-full', TINT[c.tone]]}
+					class={['h-full w-full', TONE_TINT[c.tone]]}
 					disabled={!canPlay}
 					onclick={() => onplay(c.time)}
 				>
@@ -54,7 +47,7 @@
 		{/each}
 		{#each reactions as r, i (i)}
 			<li class="w-56">
-				<Tile {@attach askable(ask?.comment(r))} class={['h-full w-full', TINT[r.tone]]}>
+				<Tile {@attach askable(ask?.comment(r))} class={['h-full w-full', TONE_TINT[r.tone]]}>
 					<span class="line-clamp-3 text-caption">“{r.text}”</span>
 					<span class="flex items-center gap-1.5 text-caption text-muted-foreground">
 						<span class={['size-1.5 shrink-0 rounded-full', TONE_DOT[r.tone]]} aria-hidden="true"

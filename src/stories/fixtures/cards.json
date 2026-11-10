@@ -1514,888 +1514,1304 @@
 			"sample": {
 				"enabled": true,
 				"results": {
-					"basis": "[4,[\"open\",\"What was your first impression of the trailer, in one sentence?\",null],[\"choice\",\"How interested are you in seeing this film?\",[\"Very interested\",\"Somewhat interested\",\"Neutral\",\"Not interested\"]],[\"choice\",\"What most influenced your interest?\",[\"The story and themes\",\"The cast\",\"The director and filmmakers\",\"The mood and visuals\",\"Nothing in particular\"]],[\"choice\",\"How emotionally engaging was the trailer?\",[\"Very engaging\",\"Somewhat engaging\",\"Not very engaging\",\"Not engaging at all\"]],[\"choice\",\"In your own words, what is the film about?\",[\"A community facing a moral choice\",\"A story of abuse and its aftermath\",\"A drama about faith\",\"I'm not sure\"]],[\"open\",\"Which moment or line from the trailer stays with you most, and why?\",null],[\"choice\",\"How likely are you to recommend this trailer to a friend?\",[\"Very likely\",\"Likely\",\"Unlikely\",\"Very unlikely\"]]]",
-					"views": 98,
+					"basis": "[6,[\"video\",null,\"What was your first impression of the trailer, in one sentence?\",\"vuvIanfCkI8R\",null],[\"scale\",4,\"test q\",null,null],[\"choice\",22,\"Character?\",[\"khm\",\"pew\"],null],[\"choice\",null,\"How interested are you in seeing this film?\",[\"Very interested\",\"Somewhat interested\",\"Neutral\",\"Not interested\"],null],[\"choice\",null,\"What most influenced your interest?\",[\"The story and themes\",\"The cast\",\"The director and filmmakers\",\"The mood and visuals\",\"Nothing in particular\"],null],[\"choice\",null,\"How emotionally engaging was the trailer?\",[\"Very engaging\",\"Somewhat engaging\",\"Not very engaging\",\"Not engaging at all\"],null],[\"choice\",null,\"In your own words, what is the film about?\",[\"A community facing a moral choice\",\"A story of abuse and its aftermath\",\"A drama about faith\",\"I'm not sure\"],null],[\"open\",null,\"Which moment or line from the trailer stays with you most, and why?\",null,null],[\"choice\",null,\"How likely are you to recommend this trailer to a friend?\",[\"Very likely\",\"Likely\",\"Unlikely\",\"Very unlikely\"],null]]",
+					"version": 4,
+					"views": 137,
 					"completion": 84,
-					"rating": 71,
+					"rating": 76,
 					"sentiment": {
 						"positive": 56,
-						"neutral": 28,
-						"negative": 16
+						"neutral": 24,
+						"negative": 20
 					},
-					"summary": "Roughly seven in ten respondents left the short trailer at least somewhat interested, and the weighty premise and ensemble cast did most of the work. The desaturated, talk-heavy tone divided people: some found it gripping and others found it slow or hard to follow. A noticeable minority were unsure what the film is actually about.",
-					"insights": [
+					"intent": "Whether the trailer lands and builds interest in the film, what drives that interest, and whether viewers grasp the premise.",
+					"summary": "Most viewers liked the trailer. It averaged 3.8 stars, and 73% found it engaging. Interest in the film is solid at 69%, driven mostly by mood and visuals rather than story. Half of respondents (51%) could not say what the film is about, so the premise does not come through.",
+					"headline": "Trailer lands and sells mood, but the premise stays unclear.",
+					"answers": [
 						{
-							"title": "Themes pull people in",
-							"body": "41% said the story and themes most influenced their interest, well ahead of the cast at 22%. The moral-choice premise is what people respond to, not star power."
+							"question": "Does the trailer land?",
+							"answer": "Yes: 3.8 of 5 stars, 73% found it engaging and 60% would recommend it.",
+							"figure": "3.8 ★",
+							"verdict": "Yes, well received overall",
+							"evidence": [
+								{
+									"id": "72ddda82",
+									"text": "62% positive reactions while watching",
+									"figure": "3.8 ★"
+								},
+								{
+									"id": "fb6136e6",
+									"text": "73% found it at least somewhat engaging",
+									"figure": "73%"
+								},
+								{
+									"id": "7e89dc59",
+									"text": "60% likely to recommend",
+									"figure": "60%"
+								}
+							],
+							"confidence": "high"
 						},
 						{
-							"title": "Premise clarity lags behind mood",
-							"body": "Only 52% read the film as a community facing a moral choice, while 27% saw it mainly as a story of abuse and 12% weren't sure. The short cut sets the tone well but leaves the central question vague for newcomers."
+							"question": "Does it make people want to see the film?",
+							"answer": "Mostly: 69% are very or somewhat interested, while 12% are not interested at all.",
+							"figure": "69%",
+							"verdict": "Mostly, with a soft middle",
+							"evidence": [
+								{
+									"id": "5a389eba",
+									"text": "28% very interested, 41% somewhat",
+									"figure": "69%"
+								},
+								{
+									"id": "7e89dc59",
+									"text": "40% unlikely to recommend it",
+									"figure": "40%"
+								}
+							],
+							"confidence": "medium"
+						},
+						{
+							"question": "What should the marketing lead with?",
+							"answer": "Mood and visuals: 34% say they drove their interest, ahead of story and themes at 27%.",
+							"figure": "Mood & visuals",
+							"verdict": "Clearly, ahead of story",
+							"evidence": [
+								{
+									"id": "cde6ca46",
+									"text": "34% picked mood and visuals",
+									"figure": "34%"
+								},
+								{
+									"id": "cde6ca46",
+									"text": "27% picked story and themes",
+									"figure": "27%"
+								}
+							],
+							"confidence": "medium"
+						},
+						{
+							"question": "Do viewers understand what the film is about?",
+							"answer": "No: 51% are not sure what it is about, and only 26% name the moral-choice premise.",
+							"figure": "51%",
+							"verdict": "No, half are lost",
+							"evidence": [
+								{
+									"id": "1e496a9d",
+									"text": "51% chose I'm not sure",
+									"figure": "51%"
+								},
+								{
+									"id": "1e496a9d",
+									"text": "26% said a community facing a moral choice",
+									"figure": "26%"
+								}
+							],
+							"confidence": "high"
 						}
 					],
+					"recommendations": [
+						{
+							"title": "Clarify the premise",
+							"body": "Half of viewers cannot say what the film is about, so add a line or title card that sets up the central choice."
+						},
+						{
+							"title": "Lead with mood and visuals",
+							"body": "Mood and visuals are the top interest driver at 34%, so build the campaign around them and use story as support."
+						},
+						{
+							"title": "Check the video and questions",
+							"body": "The video is an Inside Out 2 trailer rather than Women Talking, and the 'test q' and 'Character?' questions are unclear, so fix both before relaunching."
+						}
+					],
+					"followUps": [
+						"Why do so many people feel unsure what the film is about?",
+						"Which age group is most interested in seeing the film?",
+						"What made some viewers feel the trailer was too crowded?"
+					],
 					"quote": {
-						"text": "I couldn't tell you the whole plot, but the women sitting in that barn deciding what to do next felt heavy and real. I wanted to know what they choose.",
-						"who": "Respondent, 24–32"
+						"text": "Anxiety bursting in with all that energy; it felt exactly like my own head before a deadline.",
+						"who": "Respondent, 24–32",
+						"from": {
+							"id": "073edcce",
+							"theme": 0
+						}
 					},
 					"questions": {
 						"72ddda82": {
-							"responses": 96,
+							"responses": 135,
+							"stars": 3.8,
+							"label": "Trailer rating",
+							"takeaway": "Viewers rated the trailer 3.8 of 5 stars, with 62% positive reactions and 17% negative.",
+							"duration": 144.561089,
+							"counts": [
+								84,
+								28,
+								23
+							],
 							"people": [
 								{
-									"respondent": 16,
+									"respondent": 22,
+									"age": "33–44",
+									"when": "Today",
+									"text": "Wait, where is the Women Talking stuff? Confusing",
+									"sentiment": "negative",
+									"time": 52,
+									"rating": 2
+								},
+								{
+									"respondent": 11,
 									"age": "18–23",
+									"when": "Yesterday",
+									"text": "Anxiety is the best new character already",
+									"sentiment": "positive",
+									"time": 65,
+									"rating": 5
+								},
+								{
+									"respondent": 35,
+									"age": "45+",
 									"when": "3 days ago",
-									"text": "Gave me chills near the end, when the voices came together.",
-									"sentiment": "positive"
+									"text": "Too many characters crammed in, hard to follow",
+									"sentiment": "negative",
+									"time": 111,
+									"rating": 2
+								},
+								{
+									"respondent": 2,
+									"age": "24–32",
+									"when": "5 days ago",
+									"text": "Okay, the music is nostalgic, I'm in",
+									"sentiment": "positive",
+									"time": 8,
+									"rating": 5
+								},
+								{
+									"respondent": 65,
+									"age": "18–23",
+									"when": "5 days ago",
+									"text": "Great ending, instantly want to see it",
+									"sentiment": "positive",
+									"time": 140,
+									"rating": 5
+								},
+								{
+									"respondent": 12,
+									"age": "45+",
+									"when": "6 days ago",
+									"text": "Honestly not for me, I don't need a sequel",
+									"sentiment": "negative",
+									"time": 128,
+									"rating": 1
+								},
+								{
+									"respondent": 41,
+									"age": "33–44",
+									"when": "6 days ago",
+									"text": "Solid trailer, nothing surprising",
+									"sentiment": "neutral",
+									"time": 142,
+									"rating": 3
+								},
+								{
+									"respondent": 15,
+									"age": "24–32",
+									"when": "7 days ago",
+									"text": "Riley is so grown up now, that hit me",
+									"sentiment": "positive",
+									"time": 15,
+									"rating": 4
+								},
+								{
+									"respondent": 59,
+									"age": "24–32",
+									"when": "7 days ago",
+									"text": "The panic spiral scene is weirdly relatable",
+									"sentiment": "positive",
+									"time": 102,
+									"rating": 4
 								},
 								{
 									"respondent": 67,
 									"age": "24–32",
-									"when": "4 days ago",
-									"text": "Quiet, intense and beautifully acted, and I immediately wanted to know what they decide.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 74,
-									"age": "33–44",
-									"when": "4 days ago",
-									"text": "It looks like a heavy drama with a lot of dialogue. Interesting, but I'd wait for reviews.",
-									"sentiment": "neutral"
-								},
-								{
-									"respondent": 75,
-									"age": "24–32",
-									"when": "4 days ago",
-									"text": "Intriguing setup, though the trailer was too short to tell me much.",
-									"sentiment": "neutral"
-								},
-								{
-									"respondent": 29,
-									"age": "33–44",
-									"when": "5 days ago",
-									"text": "Powerful cast, serious subject, and it doesn't feel like a typical trailer, which I liked.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 88,
-									"age": "24–32",
-									"when": "5 days ago",
-									"text": "Serious and thoughtful, the kind of film I'd want to see with someone to talk about it afterwards.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 90,
-									"age": "33–44",
-									"when": "5 days ago",
-									"text": "I felt like I was watching a play. Not much visual excitement at all.",
-									"sentiment": "negative"
-								},
-								{
-									"respondent": 6,
-									"age": "18–23",
-									"when": "6 days ago",
-									"text": "It looks like a film made of conversations, and somehow that is more gripping than action.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 92,
-									"age": "24–32",
-									"when": "6 days ago",
-									"text": "Unusual and bold, and the cast alone makes me want to watch.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 7,
-									"age": "33–44",
 									"when": "7 days ago",
-									"text": "Gripping for something so still. It feels important.",
-									"sentiment": "positive"
+									"text": "Made me tear up a little, not gonna lie",
+									"sentiment": "positive",
+									"time": 134,
+									"rating": 4
 								},
 								{
-									"respondent": 56,
-									"age": "45+",
-									"when": "8 days ago",
-									"text": "Haunting. The muted colors and the faces say a lot without explaining everything.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 81,
-									"age": "33–44",
-									"when": "9 days ago",
-									"text": "Moving and restrained, and it left me curious rather than told what to feel.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 18,
-									"age": "45+",
-									"when": "10 days ago",
-									"text": "Strong ensemble, and I trust the director to handle heavy material with care.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 94,
-									"age": "18–23",
-									"when": "10 days ago",
-									"text": "Good performances, but I'm still not sure what the actual story is.",
-									"sentiment": "neutral"
-								},
-								{
-									"respondent": 31,
-									"age": "45+",
-									"when": "10 days ago",
-									"text": "Depressing, and I couldn't work out who anyone was or what was at stake.",
-									"sentiment": "negative"
-								},
-								{
-									"respondent": 63,
-									"age": "45+",
-									"when": "11 days ago",
-									"text": "Very grey and serious. Clearly an awards-type film.",
-									"sentiment": "neutral"
-								},
-								{
-									"respondent": 45,
-									"age": "18–23",
-									"when": "11 days ago",
-									"text": "Too slow and dreary for a trailer. Nothing made me want to rush to the cinema.",
-									"sentiment": "negative"
-								},
-								{
-									"respondent": 12,
-									"age": "24–32",
-									"when": "13 days ago",
-									"text": "Somber and talky. I can tell it's well made but I'm not sure it's for me.",
-									"sentiment": "neutral"
-								}
-							]
-						},
-						"5a389eba": {
-							"responses": 93,
-							"counts": [
-								35,
-								32,
-								16,
-								10
-							],
-							"people": [
-								{
-									"respondent": 78,
-									"age": "45+",
-									"when": "Today",
-									"option": 1
-								},
-								{
-									"respondent": 73,
-									"age": "33–44",
-									"when": "Today",
-									"option": 0
-								},
-								{
-									"respondent": 16,
-									"age": "18–23",
-									"when": "3 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 11,
-									"age": "45+",
-									"when": "3 days ago",
-									"option": 3
-								},
-								{
-									"respondent": 74,
-									"age": "33–44",
-									"when": "4 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 90,
-									"age": "33–44",
-									"when": "5 days ago",
-									"option": 2
-								},
-								{
-									"respondent": 92,
-									"age": "24–32",
-									"when": "6 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 7,
-									"age": "33–44",
-									"when": "7 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 34,
-									"age": "33–44",
-									"when": "7 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 64,
-									"age": "33–44",
-									"when": "9 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 49,
+									"respondent": 5,
 									"age": "45+",
 									"when": "9 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 31,
-									"age": "45+",
-									"when": "10 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 94,
-									"age": "18–23",
-									"when": "10 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 70,
-									"age": "33–44",
-									"when": "10 days ago",
-									"option": 2
-								},
-								{
-									"respondent": 63,
-									"age": "45+",
-									"when": "11 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 45,
-									"age": "18–23",
-									"when": "11 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 85,
-									"age": "45+",
-									"when": "13 days ago",
-									"option": 3
-								},
-								{
-									"respondent": 23,
-									"age": "45+",
-									"when": "13 days ago",
-									"option": 2
-								}
-							]
-						},
-						"cde6ca46": {
-							"responses": 91,
-							"counts": [
-								37,
-								20,
-								11,
-								17,
-								6
-							],
-							"people": [
-								{
-									"respondent": 78,
-									"age": "45+",
-									"when": "Today",
-									"option": 3
-								},
-								{
-									"respondent": 73,
-									"age": "33–44",
-									"when": "Today",
-									"option": 4
-								},
-								{
-									"respondent": 22,
-									"age": "33–44",
-									"when": "Yesterday",
-									"option": 1
-								},
-								{
-									"respondent": 62,
-									"age": "45+",
-									"when": "2 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 11,
-									"age": "45+",
-									"when": "3 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 24,
-									"age": "18–23",
-									"when": "4 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 3,
-									"age": "33–44",
-									"when": "5 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 92,
-									"age": "24–32",
-									"when": "6 days ago",
-									"option": 3
-								},
-								{
-									"respondent": 34,
-									"age": "33–44",
-									"when": "7 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 64,
-									"age": "33–44",
-									"when": "9 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 49,
-									"age": "45+",
-									"when": "9 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 94,
-									"age": "18–23",
-									"when": "10 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 70,
-									"age": "33–44",
-									"when": "10 days ago",
-									"option": 3
-								},
-								{
-									"respondent": 45,
-									"age": "18–23",
-									"when": "11 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 48,
-									"age": "18–23",
-									"when": "11 days ago",
-									"option": 2
-								},
-								{
-									"respondent": 23,
-									"age": "45+",
-									"when": "13 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 57,
-									"age": "33–44",
-									"when": "13 days ago",
-									"option": 3
-								},
-								{
-									"respondent": 37,
-									"age": "18–23",
-									"when": "13 days ago",
-									"option": 2
-								}
-							]
-						},
-						"fb6136e6": {
-							"responses": 89,
-							"counts": [
-								29,
-								37,
-								16,
-								7
-							],
-							"people": [
-								{
-									"respondent": 73,
-									"age": "33–44",
-									"when": "Today",
-									"option": 0
-								},
-								{
-									"respondent": 22,
-									"age": "33–44",
-									"when": "Yesterday",
-									"option": 1
-								},
-								{
-									"respondent": 62,
-									"age": "45+",
-									"when": "2 days ago",
-									"option": 3
-								},
-								{
-									"respondent": 27,
-									"age": "45+",
-									"when": "2 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 11,
-									"age": "45+",
-									"when": "3 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 24,
-									"age": "18–23",
-									"when": "4 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 82,
-									"age": "45+",
-									"when": "4 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 2,
-									"age": "18–23",
-									"when": "4 days ago",
-									"option": 2
-								},
-								{
-									"respondent": 3,
-									"age": "33–44",
-									"when": "5 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 34,
-									"age": "33–44",
-									"when": "7 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 84,
-									"age": "45+",
-									"when": "7 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 70,
-									"age": "33–44",
-									"when": "10 days ago",
-									"option": 2
-								},
-								{
-									"respondent": 48,
-									"age": "18–23",
-									"when": "11 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 77,
-									"age": "18–23",
-									"when": "11 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 57,
-									"age": "33–44",
-									"when": "13 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 37,
-									"age": "18–23",
-									"when": "13 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 17,
-									"age": "45+",
-									"when": "13 days ago",
-									"option": 2
-								},
-								{
-									"respondent": 12,
-									"age": "24–32",
-									"when": "13 days ago",
-									"option": 0
-								}
-							]
-						},
-						"1e496a9d": {
-							"responses": 87,
-							"counts": [
-								45,
-								24,
-								8,
-								10
-							],
-							"people": [
-								{
-									"respondent": 62,
-									"age": "45+",
-									"when": "2 days ago",
-									"option": 3
-								},
-								{
-									"respondent": 27,
-									"age": "45+",
-									"when": "2 days ago",
-									"option": 3
-								},
-								{
-									"respondent": 65,
-									"age": "18–23",
-									"when": "3 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 82,
-									"age": "45+",
-									"when": "4 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 2,
-									"age": "18–23",
-									"when": "4 days ago",
-									"option": 2
-								},
-								{
-									"respondent": 75,
-									"age": "24–32",
-									"when": "4 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 3,
-									"age": "33–44",
-									"when": "5 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 84,
-									"age": "45+",
-									"when": "7 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 95,
-									"age": "45+",
-									"when": "10 days ago",
-									"option": 1
-								},
-								{
-									"respondent": 48,
-									"age": "18–23",
-									"when": "11 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 77,
-									"age": "18–23",
-									"when": "11 days ago",
-									"option": 0
+									"text": "Cute, but feels like the first film again",
+									"sentiment": "neutral",
+									"time": 78,
+									"rating": 3
 								},
 								{
 									"respondent": 13,
 									"age": "18–23",
-									"when": "11 days ago",
-									"option": 0
+									"when": "10 days ago",
+									"text": "Love that warm Pixar glow right away",
+									"sentiment": "positive",
+									"time": 3,
+									"rating": 5
 								},
 								{
-									"respondent": 43,
-									"age": "45+",
-									"when": "11 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 87,
-									"age": "24–32",
-									"when": "11 days ago",
-									"option": 0
-								},
-								{
-									"respondent": 37,
+									"respondent": 19,
 									"age": "18–23",
-									"when": "13 days ago",
-									"option": 1
+									"when": "11 days ago",
+									"text": "The puberty alarm gag made me laugh out loud",
+									"sentiment": "positive",
+									"time": 38,
+									"rating": 5
+								},
+								{
+									"respondent": 8,
+									"age": "33–44",
+									"when": "12 days ago",
+									"text": "Nice character intro but a bit slow",
+									"sentiment": "neutral",
+									"time": 26,
+									"rating": 3
+								},
+								{
+									"respondent": 18,
+									"age": "24–32",
+									"when": "12 days ago",
+									"text": "Joy being pushed aside stings a bit",
+									"sentiment": "neutral",
+									"time": 90,
+									"rating": 3
 								},
 								{
 									"respondent": 17,
-									"age": "45+",
-									"when": "13 days ago",
-									"option": 2
+									"age": "33–44",
+									"when": "12 days ago",
+									"text": "Visuals are gorgeous, the colors pop",
+									"sentiment": "positive",
+									"time": 120,
+									"rating": 5
+								}
+							]
+						},
+						"302144d6": {
+							"responses": 132,
+							"counts": [
+								4,
+								3,
+								4,
+								5,
+								7,
+								11,
+								13,
+								18,
+								25,
+								22,
+								20
+							],
+							"people": [
+								{
+									"respondent": 11,
+									"age": "18–23",
+									"when": "Yesterday",
+									"value": 5
 								},
 								{
-									"respondent": 12,
+									"respondent": 26,
+									"age": "33–44",
+									"when": "Yesterday",
+									"value": 3
+								},
+								{
+									"respondent": 9,
 									"age": "24–32",
-									"when": "13 days ago",
-									"option": 0
+									"when": "Yesterday",
+									"value": 9
+								},
+								{
+									"respondent": 3,
+									"age": "45+",
+									"when": "3 days ago",
+									"value": 10
+								},
+								{
+									"respondent": 24,
+									"age": "33–44",
+									"when": "3 days ago",
+									"value": 1
+								},
+								{
+									"respondent": 30,
+									"age": "45+",
+									"when": "3 days ago",
+									"value": 8
+								},
+								{
+									"respondent": 49,
+									"age": "33–44",
+									"when": "3 days ago",
+									"value": 4
+								},
+								{
+									"respondent": 40,
+									"age": "33–44",
+									"when": "3 days ago",
+									"value": 6
 								},
 								{
 									"respondent": 47,
 									"age": "24–32",
+									"when": "3 days ago",
+									"value": 6
+								},
+								{
+									"respondent": 2,
+									"age": "24–32",
+									"when": "5 days ago",
+									"value": 7
+								},
+								{
+									"respondent": 41,
+									"age": "33–44",
+									"when": "6 days ago",
+									"value": 9
+								},
+								{
+									"respondent": 15,
+									"age": "24–32",
+									"when": "7 days ago",
+									"value": 10
+								},
+								{
+									"respondent": 59,
+									"age": "24–32",
+									"when": "7 days ago",
+									"value": 8
+								},
+								{
+									"respondent": 67,
+									"age": "24–32",
+									"when": "7 days ago",
+									"value": 10
+								},
+								{
+									"respondent": 7,
+									"age": "33–44",
+									"when": "7 days ago",
+									"value": 7
+								},
+								{
+									"respondent": 19,
+									"age": "18–23",
+									"when": "11 days ago",
+									"value": 0
+								},
+								{
+									"respondent": 18,
+									"age": "24–32",
+									"when": "12 days ago",
+									"value": 9
+								},
+								{
+									"respondent": 54,
+									"age": "33–44",
 									"when": "13 days ago",
-									"option": 1
+									"value": 2
 								}
-							]
+							],
+							"label": "Early slider score",
+							"takeaway": "The 0:04 slider averaged 6.9 of 10, with 51% scoring 8 or more, though the question is not clearly worded."
 						},
-						"073edcce": {
-							"responses": 84,
+						"2ce63198": {
+							"responses": 130,
+							"counts": [
+								74,
+								56
+							],
 							"people": [
 								{
 									"respondent": 26,
 									"age": "33–44",
-									"when": "Today",
-									"text": "A woman saying they have a few hours to decide. The ticking clock gave it urgency.",
-									"sentiment": "positive"
+									"when": "Yesterday",
+									"option": 1
 								},
 								{
-									"respondent": 27,
+									"respondent": 9,
+									"age": "24–32",
+									"when": "Yesterday",
+									"option": 0
+								},
+								{
+									"respondent": 6,
+									"age": "18–23",
+									"when": "Yesterday",
+									"option": 1
+								},
+								{
+									"respondent": 29,
 									"age": "45+",
 									"when": "2 days ago",
-									"text": "The part about forgiveness being tested. I'm still thinking about whether I'd forgive in their place.",
-									"sentiment": "positive"
+									"option": 0
 								},
 								{
-									"respondent": 65,
-									"age": "18–23",
+									"respondent": 30,
+									"age": "45+",
 									"when": "3 days ago",
-									"text": "The title card after all the talking. It landed, though I'm not sure why it stuck with me.",
-									"sentiment": "neutral"
+									"option": 1
 								},
 								{
-									"respondent": 91,
+									"respondent": 49,
 									"age": "33–44",
 									"when": "3 days ago",
-									"text": "The mention of what happened to them. It was brief but clearly central.",
-									"sentiment": "neutral"
+									"option": 0
 								},
 								{
-									"respondent": 4,
-									"age": "24–32",
+									"respondent": 40,
+									"age": "33–44",
 									"when": "3 days ago",
-									"text": "No single line. It was so quiet and low-key that I forgot most of it right away.",
-									"sentiment": "negative"
-								},
-								{
-									"respondent": 75,
-									"age": "24–32",
-									"when": "4 days ago",
-									"text": "The wide shot of them gathered in the hayloft. It felt like a trial, but a gentle one.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 97,
-									"age": "18–23",
-									"when": "6 days ago",
-									"text": "Honestly nothing stood out. The whole thing blurred into one grey mood.",
-									"sentiment": "negative"
-								},
-								{
-									"respondent": 84,
-									"age": "45+",
-									"when": "7 days ago",
-									"text": "The line about whether they're allowed to decide for themselves. It's what the whole film seems to be about.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 19,
-									"age": "33–44",
-									"when": "9 days ago",
-									"text": "The women arguing in low voices. It was tense, but I couldn't follow who was who.",
-									"sentiment": "neutral"
-								},
-								{
-									"respondent": 32,
-									"age": "33–44",
-									"when": "10 days ago",
-									"text": "Any of the arguments between the older and younger women. Real disagreement, no easy answers.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 95,
-									"age": "45+",
-									"when": "10 days ago",
-									"text": "The ending music felt like it was trying too hard to make me emotional.",
-									"sentiment": "negative"
-								},
-								{
-									"respondent": 28,
-									"age": "33–44",
-									"when": "11 days ago",
-									"text": "The closing shot of them singing together. It was the one moment of warmth and it hit hard.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 77,
-									"age": "18–23",
-									"when": "11 days ago",
-									"text": "A close-up of a woman's face as she listens to the others. You can see everything she's thinking.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 13,
-									"age": "18–23",
-									"when": "11 days ago",
-									"text": "The shot of the fields in the morning light. It's so calm, which makes the dread worse.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 87,
-									"age": "24–32",
-									"when": "11 days ago",
-									"text": "The music swelling just as the vote is mentioned. Goosebumps.",
-									"sentiment": "positive"
-								},
-								{
-									"respondent": 43,
-									"age": "45+",
-									"when": "11 days ago",
-									"text": "Mostly the visuals: the washed-out colors and old-fashioned clothes. Not a specific line.",
-									"sentiment": "neutral"
-								},
-								{
-									"respondent": 12,
-									"age": "24–32",
-									"when": "13 days ago",
-									"text": "The moment the women weigh up staying, fighting or leaving. It boils a huge dilemma down to one simple choice.",
-									"sentiment": "positive"
+									"option": 1
 								},
 								{
 									"respondent": 47,
 									"age": "24–32",
-									"when": "13 days ago",
-									"text": "The vote scene, I think. Interesting but I wanted more context.",
-									"sentiment": "neutral"
-								}
-							]
-						},
-						"7e89dc59": {
-							"responses": 82,
-							"counts": [
-								18,
-								32,
-								22,
-								10
-							],
-							"people": [
-								{
-									"respondent": 55,
-									"age": "24–32",
-									"when": "Yesterday",
-									"option": 2
-								},
-								{
-									"respondent": 44,
-									"age": "45+",
-									"when": "Yesterday",
-									"option": 1
-								},
-								{
-									"respondent": 96,
-									"age": "18–23",
-									"when": "2 days ago",
+									"when": "3 days ago",
 									"option": 0
 								},
 								{
-									"respondent": 5,
-									"age": "24–32",
-									"when": "2 days ago",
+									"respondent": 43,
+									"age": "18–23",
+									"when": "3 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 21,
+									"age": "18–23",
+									"when": "3 days ago",
 									"option": 1
 								},
 								{
 									"respondent": 65,
 									"age": "18–23",
+									"when": "5 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 59,
+									"age": "24–32",
+									"when": "7 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 67,
+									"age": "24–32",
+									"when": "7 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 7,
+									"age": "33–44",
+									"when": "7 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 27,
+									"age": "33–44",
+									"when": "8 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 18,
+									"age": "24–32",
+									"when": "12 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 54,
+									"age": "33–44",
+									"when": "13 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 56,
+									"age": "45+",
+									"when": "13 days ago",
+									"option": 1
+								}
+							],
+							"label": "Character pick",
+							"takeaway": "Respondents split 57% khm to 43% pew, but the vague option labels make this hard to interpret."
+						},
+						"5a389eba": {
+							"responses": 127,
+							"counts": [
+								36,
+								52,
+								24,
+								15
+							],
+							"people": [
+								{
+									"respondent": 9,
+									"age": "24–32",
+									"when": "Yesterday",
+									"option": 1
+								},
+								{
+									"respondent": 6,
+									"age": "18–23",
+									"when": "Yesterday",
+									"option": 2
+								},
+								{
+									"respondent": 29,
+									"age": "45+",
+									"when": "2 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 66,
+									"age": "24–32",
+									"when": "2 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 40,
+									"age": "33–44",
 									"when": "3 days ago",
 									"option": 0
 								},
 								{
-									"respondent": 4,
+									"respondent": 47,
 									"age": "24–32",
 									"when": "3 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 43,
+									"age": "18–23",
+									"when": "3 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 21,
+									"age": "18–23",
+									"when": "3 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 65,
+									"age": "18–23",
+									"when": "5 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 98,
+									"age": "24–32",
+									"when": "5 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 7,
+									"age": "33–44",
+									"when": "7 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 27,
+									"age": "33–44",
+									"when": "8 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 14,
+									"age": "24–32",
+									"when": "10 days ago",
 									"option": 3
 								},
 								{
-									"respondent": 36,
+									"respondent": 77,
+									"age": "24–32",
+									"when": "10 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 64,
 									"age": "18–23",
+									"when": "11 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 73,
+									"age": "33–44",
+									"when": "11 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 56,
+									"age": "45+",
+									"when": "13 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 78,
+									"age": "18–23",
+									"when": "13 days ago",
+									"option": 1
+								}
+							],
+							"label": "Interest in film",
+							"takeaway": "69% are very or somewhat interested, and 12% are not interested.",
+							"ageNote": "18–23 were keenest, with about 80% at least somewhat interested."
+						},
+						"cde6ca46": {
+							"responses": 125,
+							"counts": [
+								34,
+								20,
+								11,
+								43,
+								17
+							],
+							"people": [
+								{
+									"respondent": 82,
+									"age": "45+",
+									"when": "Today",
+									"option": 0
+								},
+								{
+									"respondent": 93,
+									"age": "45+",
+									"when": "Today",
+									"option": 2
+								},
+								{
+									"respondent": 6,
+									"age": "18–23",
+									"when": "Yesterday",
+									"option": 3
+								},
+								{
+									"respondent": 66,
+									"age": "24–32",
+									"when": "2 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 101,
+									"age": "18–23",
+									"when": "2 days ago",
+									"option": 4
+								},
+								{
+									"respondent": 43,
+									"age": "18–23",
+									"when": "3 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 21,
+									"age": "18–23",
+									"when": "3 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 103,
+									"age": "33–44",
+									"when": "3 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 98,
+									"age": "24–32",
+									"when": "5 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 84,
+									"age": "33–44",
+									"when": "6 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 27,
+									"age": "33–44",
+									"when": "8 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 88,
+									"age": "45+",
+									"when": "8 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 32,
+									"age": "24–32",
+									"when": "8 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 14,
+									"age": "24–32",
+									"when": "10 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 77,
+									"age": "24–32",
+									"when": "10 days ago",
+									"option": 4
+								},
+								{
+									"respondent": 64,
+									"age": "18–23",
+									"when": "11 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 73,
+									"age": "33–44",
+									"when": "11 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 78,
+									"age": "18–23",
+									"when": "13 days ago",
+									"option": 3
+								}
+							],
+							"label": "Interest driver",
+							"takeaway": "Mood and visuals lead at 34%, ahead of story and themes at 27%."
+						},
+						"fb6136e6": {
+							"responses": 122,
+							"counts": [
+								38,
+								51,
+								24,
+								9
+							],
+							"people": [
+								{
+									"respondent": 82,
+									"age": "45+",
+									"when": "Today",
+									"option": 1
+								},
+								{
+									"respondent": 93,
+									"age": "45+",
+									"when": "Today",
+									"option": 1
+								},
+								{
+									"respondent": 101,
+									"age": "18–23",
+									"when": "2 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 103,
+									"age": "33–44",
+									"when": "3 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 16,
+									"age": "33–44",
 									"when": "3 days ago",
 									"option": 1
 								},
 								{
-									"respondent": 8,
-									"age": "18–23",
-									"when": "3 days ago",
+									"respondent": 86,
+									"age": "45+",
+									"when": "4 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 98,
+									"age": "24–32",
+									"when": "5 days ago",
 									"option": 1
 								},
 								{
-									"respondent": 97,
-									"age": "18–23",
+									"respondent": 84,
+									"age": "33–44",
 									"when": "6 days ago",
 									"option": 1
 								},
 								{
-									"respondent": 15,
+									"respondent": 99,
 									"age": "18–23",
+									"when": "6 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 88,
+									"age": "45+",
 									"when": "8 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 32,
+									"age": "24–32",
+									"when": "8 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 77,
+									"age": "24–32",
+									"when": "10 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 42,
+									"age": "33–44",
+									"when": "10 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 91,
+									"age": "24–32",
+									"when": "10 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 73,
+									"age": "33–44",
+									"when": "11 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 31,
+									"age": "24–32",
+									"when": "12 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 78,
+									"age": "18–23",
+									"when": "13 days ago",
 									"option": 0
 								},
 								{
 									"respondent": 20,
 									"age": "18–23",
-									"when": "9 days ago",
-									"option": 2
-								},
-								{
-									"respondent": 41,
-									"age": "45+",
-									"when": "9 days ago",
-									"option": 2
-								},
-								{
-									"respondent": 95,
-									"age": "45+",
-									"when": "10 days ago",
+									"when": "13 days ago",
 									"option": 1
-								},
+								}
+							],
+							"label": "Emotional engagement",
+							"takeaway": "73% found the trailer engaging, with 31% saying very engaging."
+						},
+						"1e496a9d": {
+							"responses": 120,
+							"counts": [
+								31,
+								17,
+								11,
+								61
+							],
+							"people": [
 								{
-									"respondent": 32,
-									"age": "33–44",
-									"when": "10 days ago",
+									"respondent": 93,
+									"age": "45+",
+									"when": "Today",
 									"option": 2
 								},
 								{
-									"respondent": 87,
+									"respondent": 61,
 									"age": "24–32",
-									"when": "11 days ago",
+									"when": "Today",
+									"option": 3
+								},
+								{
+									"respondent": 104,
+									"age": "18–23",
+									"when": "Yesterday",
+									"option": 3
+								},
+								{
+									"respondent": 101,
+									"age": "18–23",
+									"when": "2 days ago",
 									"option": 1
 								},
 								{
-									"respondent": 28,
+									"respondent": 16,
 									"age": "33–44",
-									"when": "11 days ago",
+									"when": "3 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 86,
+									"age": "45+",
+									"when": "4 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 99,
+									"age": "18–23",
+									"when": "6 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 88,
+									"age": "45+",
+									"when": "8 days ago",
 									"option": 0
 								},
 								{
-									"respondent": 47,
+									"respondent": 32,
 									"age": "24–32",
-									"when": "13 days ago",
+									"when": "8 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 10,
+									"age": "24–32",
+									"when": "9 days ago",
 									"option": 3
+								},
+								{
+									"respondent": 42,
+									"age": "33–44",
+									"when": "10 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 91,
+									"age": "24–32",
+									"when": "10 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 53,
+									"age": "24–32",
+									"when": "10 days ago",
+									"option": 0
 								},
 								{
 									"respondent": 72,
 									"age": "18–23",
-									"when": "13 days ago",
+									"when": "11 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 100,
+									"age": "18–23",
+									"when": "11 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 95,
+									"age": "24–32",
+									"when": "11 days ago",
 									"option": 2
+								},
+								{
+									"respondent": 31,
+									"age": "24–32",
+									"when": "12 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 20,
+									"age": "18–23",
+									"when": "13 days ago",
+									"option": 0
+								}
+							],
+							"label": "Grasp of premise",
+							"takeaway": "51% are not sure what the film is about, and only 26% name the moral choice.",
+							"ageNote": "45+ were the most likely to say they were not sure."
+						},
+						"073edcce": {
+							"responses": 117,
+							"label": "Memorable moment",
+							"takeaway": "Anxiety's entrance is the most memorable moment at 30%, while Joy being sidelined is divisive at 24%.",
+							"themes": [
+								{
+									"label": "Anxiety's entrance",
+									"sentiment": "positive",
+									"share": 30
+								},
+								{
+									"label": "Joy being sidelined",
+									"sentiment": "negative",
+									"share": 24
+								},
+								{
+									"label": "Humor and visuals",
+									"sentiment": "positive",
+									"share": 22
+								},
+								{
+									"label": "Riley's panic spiral",
+									"sentiment": "positive",
+									"share": 14
+								},
+								{
+									"label": "Nothing stuck",
+									"sentiment": "negative",
+									"share": 10
+								}
+							],
+							"people": [
+								{
+									"respondent": 61,
+									"age": "24–32",
+									"when": "Today",
+									"text": "The quick gags in the headquarters scene made it fun.",
+									"sentiment": "positive",
+									"theme": 2
+								},
+								{
+									"respondent": 104,
+									"age": "18–23",
+									"when": "Yesterday",
+									"text": "The puberty alarm joke. I laughed so loud.",
+									"sentiment": "positive",
+									"theme": 2
+								},
+								{
+									"respondent": 89,
+									"age": "33–44",
+									"when": "2 days ago",
+									"text": "Anxiety's line about planning for every outcome. Too real.",
+									"sentiment": "neutral",
+									"theme": 0
+								},
+								{
+									"respondent": 79,
+									"age": "45+",
+									"when": "2 days ago",
+									"text": "Seeing Joy lose control made me uneasy about where this goes.",
+									"sentiment": "negative",
+									"theme": 1
+								},
+								{
+									"respondent": 90,
+									"age": "33–44",
+									"when": "3 days ago",
+									"text": "The colors on the new emotions are so vivid.",
+									"sentiment": "positive",
+									"theme": 2
+								},
+								{
+									"respondent": 105,
+									"age": "33–44",
+									"when": "4 days ago",
+									"text": "Joy's face when she's pushed out says everything about growing up.",
+									"sentiment": "neutral",
+									"theme": 1
+								},
+								{
+									"respondent": 75,
+									"age": "33–44",
+									"when": "6 days ago",
+									"text": "The moment Anxiety takes over the console, because it shows how helpful worry can turn into control.",
+									"sentiment": "positive",
+									"theme": 0
+								},
+								{
+									"respondent": 99,
+									"age": "18–23",
+									"when": "6 days ago",
+									"text": "Joy being sidelined bugged me; I wanted her to have more.",
+									"sentiment": "negative",
+									"theme": 1
+								},
+								{
+									"respondent": 34,
+									"age": "45+",
+									"when": "7 days ago",
+									"text": "Honestly nothing stood out; it felt like a typical trailer.",
+									"sentiment": "negative",
+									"theme": 4
+								},
+								{
+									"respondent": 87,
+									"age": "45+",
+									"when": "7 days ago",
+									"text": "Can't pick one, too many things flying around.",
+									"sentiment": "negative",
+									"theme": 4
+								},
+								{
+									"respondent": 10,
+									"age": "24–32",
+									"when": "9 days ago",
+									"text": "Joy getting shoved aside. Felt sad, like losing a friend.",
+									"sentiment": "negative",
+									"theme": 1
+								},
+								{
+									"respondent": 91,
+									"age": "24–32",
+									"when": "10 days ago",
+									"text": "Anxiety arriving, I felt that in my stomach.",
+									"sentiment": "positive",
+									"theme": 0
+								},
+								{
+									"respondent": 53,
+									"age": "24–32",
+									"when": "10 days ago",
+									"text": "Riley's panic spiral at the end. I've been there at 3am.",
+									"sentiment": "positive",
+									"theme": 3
+								},
+								{
+									"respondent": 72,
+									"age": "18–23",
+									"when": "11 days ago",
+									"text": "Riley lying awake. It stayed with me because it's honest.",
+									"sentiment": "positive",
+									"theme": 3
+								},
+								{
+									"respondent": 31,
+									"age": "24–32",
+									"when": "12 days ago",
+									"text": "Anxiety bursting in with all that energy; it felt exactly like my own head before a deadline.",
+									"sentiment": "positive",
+									"theme": 0
+								},
+								{
+									"respondent": 20,
+									"age": "18–23",
+									"when": "13 days ago",
+									"text": "Anxiety's big smile while everything falls apart. Funny and a bit scary.",
+									"sentiment": "positive",
+									"theme": 0
 								}
 							]
+						},
+						"7e89dc59": {
+							"responses": 115,
+							"counts": [
+								25,
+								44,
+								32,
+								14
+							],
+							"people": [
+								{
+									"respondent": 74,
+									"age": "45+",
+									"when": "Yesterday",
+									"option": 1
+								},
+								{
+									"respondent": 79,
+									"age": "45+",
+									"when": "2 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 89,
+									"age": "33–44",
+									"when": "2 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 83,
+									"age": "45+",
+									"when": "3 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 28,
+									"age": "24–32",
+									"when": "4 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 71,
+									"age": "45+",
+									"when": "4 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 23,
+									"age": "45+",
+									"when": "5 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 75,
+									"age": "33–44",
+									"when": "6 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 34,
+									"age": "45+",
+									"when": "7 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 87,
+									"age": "45+",
+									"when": "7 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 94,
+									"age": "18–23",
+									"when": "7 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 39,
+									"age": "45+",
+									"when": "8 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 92,
+									"age": "18–23",
+									"when": "9 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 53,
+									"age": "24–32",
+									"when": "10 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 81,
+									"age": "18–23",
+									"when": "10 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 72,
+									"age": "18–23",
+									"when": "11 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 100,
+									"age": "18–23",
+									"when": "11 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 95,
+									"age": "24–32",
+									"when": "11 days ago",
+									"option": 1
+								}
+							],
+							"label": "Likelihood to recommend",
+							"takeaway": "60% would likely recommend the trailer, but 40% are unlikely to."
 						}
 					},
 					"by": "lumi"
@@ -6388,6 +6804,771 @@
 									"sentiment": "positive"
 								}
 							]
+						}
+					},
+					"by": "lumi"
+				}
+			}
+		}
+	},
+	"Demo: Inside Out 2 · Inside Out 2 trailer study": {
+		"id": "7e83395d",
+		"type": "study",
+		"title": "Inside Out 2 trailer study",
+		"data": {
+			"questions": [
+				{
+					"id": "d63c2a3e",
+					"type": "video",
+					"text": "",
+					"videoId": "vuvIanfCkI8R",
+					"questions": [
+						{
+							"id": "778fe4f1",
+							"type": "scale",
+							"text": "How do you feel about the new emotions?",
+							"time": 66
+						},
+						{
+							"id": "11703c95",
+							"type": "open",
+							"text": "What went through your mind when Anxiety bottled up Joy and the others?",
+							"placeholder": "My first reaction was…",
+							"time": 109
+						}
+					],
+					"videoName": "Inside Out 2 | Trailer 1"
+				},
+				{
+					"id": "f9372da8",
+					"type": "choice",
+					"text": "Which new emotion would you most like to see more of?",
+					"options": [
+						"Anxiety",
+						"Embarrassment",
+						"Envy",
+						"Ennui"
+					]
+				}
+			],
+			"sample": {
+				"enabled": true,
+				"results": {
+					"basis": "[6,[\"video\",null,\"\",\"vuvIanfCkI8R\",null],[\"scale\",66,\"How do you feel about the new emotions?\",null,null],[\"open\",109,\"What went through your mind when Anxiety bottled up Joy and the others?\",null,null],[\"choice\",null,\"Which new emotion would you most like to see more of?\",[\"Anxiety\",\"Embarrassment\",\"Envy\",\"Ennui\"],null]]",
+					"version": 4,
+					"views": 146,
+					"completion": 88,
+					"rating": 84,
+					"sentiment": {
+						"positive": 66,
+						"neutral": 21,
+						"negative": 13
+					},
+					"intent": "Whether the trailer lands, how viewers feel about the new emotions, and which one to lead the marketing with.",
+					"summary": "The audience mostly loved the trailer: it averaged 4.2 stars, and 73% rated the new emotions 7 or higher. The Anxiety-bottles-Joy scene got a mixed but engaged reaction, with many finding it relatable and about a quarter worried for Joy. Anxiety was the clear favourite for more screen time, ahead of Embarrassment.",
+					"headline": "Trailer lands; lead the marketing with Anxiety.",
+					"answers": [
+						{
+							"question": "Does the trailer land?",
+							"answer": "Yes: it averaged 4.2 of 5 stars and 72% of reactions were positive.",
+							"figure": "4.2 ★",
+							"verdict": "Yes, clearly well received",
+							"evidence": [
+								{
+									"id": "d63c2a3e",
+									"text": "72% positive reactions while watching",
+									"figure": "72%"
+								},
+								{
+									"id": "d63c2a3e",
+									"text": "Average star rating",
+									"figure": "4.2 ★"
+								}
+							],
+							"confidence": "high"
+						},
+						{
+							"question": "Do people like the new emotions?",
+							"answer": "Mostly: the average was 7.3 out of 10 and 73% scored 7 or more.",
+							"figure": "7.3 / 10",
+							"verdict": "Mostly, with a small cold minority",
+							"evidence": [
+								{
+									"id": "778fe4f1",
+									"text": "73% scored 7 or higher",
+									"figure": "73%"
+								}
+							],
+							"confidence": "high"
+						},
+						{
+							"question": "Which new emotion should lead?",
+							"answer": "Anxiety, picked by 42%, well ahead of Embarrassment at 27%.",
+							"figure": "Anxiety",
+							"verdict": "Clearly, ahead of Embarrassment",
+							"evidence": [
+								{
+									"id": "f9372da8",
+									"text": "42% picked Anxiety",
+									"figure": "42%"
+								},
+								{
+									"id": "f9372da8",
+									"text": "27% picked Embarrassment",
+									"figure": "27%"
+								}
+							],
+							"confidence": "high"
+						},
+						{
+							"question": "How does the Anxiety takeover of Joy feel?",
+							"answer": "Mixed: 32% found it relatable but 24% worried for Joy and the others.",
+							"figure": "24% uneasy",
+							"verdict": "Partly: a quarter felt uneasy",
+							"evidence": [
+								{
+									"id": "11703c95",
+									"text": "24% worried about Joy",
+									"figure": "24%"
+								},
+								{
+									"id": "11703c95",
+									"text": "32% found Anxiety relatable",
+									"figure": "32%"
+								}
+							],
+							"confidence": "medium"
+						}
+					],
+					"recommendations": [
+						{
+							"title": "Lead with Anxiety",
+							"body": "42% want more of Anxiety and many find her relatable, so make her the face of the campaign."
+						},
+						{
+							"title": "Keep Joy's fate reassuring",
+							"body": "A quarter felt uneasy when Joy was bottled up, so pair that scene with warmth or humour in cuts."
+						},
+						{
+							"title": "Give Embarrassment a supporting push",
+							"body": "At 27% it is a strong second pick and could anchor funny spots for teens."
+						}
+					],
+					"followUps": [
+						"Why do some people feel uneasy when Anxiety bottles up Joy?",
+						"How do the youngest viewers rate the new emotions compared with older ones?",
+						"What do people who scored the new emotions under 5 dislike?"
+					],
+					"quote": {
+						"text": "Honestly, Anxiety taking over felt way too real. That spiral of overthinking is exactly my brain at 2am.",
+						"who": "Respondent, 24–32",
+						"from": {
+							"id": "11703c95",
+							"theme": 0
+						}
+					},
+					"questions": {
+						"d63c2a3e": {
+							"responses": 142,
+							"stars": 4.2,
+							"label": "Trailer rating",
+							"takeaway": "Viewers rated the trailer 4.2 stars, with 72% of reactions positive.",
+							"ageNote": "Viewers 45+ were a little cooler, mostly 3 to 4 stars.",
+							"duration": 144.561089,
+							"counts": [
+								102,
+								26,
+								14
+							],
+							"people": [
+								{
+									"respondent": 49,
+									"age": "24–32",
+									"when": "Today",
+									"text": "Riley is a teenager now, that already hits me in the feels.",
+									"sentiment": "positive",
+									"time": 14,
+									"rating": 5
+								},
+								{
+									"respondent": 89,
+									"age": "24–32",
+									"when": "Today",
+									"text": "Anxiety's energy is perfect, the animation is so expressive.",
+									"sentiment": "positive",
+									"time": 102,
+									"rating": 5
+								},
+								{
+									"respondent": 22,
+									"age": "33–44",
+									"when": "Today",
+									"text": "Wait, they are bottling up Joy? That got dark fast.",
+									"sentiment": "neutral",
+									"time": 110,
+									"rating": 3
+								},
+								{
+									"respondent": 104,
+									"age": "18–23",
+									"when": "Today",
+									"text": "Pixar did it again, day one for me.",
+									"sentiment": "positive",
+									"time": 141,
+									"rating": 5
+								},
+								{
+									"respondent": 52,
+									"age": "18–23",
+									"when": "Yesterday",
+									"text": "Embarrassment hiding in his hoodie is gold.",
+									"sentiment": "positive",
+									"time": 70,
+									"rating": 5
+								},
+								{
+									"respondent": 24,
+									"age": "24–32",
+									"when": "2 days ago",
+									"text": "Oh I missed these characters so much!",
+									"sentiment": "positive",
+									"time": 6,
+									"rating": 5
+								},
+								{
+									"respondent": 27,
+									"age": "33–44",
+									"when": "3 days ago",
+									"text": "Envy is tiny and so cute, I want more of her.",
+									"sentiment": "positive",
+									"time": 85,
+									"rating": 4
+								},
+								{
+									"respondent": 3,
+									"age": "18–23",
+									"when": "4 days ago",
+									"text": "Ennui with her phone is the funniest thing, that is me.",
+									"sentiment": "positive",
+									"time": 78,
+									"rating": 5
+								},
+								{
+									"respondent": 18,
+									"age": "45+",
+									"when": "4 days ago",
+									"text": "The score here is great, it builds nicely.",
+									"sentiment": "positive",
+									"time": 130,
+									"rating": 4
+								},
+								{
+									"respondent": 34,
+									"age": "18–23",
+									"when": "6 days ago",
+									"text": "New emotions arriving is such a fun idea!",
+									"sentiment": "positive",
+									"time": 58,
+									"rating": 5
+								},
+								{
+									"respondent": 26,
+									"age": "33–44",
+									"when": "6 days ago",
+									"text": "Taking my niece to this for sure.",
+									"sentiment": "positive",
+									"time": 136,
+									"rating": 4
+								},
+								{
+									"respondent": 20,
+									"age": "24–32",
+									"when": "7 days ago",
+									"text": "Cute ending, can't wait for June.",
+									"sentiment": "positive",
+									"time": 143,
+									"rating": 5
+								},
+								{
+									"respondent": 21,
+									"age": "33–44",
+									"when": "9 days ago",
+									"text": "Joy looks a bit sidelined here, hope she gets enough to do.",
+									"sentiment": "neutral",
+									"time": 95,
+									"rating": 3
+								},
+								{
+									"respondent": 42,
+									"age": "45+",
+									"when": "9 days ago",
+									"text": "Too much going on at once, the pacing felt frantic here.",
+									"sentiment": "negative",
+									"time": 124,
+									"rating": 1
+								},
+								{
+									"respondent": 116,
+									"age": "24–32",
+									"when": "10 days ago",
+									"text": "That made me tear up a bit, it is so true to growing up.",
+									"sentiment": "positive",
+									"time": 116,
+									"rating": 5
+								},
+								{
+									"respondent": 43,
+									"age": "45+",
+									"when": "12 days ago",
+									"text": "Nice art but the opening is pretty slow.",
+									"sentiment": "neutral",
+									"time": 22,
+									"rating": 3
+								},
+								{
+									"respondent": 54,
+									"age": "18–23",
+									"when": "12 days ago",
+									"text": "The puberty alarm gag is hilarious.",
+									"sentiment": "positive",
+									"time": 38,
+									"rating": 5
+								},
+								{
+									"respondent": 112,
+									"age": "33–44",
+									"when": "12 days ago",
+									"text": "Do we really need another sequel? Feels like a safe bet.",
+									"sentiment": "negative",
+									"time": 47,
+									"rating": 2
+								}
+							]
+						},
+						"778fe4f1": {
+							"responses": 137,
+							"counts": [
+								1,
+								1,
+								3,
+								4,
+								6,
+								10,
+								12,
+								22,
+								32,
+								30,
+								16
+							],
+							"people": [
+								{
+									"respondent": 22,
+									"age": "33–44",
+									"when": "Today",
+									"value": 8
+								},
+								{
+									"respondent": 49,
+									"age": "24–32",
+									"when": "Today",
+									"value": 9
+								},
+								{
+									"respondent": 104,
+									"age": "18–23",
+									"when": "Today",
+									"value": 1
+								},
+								{
+									"respondent": 89,
+									"age": "24–32",
+									"when": "Today",
+									"value": 2
+								},
+								{
+									"respondent": 52,
+									"age": "18–23",
+									"when": "Yesterday",
+									"value": 3
+								},
+								{
+									"respondent": 92,
+									"age": "45+",
+									"when": "3 days ago",
+									"value": 9
+								},
+								{
+									"respondent": 18,
+									"age": "45+",
+									"when": "4 days ago",
+									"value": 5
+								},
+								{
+									"respondent": 3,
+									"age": "18–23",
+									"when": "4 days ago",
+									"value": 6
+								},
+								{
+									"respondent": 41,
+									"age": "33–44",
+									"when": "5 days ago",
+									"value": 0
+								},
+								{
+									"respondent": 80,
+									"age": "33–44",
+									"when": "5 days ago",
+									"value": 8
+								},
+								{
+									"respondent": 26,
+									"age": "33–44",
+									"when": "6 days ago",
+									"value": 4
+								},
+								{
+									"respondent": 34,
+									"age": "18–23",
+									"when": "6 days ago",
+									"value": 7
+								},
+								{
+									"respondent": 108,
+									"age": "18–23",
+									"when": "6 days ago",
+									"value": 10
+								},
+								{
+									"respondent": 86,
+									"age": "33–44",
+									"when": "8 days ago",
+									"value": 6
+								},
+								{
+									"respondent": 96,
+									"age": "45+",
+									"when": "10 days ago",
+									"value": 7
+								},
+								{
+									"respondent": 116,
+									"age": "24–32",
+									"when": "10 days ago",
+									"value": 10
+								},
+								{
+									"respondent": 68,
+									"age": "18–23",
+									"when": "13 days ago",
+									"value": 8
+								},
+								{
+									"respondent": 15,
+									"age": "33–44",
+									"when": "13 days ago",
+									"value": 9
+								}
+							],
+							"label": "Like the new emotions",
+							"takeaway": "The new emotions score 7.3 out of 10 on average, and 73% gave 7 or more.",
+							"ageNote": "Viewers 18–23 scored highest, with most giving 9 or 10."
+						},
+						"11703c95": {
+							"responses": 133,
+							"label": "Reaction to Anxiety",
+							"takeaway": "32% found Anxiety relatable, while 24% worried for Joy and the others.",
+							"ageNote": "Viewers 33–44 were most likely to worry about Joy.",
+							"themes": [
+								{
+									"label": "Relatable anxiety",
+									"sentiment": "positive",
+									"share": 32
+								},
+								{
+									"label": "Worry for Joy",
+									"sentiment": "negative",
+									"share": 24
+								},
+								{
+									"label": "Clever and funny",
+									"sentiment": "positive",
+									"share": 24
+								},
+								{
+									"label": "Just curious",
+									"sentiment": "neutral",
+									"share": 20
+								}
+							],
+							"people": [
+								{
+									"respondent": 49,
+									"age": "24–32",
+									"when": "Today",
+									"text": "Honestly, Anxiety taking over felt way too real. That spiral of overthinking is exactly my brain at 2am.",
+									"sentiment": "positive",
+									"theme": 0
+								},
+								{
+									"respondent": 104,
+									"age": "18–23",
+									"when": "Today",
+									"text": "I felt seen. Sometimes anxiety really does lock everything else away.",
+									"sentiment": "positive",
+									"theme": 0
+								},
+								{
+									"respondent": 89,
+									"age": "24–32",
+									"when": "Today",
+									"text": "Relatable and a bit sad at once.",
+									"sentiment": "positive",
+									"theme": 0
+								},
+								{
+									"respondent": 115,
+									"age": "33–44",
+									"when": "Today",
+									"text": "Curious how Riley will handle it without Joy.",
+									"sentiment": "neutral",
+									"theme": 3
+								},
+								{
+									"respondent": 130,
+									"age": "45+",
+									"when": "Today",
+									"text": "Not sure yet, I'd have to see the whole film.",
+									"sentiment": "neutral",
+									"theme": 3
+								},
+								{
+									"respondent": 141,
+									"age": "33–44",
+									"when": "2 days ago",
+									"text": "Is Riley going to be okay? That looked scary for a kids' film.",
+									"sentiment": "negative",
+									"theme": 1
+								},
+								{
+									"respondent": 92,
+									"age": "45+",
+									"when": "3 days ago",
+									"text": "I worried the film would get too heavy for younger kids.",
+									"sentiment": "negative",
+									"theme": 1
+								},
+								{
+									"respondent": 33,
+									"age": "45+",
+									"when": "3 days ago",
+									"text": "Nothing much, just waiting for the next scene.",
+									"sentiment": "neutral",
+									"theme": 3
+								},
+								{
+									"respondent": 80,
+									"age": "33–44",
+									"when": "5 days ago",
+									"text": "That is exactly what my teens went through, it is surprisingly accurate.",
+									"sentiment": "positive",
+									"theme": 0
+								},
+								{
+									"respondent": 127,
+									"age": "18–23",
+									"when": "5 days ago",
+									"text": "Hmm, I wonder who ends up saving the day.",
+									"sentiment": "neutral",
+									"theme": 3
+								},
+								{
+									"respondent": 108,
+									"age": "18–23",
+									"when": "6 days ago",
+									"text": "Ha, Joy shaking the bottle made me laugh out loud.",
+									"sentiment": "positive",
+									"theme": 2
+								},
+								{
+									"respondent": 20,
+									"age": "24–32",
+									"when": "7 days ago",
+									"text": "Clever way to show a mind overruling itself.",
+									"sentiment": "positive",
+									"theme": 2
+								},
+								{
+									"respondent": 86,
+									"age": "33–44",
+									"when": "8 days ago",
+									"text": "Wow, this is going to hit adults as hard as kids.",
+									"sentiment": "positive",
+									"theme": 0
+								},
+								{
+									"respondent": 96,
+									"age": "45+",
+									"when": "10 days ago",
+									"text": "Uncomfortable. Locking away the happy feelings seems like a bad plan.",
+									"sentiment": "negative",
+									"theme": 1
+								},
+								{
+									"respondent": 116,
+									"age": "24–32",
+									"when": "10 days ago",
+									"text": "Anxiety is clearly the villain, but she thinks she is helping. Love that.",
+									"sentiment": "positive",
+									"theme": 2
+								},
+								{
+									"respondent": 15,
+									"age": "33–44",
+									"when": "13 days ago",
+									"text": "I just thought, poor Joy, she is going to be so lost without a say.",
+									"sentiment": "negative",
+									"theme": 1
+								},
+								{
+									"respondent": 68,
+									"age": "18–23",
+									"when": "13 days ago",
+									"text": "The way they trap them was funny and cute, very Pixar.",
+									"sentiment": "positive",
+									"theme": 2
+								},
+								{
+									"respondent": 5,
+									"age": "24–32",
+									"when": "13 days ago",
+									"text": "Wondering how they get out, I hope it is not too neat.",
+									"sentiment": "neutral",
+									"theme": 3
+								}
+							]
+						},
+						"f9372da8": {
+							"responses": 128,
+							"counts": [
+								54,
+								35,
+								19,
+								20
+							],
+							"people": [
+								{
+									"respondent": 115,
+									"age": "33–44",
+									"when": "Today",
+									"option": 0
+								},
+								{
+									"respondent": 130,
+									"age": "45+",
+									"when": "Today",
+									"option": 1
+								},
+								{
+									"respondent": 141,
+									"age": "33–44",
+									"when": "2 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 113,
+									"age": "33–44",
+									"when": "2 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 92,
+									"age": "45+",
+									"when": "3 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 33,
+									"age": "45+",
+									"when": "3 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 58,
+									"age": "24–32",
+									"when": "3 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 90,
+									"age": "33–44",
+									"when": "4 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 127,
+									"age": "18–23",
+									"when": "5 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 108,
+									"age": "18–23",
+									"when": "6 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 20,
+									"age": "24–32",
+									"when": "7 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 129,
+									"age": "45+",
+									"when": "7 days ago",
+									"option": 1
+								},
+								{
+									"respondent": 57,
+									"age": "18–23",
+									"when": "8 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 101,
+									"age": "24–32",
+									"when": "9 days ago",
+									"option": 3
+								},
+								{
+									"respondent": 116,
+									"age": "24–32",
+									"when": "10 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 74,
+									"age": "18–23",
+									"when": "10 days ago",
+									"option": 2
+								},
+								{
+									"respondent": 15,
+									"age": "33–44",
+									"when": "13 days ago",
+									"option": 0
+								},
+								{
+									"respondent": 5,
+									"age": "24–32",
+									"when": "13 days ago",
+									"option": 1
+								}
+							],
+							"label": "Lead pick",
+							"takeaway": "Anxiety is the top pick at 42%, ahead of Embarrassment at 27%.",
+							"ageNote": "Viewers 18–23 leaned to Embarrassment and Ennui more than others."
 						}
 					},
 					"by": "lumi"

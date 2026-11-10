@@ -14,6 +14,7 @@
 	import GettingStarted from '#lib/components/GettingStarted.svelte';
 	import { resolve } from '$app/paths';
 	import AiDock, { timeOfDayGreeting, type DockMode } from '#lib/components/AiDock.svelte';
+	import { readLocal, removeLocal, writeLocal } from '#lib/local.js';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import BrandButton from '#lib/components/BrandButton.svelte';
 	import ZoomIcon from '#lib/components/ZoomIcon.svelte';
@@ -84,6 +85,28 @@
 	let draft = $state('');
 	/** Lumi's dock size, changed with its pull tab. */
 	let dockMode = $state<DockMode>('default');
+
+	// Lumi's dock remembers its state on this device: its size (everywhere), and an unsent message (per project), so a
+	// reload or coming back later picks up where you left off. Read after mount (not during server rendering); written
+	// only after that, so the defaults never overwrite what was saved.
+	const DOCK_KEY = 'iris.dock.mode';
+	const draftKey = $derived(`iris.dock.draft.${data.project.id}`);
+	let dockRestored = $state(false);
+	onMount(() => {
+		const mode = readLocal(DOCK_KEY);
+		if (mode === 'compact' || mode === 'default' || mode === 'expanded') dockMode = mode;
+		const saved = readLocal(draftKey);
+		if (saved && !draft) draft = saved;
+		dockRestored = true;
+	});
+	$effect(() => {
+		if (dockRestored) writeLocal(DOCK_KEY, dockMode);
+	});
+	$effect(() => {
+		if (!dockRestored) return;
+		if (draft.trim()) writeLocal(draftKey, draft);
+		else removeLocal(draftKey);
+	});
 	/** The conversation for the expanded dock; the message being sent shows right away, Lumi's answer when it lands. */
 	// svelte-ignore state_referenced_locally
 	let messages = $state<TranscriptMessage[]>(data.transcript);

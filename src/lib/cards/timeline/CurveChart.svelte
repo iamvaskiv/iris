@@ -36,8 +36,7 @@
 
 	function onclick(e: MouseEvent) {
 		if (!onseek) return;
-		const box = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		onseek(Math.min(1, Math.max(0, (e.clientX - box.left) / box.width)) * duration);
+		onseek(fractionAlong(e, e.currentTarget as HTMLElement) * duration);
 	}
 </script>
 

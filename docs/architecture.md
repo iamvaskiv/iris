@@ -314,15 +314,54 @@ sequenceDiagram
     box rgba(244,36,255,0.15) AI
         participant Cl as Claude (Lumi)
     end
-    SC->>API: enabled: true
-    alt no results yet, questions changed, or last time was generic filler
-        API->>Cl: questions + JSON schema (summary, insights, quote, shares, answers)
+    SC->>API: enabled: true (refresh: true to write them again)
+    alt no results yet, questions changed, generic filler last time, an older shape, or refresh
+        API->>Cl: questions + JSON schema (intent, key questions answered, recommendations, follow-ups, per question: label, takeaway, age note, themes, stars, shares, answers)
         Cl-->>API: written results (or an error: generic filler)
-        API->>API: views, completion, counts per option that add up, respondents per question
+        API->>API: views, completion, counts per option that add up, theme shares, respondents per question
     end
     API->>S: save as the card's sample (enabled)
     API-->>SC: sample results
     SC->>SC: switch to results, badge "Sample data"
+```
+
+## What a study's results answer
+
+Sample results answer what the study set out to learn, not just tally it. When Lumi writes them (`sampleResults` in
+`study.ts`), she first works out the author's intent from how the study is built (what each video is for, why a
+question pops up where it does, what comparing videos or offering a channel says), then answers the two to four
+questions behind it, each with its evidence (study questions by id, with the finding there) and how sure the sample
+makes it. Per question she names what it measures, sums it up, notes an age band that stood out, and groups open
+answers into themes. The app works the counts out so they add up, and the card's numbers come from those counts
+(`study/insights.ts`): headline numbers in the study's own terms, a slider's spread, a multiple-choice leader, a
+video's stars, a channel's most opened video, where people dropped off, and, when videos are shown one after another,
+which did better. Results in the older shape (`version` below 2) are written again the first time the card shows them.
+
+```mermaid
+---
+config:
+  look: classic
+---
+flowchart LR
+    setup["Study setup<br/>steps, types, timings"] --> lumi["Lumi writes results<br/>study.ts"]
+    lumi --> answers["Intent, key questions answered<br/>evidence, confidence"]
+    lumi --> per["Per question<br/>label, takeaway, age note, themes, stars"]
+    lumi --> next["Recommendations<br/>follow-ups"]
+    lumi --> counts["Shares → counts that add up<br/>(the app)"]
+    counts --> numbers["study/insights.ts<br/>headlines, spread, leader, drop-off, compared videos"]
+    answers --> overview["Overview tab<br/>verdict, answer tiles, what to do next + quote, videos compared / most opened"]
+    numbers --> overview
+    per --> pane["Questions tab<br/>takeaways, themes, spread, video strip, responses"]
+    numbers --> pane
+    next --> overview
+    next --> slides["Lane next steps"]
+
+    classDef ui stroke:#4c7dff,fill:#4c7dff33
+    classDef server stroke:#00bd32,fill:#00bd3233
+    classDef ai stroke:#f424ff,fill:#f424ff33
+    class setup,overview,pane,slides ui
+    class counts,numbers server
+    class lumi,answers,per,next ai
 ```
 
 ## Viewer data sources

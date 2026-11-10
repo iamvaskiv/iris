@@ -1,6 +1,7 @@
 import { getContext, setContext } from 'svelte';
 import { SCALE_MAX, SCALE_MIN, flatSteps } from './study/question-types';
 import { toneOf } from './viewer';
+import { sliderSpread } from './study/insights';
 import type { Card, InsightComment, Insights, StudyData, ViewerData } from './types';
 
 /**
@@ -82,14 +83,13 @@ export function studySources(cards: Card[], videoId: string): ViewerSource[] {
 							.sort((x, y) => y.count - x.count)
 					});
 				if (result?.responses && popUp.type === 'scale' && result.counts?.length) {
-					const votes = result.counts.reduce((n, c) => n + c, 0);
-					const sum = result.counts.reduce((n, c, value) => n + c * value, 0);
-					if (votes)
+					const spread = sliderSpread(result.counts);
+					if (spread.n)
 						questions.push({
 							question: popUp.text,
 							type: 'scale',
 							responses: result.responses,
-							average: Math.round((sum / votes) * 10) / 10,
+							average: Math.round(spread.average * 10) / 10,
 							max: SCALE_MAX
 						});
 				}

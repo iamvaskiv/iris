@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { RESULTS_VERSION } from './study/insights';
 	import { page } from '$app/state';
 	import {
 		Badge,
@@ -88,13 +89,17 @@
 	let questions = $state<Question[]>([]);
 	let selected = $state(0);
 	let sample = $state<StudyData['sample']>();
+	/** What the study is trying to find out: Lumi drafts it, edited under the title (else her reading of the results). */
+	let intent = $state('');
 	$effect.pre(() => {
 		const data = card.data as StudyData | undefined;
 		const latest = $state.snapshot(data?.questions ?? []);
 		const latestSample = $state.snapshot(data?.sample);
+		const latestIntent = data?.intent ?? data?.sample?.results?.intent ?? '';
 		untrack(() => {
 			questions = latest;
 			sample = latestSample;
+			intent = latestIntent;
 			selected = Math.min(selected, Math.max(0, flatSteps(latest).length - 1));
 		});
 	});
@@ -125,6 +130,20 @@
 		await tick();
 		list?.querySelector('[aria-current=step]')?.scrollIntoView({ block: 'nearest' });
 	};
+
+	/** Saves the intent once it's edited (on leaving the field, or Enter). */
+	function saveIntent() {
+		const projectId = page.params.id;
+		const data = card.data as StudyData | undefined;
+		intent = intent.trim();
+		if (!projectId || intent === (data?.intent ?? data?.sample?.results?.intent ?? '')) return;
+		fetch(`/api/projects/${projectId}/cards/${card.id}`, {
+			method: 'PUT',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({ intent })
+		}).catch((e) => console.error('Saving the intent failed', e));
+		updateCard?.(card.id, { ...card.data, intent });
+	}
 
 	/** Saves a moment after the last edit. Storybook has no project, so nothing is saved there. */
 	let timer: ReturnType<typeof setTimeout>;
@@ -474,19 +493,23 @@
 	let writing = $state(false);
 	let sampleError = $state('');
 
-	// Sample results from before individual responses existed: have Lumi write them again (once per page view).
+	// Sample results from before individual responses existed, or before Lumi answered what the study set out to learn:
+	// have her write them again (once per page view).
 	let refreshed = false;
 	$effect(() => {
 		// Once per study: its insights side, beside it in lanes, leaves it to the setup.
 		const stale =
-			part !== 'insights' && results && questions.some((q) => !results.questions[q.id]?.people);
+			part !== 'insights' &&
+			results &&
+			(results.version !== RESULTS_VERSION ||
+				questions.some((q) => !results.questions[q.id]?.people));
 		if (stale && !refreshed && !writing) {
 			refreshed = true;
 			setSample(true);
 		}
 	});
 
-	async function setSample(enabled: boolean) {
+	async function setSample(enabled: boolean, refresh = false) {
 		const projectId = page.params.id;
 		sampleError = '';
 		if (!projectId) {
@@ -499,7 +522,7 @@
 			const res = await fetch(`/api/projects/${projectId}/cards/${card.id}/sample`, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ enabled })
+				body: JSON.stringify({ enabled, refresh })
 			});
 			if (!res.ok) throw new Error(`${res.status}`);
 			sample = (await res.json()).sample;
@@ -529,11 +552,31 @@
 					>Lumi is updating the answers…</span
 				>{/if}
 		</Card.Title>
-		<Card.Description
-			>{part === 'insights'
-				? 'Insights'
-				: (card.subtitle ?? 'Questions to share with people')}</Card.Description
-		>
+		{#if shownResults}
+			<!-- Who took part: how solid the results are, before anything else. -->
+			<Card.Description>
+				{shownResults.views} people · {shownResults.completion}% finished
+			</Card.Description>
+		{:else if part === 'insights' || card.subtitle}
+			<Card.Description>{part === 'insights' ? 'Insights' : card.subtitle}</Card.Description>
+		{/if}
+		{#if !shownResults && part !== 'insights'}
+			<!-- What the study is for, edited in place: Lumi's reading of the results starts from it. -->
+			<label class="col-start-1 flex items-start gap-1.5 text-body">
+				<span class="sr-only">Intent</span>
+				<textarea
+					bind:value={intent}
+					rows="1"
+					placeholder="What do you want to find out?"
+					class="field-sizing-content min-w-0 flex-1 resize-none rounded-xs bg-transparent text-muted-foreground outline-none placeholder:text-placeholder focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+					onblur={saveIntent}
+					onkeydown={(e) => {
+						if (e.key !== 'Enter') return;
+						e.preventDefault();
+						e.currentTarget.blur();
+					}}></textarea>
+			</label>
+		{/if}
 		<!-- With sample results the study reads as live: a "Fielding in progress" badge beside Share. -->
 		<Card.Action class="flex items-center gap-2">
 			{#if results}<Badge variant="success">Fielding in progress</Badge>{/if}
@@ -903,6 +946,17 @@
 			onCheckedChange={setSample}
 		/>
 	</div>
+	{#if sample?.enabled && sample.results && !writing}
+		<!-- Fresh made-up answers (and Lumi's reading of them), for the same questions. -->
+		<Button
+			variant="ghost"
+			size="sm"
+			class="-ml-3 self-start"
+			onclick={() => setSample(true, true)}
+		>
+			Refresh sample results
+		</Button>
+	{/if}
 	{#if writing}
 		<p class="text-caption text-muted-foreground">Lumi is making up answers…</p>
 	{:else if sampleError}

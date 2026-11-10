@@ -1,6 +1,8 @@
 import { quoted } from '#lib/ask-lumi.js';
-import { SCALE_MAX, SCALE_MIN, popsUp, stepTitle, timecode, type FlatStep } from './question-types';
-import type { Question, SampleResponse, SampleResults } from '../types';
+import { share } from '../format';
+import { sliderSpread } from './insights';
+import { SCALE_MAX, popsUp, stepTitle, timecode, type FlatStep } from './question-types';
+import type { Question, SampleResponse, SampleResults, StudyAnswer } from '../types';
 
 /**
  * The questions a study card offers Lumi (see `ask-lumi.ts`), worded from what's on the card: its steps while setting
@@ -9,7 +11,6 @@ import type { Question, SampleResponse, SampleResults } from '../types';
  */
 export function studyQuestions(title: string, results?: SampleResults) {
 	const study = quoted(title);
-	const percent = (n: number, total: number) => (total ? Math.round((n / total) * 100) : 0);
 	/** “Question”, and where it's asked when that's inside a video. */
 	const asked = (step: FlatStep) =>
 		popsUp(step)
@@ -18,10 +19,6 @@ export function studyQuestions(title: string, results?: SampleResults) {
 	const written = (q: Question) => !!q.text.trim() || (q.type === 'video' && !!q.videoId);
 	const answersTo = (q: Question) => results?.questions[q.id];
 	const optionLabel = (q: Question, k: number) => q.options?.[k] || `Option ${k + 1}`;
-	const average = (counts: number[] = []) => {
-		const n = counts.reduce((a, b) => a + b, 0);
-		return n ? counts.reduce((sum, c, k) => sum + c * (SCALE_MIN + k), 0) / n : 0;
-	};
 
 	return {
 		/** A step in the setup's list: what asking it would tell us. */
@@ -43,21 +40,37 @@ export function studyQuestions(title: string, results?: SampleResults) {
 				? `What happens at ${timecode(step.q.time ?? 0)} in ${quoted(stepTitle(step.parent!))}, where ${study} asks ${quoted(stepTitle(step.q))}?`
 				: null,
 
-		/** The key numbers above the results. */
-		stat: (kind: 'views' | 'sentiment' | 'rating' | 'completion') => {
-			if (!results) return null;
-			const { positive, negative } = results.sentiment;
-			return {
-				views: `Who are the ${results.views} people who've seen ${study} so far?`,
-				sentiment: `${positive}% of reactions to ${study} are positive and ${negative}% negative. What's behind that?`,
-				rating: `Why does ${study} have an average rating of ${results.rating}%? What do people like and dislike?`,
-				completion: `${results.completion}% of people finished ${study}. Where do the others drop off, and why?`
-			}[kind];
-		},
-
 		summary: () => `What should we do next, given the results of ${study}?`,
-		insight: (insight: { title: string }) =>
-			`What's the evidence for ${quoted(insight.title)} in the results of ${study}?`,
+
+		/** A question the study set out to answer, and Lumi's answer to it. */
+		answer: (a: StudyAnswer) =>
+			a.confidence === 'low'
+				? `${study} asked ${quoted(a.question)}, and the answer is close: ${quoted(a.answer)} What would settle it?`
+				: `${study} set out to learn ${quoted(a.question)}: ${quoted(a.answer)} What's the strongest evidence, and what could change it?`,
+
+		/** A recommendation from the results. */
+		recommendation: (r: { title: string; body: string }) =>
+			`How would we ${r.title.charAt(0).toLowerCase()}${r.title.slice(1)}, given the results of ${study}?`,
+
+		/** A video compared with the others shown in the study. */
+		compareVideo: (step: FlatStep, better: boolean) =>
+			better
+				? `Why did ${quoted(stepTitle(step.q))} do better than the other videos in ${study}?`
+				: `Why did ${quoted(stepTitle(step.q))} fall behind the other videos in ${study}?`,
+
+		/** A theme in the answers to an open question. */
+		theme: (step: FlatStep, theme: { label: string; share: number }) =>
+			`${theme.share}% of answers to ${asked(step)} in ${study} are about ${quoted(theme.label)}. What are people saying, and why?`,
+
+		/** A slider's spread: how many gave it 7 or more, and whether opinion is split. */
+		spread: (step: FlatStep, high: number, split: boolean) =>
+			split
+				? `Opinion is split on ${asked(step)} in ${study}: who loved it, who didn't, and why?`
+				: `${high}% gave ${asked(step)} in ${study} 7 or more. What sets them apart from the rest?`,
+
+		/** Reactions along a video, at a moment. */
+		videoMoment: (step: FlatStep, time: number) =>
+			`How did people in ${study} react around ${timecode(time)} in the video ${quoted(stepTitle(step.q))}, and why?`,
 		quote: (quote: { text: string; who: string }) =>
 			`${quote.who} said ${quoted(quote.text)} in ${study}. What's behind that, and do others feel the same?`,
 
@@ -82,20 +95,20 @@ export function studyQuestions(title: string, results?: SampleResults) {
 			if (!a) return null;
 			const counts = a.counts ?? [];
 			const n = counts[k] ?? 0;
-			const share = percent(n, a.responses);
+			const pct = share(n, a.responses);
 			const option = quoted(optionLabel(q, k));
 			if (!n) return `Why did nobody pick ${option} when ${study} asked ${asked(step)}?`;
 			const top = n === Math.max(...counts);
 			return top
-				? `Why did ${share > 50 ? 'most people' : 'the most people'} (${share}%) pick ${option} when ${study} asked ${asked(step)}?`
-				: `Who picked ${option} (${share}%) when ${study} asked ${asked(step)}, and why?`;
+				? `Why did ${pct > 50 ? 'most people' : 'the most people'} (${pct}%) pick ${option} when ${study} asked ${asked(step)}?`
+				: `Who picked ${option} (${pct}%) when ${study} asked ${asked(step)}, and why?`;
 		},
 
 		/** A slider question's average. */
 		scale: (step: FlatStep) => {
 			const a = answersTo(step.q);
 			if (!a) return null;
-			return `People gave ${asked(step)} ${average(a.counts).toFixed(1)} out of ${SCALE_MAX} on average in ${study}. Why?`;
+			return `People gave ${asked(step)} ${sliderSpread(a.counts).average.toFixed(1)} out of ${SCALE_MAX} on average in ${study}. Why?`;
 		},
 
 		/** A video's reactions bar. */
@@ -105,8 +118,8 @@ export function studyQuestions(title: string, results?: SampleResults) {
 			if (!total) return null;
 			const video = quoted(stepTitle(step.q));
 			return negative > positive
-				? `Why did more people react badly (${percent(negative, total)}%) than well to the video ${video} in ${study}?`
-				: `${percent(positive, total)}% of reactions to the video ${video} in ${study} are positive. What did people like, and what put the others off?`;
+				? `Why did more people react badly (${share(negative, total)}%) than well to the video ${video} in ${study}?`
+				: `${share(positive, total)}% of reactions to the video ${video} in ${study} are positive. What did people like, and what put the others off?`;
 		},
 
 		/** The responses pane's heading: everyone who answered, or those who picked the option it's filtered to. */

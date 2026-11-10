@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { Card, Tile } from '@latitudelabs/design-system';
 	import { askable } from '#lib/ask-lumi.js';
-	import { timecode } from '../format';
+	import { share, timecode } from '../format';
+	import { TONES, TONE_DOT, TONE_LABEL, TONE_TINT, type Tone } from '../viewer';
 	import type { InsightComment, Insights } from '../types';
 
 	type Question = Insights['questions'][number];
-	type Tone = 'positive' | 'neutral' | 'negative';
 
 	/**
 	 * How a video landed, in colour: the comment sentiment split (a tinted tile per tone and a bright bar), Questions
@@ -34,22 +34,9 @@
 		onplay?: (time: number) => void;
 	} = $props();
 
-	const percent = (n: number, of: number) => Math.round((n / (of || 1)) * 100);
 	const sentimentTotal = $derived(
 		sentiment ? sentiment.positive + sentiment.neutral + sentiment.negative : 0
 	);
-
-	/** Each tone's colours: a soft tint for its tile, the full colour for its bar and dot. */
-	const TONES: { key: Tone; label: string; tint: string; solid: string }[] = [
-		{
-			key: 'positive',
-			label: 'Positive',
-			tint: 'bg-category-green/12',
-			solid: 'bg-category-green'
-		},
-		{ key: 'neutral', label: 'Neutral', tint: 'bg-muted', solid: 'bg-control' },
-		{ key: 'negative', label: 'Negative', tint: 'bg-chart-red/12', solid: 'bg-chart-red' }
-	];
 
 	/** A question's kind, in the colour a study gives that kind of step. */
 	function kindOf(q: Question) {
@@ -74,7 +61,7 @@
 	<div class={['h-2 w-full overflow-hidden rounded-full', track]} role="img" aria-label={label}>
 		<div
 			class={['h-full rounded-full transition-[width] duration-300', solid]}
-			style:width="{percent(value, max)}%"
+			style:width="{share(value, max)}%"
 		></div>
 	</div>
 {/snippet}
@@ -82,20 +69,11 @@
 {#snippet comment(c: InsightComment, isLiked: boolean)}
 	<li class="w-60">
 		<Tile
-			class={['h-full w-full gap-2', isLiked ? 'bg-category-green/12' : 'bg-chart-red/12']}
+			class={['h-full w-full gap-2', TONE_TINT[isLiked ? 'positive' : 'negative']]}
 			onclick={onplay && (() => onplay(c.time))}
 			{@attach askable(ask?.comment(c, isLiked))}
 		>
-			<span class="flex gap-2">
-				<span
-					class={[
-						'w-1 shrink-0 self-stretch rounded-full',
-						isLiked ? 'bg-category-green' : 'bg-chart-red'
-					]}
-					aria-hidden="true"
-				></span>
-				<span class="line-clamp-3 text-caption">“{c.text}”</span>
-			</span>
+			<span class="line-clamp-3 text-caption">“{c.text}”</span>
 			<span class="mt-auto flex flex-wrap items-center gap-1 text-caption text-muted-foreground">
 				{timecode(c.time)}
 				{#each (c.emotions ?? []).slice(0, 2) as emotion (emotion)}
@@ -110,22 +88,23 @@
 {#if sentiment && sentimentTotal}
 	<div class="flex flex-col gap-3" {@attach askable(ask?.sentiment)}>
 		<ul class="grid grid-cols-3 gap-3" aria-label="Comment sentiment">
-			{#each TONES as t (t.key)}
-				<li class={['flex flex-col gap-1 rounded-md p-3', t.tint]}>
+			{#each TONES as t (t)}
+				<li class={['flex flex-col gap-1 rounded-md p-3', TONE_TINT[t]]}>
 					<span class="flex items-center gap-1.5 text-caption text-muted-foreground">
-						<span class={['size-2 rounded-full', t.solid]} aria-hidden="true"></span>{t.label}
+						<span class={['size-2 rounded-full', TONE_DOT[t]]} aria-hidden="true"
+						></span>{TONE_LABEL[t]}
 					</span>
-					<span class="text-title">{percent(sentiment[t.key], sentimentTotal)}%</span>
+					<span class="text-title">{share(sentiment[t], sentimentTotal)}%</span>
 					<span class="text-caption text-muted-foreground"
-						>{sentiment[t.key]} {sentiment[t.key] === 1 ? 'comment' : 'comments'}</span
+						>{sentiment[t]} {sentiment[t] === 1 ? 'comment' : 'comments'}</span
 					>
 				</li>
 			{/each}
 		</ul>
 		<div class="flex h-2.5 gap-1" aria-hidden="true">
-			{#each TONES as t (t.key)}
-				{#if sentiment[t.key]}
-					<div class={['rounded-full', t.solid]} style:flex-grow={sentiment[t.key]}></div>
+			{#each TONES as t (t)}
+				{#if sentiment[t]}
+					<div class={['rounded-full', TONE_DOT[t]]} style:flex-grow={sentiment[t]}></div>
 				{/if}
 			{/each}
 		</div>
@@ -148,7 +127,8 @@
 					{#if q.average !== undefined && q.max}
 						<div class="mt-auto flex flex-col gap-2">
 							<span class="text-heading"
-								>{q.average}<span class="text-body text-muted-foreground">{` / ${q.max}`}</span></span
+								>{q.average}<span class="text-body text-muted-foreground">{` / ${q.max}`}</span
+								></span
 							>
 							{@render bar(
 								q.average,
@@ -171,7 +151,7 @@
 										]}
 									>
 										{option.label}<span class="text-muted-foreground"
-											>{percent(option.count, total)}%</span
+											>{share(option.count, total)}%</span
 										>
 									</span>
 									{@render bar(
@@ -179,7 +159,7 @@
 										total,
 										kind.track,
 										option.count === top ? kind.solid : `${kind.solid} opacity-60`,
-										`${option.label}: ${percent(option.count, total)}% of answers`
+										`${option.label}: ${share(option.count, total)}% of answers`
 									)}
 								</li>
 							{/each}

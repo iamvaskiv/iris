@@ -142,10 +142,9 @@
 
 	function onpointermove(e: PointerEvent) {
 		if (e.pointerType === 'touch' || !track || !root) return;
-		const box = track.getBoundingClientRect();
-		if (e.clientX < box.left) return (hover = null);
+		if (e.clientX < track.getBoundingClientRect().left) return (hover = null);
 		hover = {
-			time: Math.min(1, Math.max(0, (e.clientX - box.left) / box.width)) * duration,
+			time: fractionAlong(e, track) * duration,
 			y: e.clientY - root.getBoundingClientRect().top
 		};
 	}
@@ -159,8 +158,7 @@
 
 	/** Clicking a lane goes to that moment. */
 	function seek(e: MouseEvent) {
-		const box = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		onseek(Math.min(1, Math.max(0, (e.clientX - box.left) / box.width)) * duration);
+		onseek(fractionAlong(e, e.currentTarget as HTMLElement) * duration);
 	}
 </script>
 

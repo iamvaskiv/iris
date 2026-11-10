@@ -1,17 +1,19 @@
 <script lang="ts">
-	import { SentimentCounts, Stat } from '@latitudelabs/design-system';
+	import { Button, SegmentedControl } from '@latitudelabs/design-system';
+	import { X } from '@latitudelabs/design-system/icons';
+	import { fly } from 'svelte/transition';
 	import StudyOverview from './StudyOverview.svelte';
 	import StudyQuestions from './StudyQuestions.svelte';
 	import StudyResponses from './StudyResponses.svelte';
-	import { askable } from '#lib/ask-lumi.js';
 	import { flatSteps } from './question-types';
 	import { studyQuestions } from './questions';
 	import type { Question, SampleResults } from '../types';
 
 	/**
-	 * A study's (sample) results: key numbers, Lumi's reading of them, and the answers per question. Picking a question
-	 * slides the overview off to the left (a sliver stays, to come back) and shows that question's individual responses
-	 * on the right; picking an option filters them.
+	 * A study's (sample) results, in two tabs. **Overview**: the dashboard (StudyOverview), the study's answers at a
+	 * glance. **Questions**: the answers per question, full width; clicking one opens its individual responses in a panel
+	 * beside it (picking an option or theme filters them; clicking it again, ×, or Escape closes it). A headline number or a piece of evidence on the Overview opens its
+	 * question on the Questions tab.
 	 */
 	let {
 		title,
@@ -22,111 +24,102 @@
 	/** What the results can ask Lumi (see ask-lumi.ts). */
 	const ask = $derived(studyQuestions(title, results));
 
+	const steps = $derived(flatSteps(questions));
+	let tab = $state<'overview' | 'questions'>('overview');
 	let focused = $state<string | null>(null);
 	let filter = $state<number | null>(null);
-	/** What the responses pane shows: kept while it slides away, so it doesn't empty mid-slide. */
-	let shown = $state<string | null>(null);
 
+	/** Opens a question (and an option or theme in it), on the Questions tab; picking the open one again closes it. */
 	function pick(id: string, option: number | null = null) {
-		if (focused === id && option === null) return back();
-		focused = shown = id;
+		if (tab === 'questions' && focused === id && option === null) {
+			focused = null;
+			filter = null;
+			return;
+		}
+		tab = 'questions';
+		focused = id;
 		filter = option !== null && filter === option ? null : option;
 	}
-	function back() {
+	function show(next: 'overview' | 'questions') {
+		tab = next;
+	}
+	/** Closes the responses panel. */
+	function close() {
 		focused = null;
 		filter = null;
 	}
 
-	const step = $derived(flatSteps(questions).find((s) => s.q.id === shown));
-	const question = $derived(step?.q);
-	const answers = $derived(shown ? results.questions[shown] : undefined);
-
-	// The panes fill the whole card (Card.Root is their positioned parent) and start their content below the header and
-	// the key numbers: `top` is where those end, in card coordinates.
-	let stats = $state<HTMLElement | null>(null);
-	let top = $state(0);
+	const step = $derived(steps.find((s) => s.q.id === focused));
+	const answers = $derived(focused ? results.questions[focused] : undefined);
+	let pane = $state<HTMLElement>();
+	let list = $state<HTMLElement>();
+	// A newly picked question's responses start from the top, and the list brings that question into view.
 	$effect(() => {
-		const card = stats?.offsetParent as HTMLElement | null;
-		if (!stats || !card) return;
-		const measure = () => (top = stats!.offsetTop + stats!.offsetHeight + 24);
-		const observer = new ResizeObserver(measure);
-		observer.observe(card);
-		observer.observe(stats);
-		return () => observer.disconnect();
+		void focused;
+		pane?.scrollTo({ top: 0 });
+		list?.querySelector('[aria-current=step]')?.scrollIntoView({ block: 'nearest' });
 	});
 </script>
 
 <svelte:window
 	onkeydown={(e) => {
-		if (focused && e.key === 'Escape' && !e.defaultPrevented) back();
+		// Escape closes the responses panel first, then goes back to the Overview.
+		if (tab !== 'questions' || e.key !== 'Escape' || e.defaultPrevented) return;
+		if (focused) close();
+		else show('overview');
 	}}
 />
 
-<div bind:this={stats} class="relative z-20 flex flex-wrap gap-5">
-	<Stat variant="plain" value={results.views} label="Views" {@attach askable(ask.stat('views'))} />
-	<Stat variant="plain" label="Sentiment" {@attach askable(ask.stat('sentiment'))}>
-		<SentimentCounts {...results.sentiment} unit="%" />
-	</Stat>
-	<Stat
-		variant="plain"
-		value="{results.rating}%"
-		label="Rating, avg."
-		{@attach askable(ask.stat('rating'))}
+<div class="flex min-h-0 flex-1 flex-col gap-5">
+	<SegmentedControl
+		aria-label="Results"
+		options={[
+			{ value: 'overview', label: 'Overview' },
+			{ value: 'questions', label: `Questions · ${steps.length}` }
+		]}
+		value={tab}
+		onValueChange={(v) => show(v as 'overview' | 'questions')}
 	/>
-	<Stat
-		variant="plain"
-		value="{results.completion}%"
-		label="Completion"
-		{@attach askable(ask.stat('completion'))}
-	/>
-</div>
 
-<!-- Three half-width panes on a track: overview | questions | responses. Focusing a question slides the track left by
-     half, less 2rem, so the overview's edge stays in view. Clipped (not hidden), so focus can't scroll it. It fills the
-     whole card: the panes start their content below the header and numbers (`top`), and on the right they scroll up to
-     the card's top edge, under Share; on the left a card-coloured backdrop hides what scrolls under the title and
-     numbers. Room at the bottom lets the last items scroll up above Lumi's dock. -->
-<div class="absolute inset-0 overflow-clip" style:--top="{top}px">
-	<div
-		class="absolute top-0 left-0 z-10 bg-card transition-[width] duration-300 ease-out motion-reduce:transition-none"
-		style:height="{top}px"
-		style:width={focused ? 'calc(50% + 2rem)' : '50%'}
-		aria-hidden="true"
-	></div>
-	<div
-		class="flex h-full transition-[translate] duration-300 ease-out motion-reduce:transition-none"
-		style:translate={focused ? 'calc(-50% + 2rem) 0' : '0 0'}
-	>
-		<div
-			class="flex h-full w-1/2 shrink-0 flex-col gap-4 overflow-y-auto pt-(--top) pr-4 pb-24 pl-4"
-			inert={!!focused}
-		>
-			<StudyOverview {results} {ask} />
+	{#if tab === 'overview'}
+		<!-- Room at the bottom lets the last items scroll up above Lumi's dock. -->
+		<div class="-mx-6 min-h-0 flex-1 overflow-y-auto px-6 pb-32">
+			<StudyOverview
+				{questions}
+				{results}
+				{ask}
+				onpick={(id, option) => pick(id, option ?? null)}
+			/>
 		</div>
-
-		<!-- Steps pad their own items, which lines the numbers up with the key numbers above. -->
-		<div class="h-full w-1/2 shrink-0 overflow-y-auto pt-(--top) pb-24">
-			<StudyQuestions {questions} {results} {focused} {filter} {ask} onpick={pick} />
-		</div>
-
-		<section
-			class="flex h-full w-1/2 shrink-0 flex-col gap-4 overflow-y-auto pt-(--top) pr-12 pb-24 pl-4"
-			aria-label="Responses"
-			inert={!focused}
-		>
-			{#if step && question && answers}
-				<StudyResponses {step} {answers} {filter} {ask} onclearfilter={() => (filter = null)} />
+	{:else}
+		<!-- The answers per question, full width; clicking one opens its responses in a panel beside it (each scrolls on
+		     its own). -->
+		<div class="flex min-h-0 flex-1 gap-8">
+			<div
+				bind:this={list}
+				class={['min-h-0 overflow-y-auto pb-32', focused ? 'w-1/2' : 'w-full']}
+			>
+				<StudyQuestions {questions} {results} {focused} {filter} {ask} onpick={pick} />
+			</div>
+			{#if focused}
+				<section
+					bind:this={pane}
+					transition:fly={{ x: 24, duration: 200 }}
+					class="relative flex min-h-0 w-1/2 flex-col gap-4 overflow-y-auto rounded-xl bg-muted/50 p-5 pr-12 pb-32"
+					aria-label="Responses"
+				>
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						class="absolute top-3 right-3"
+						aria-label="Close responses"
+						onclick={close}><X /></Button
+					>
+					{#if step && answers}
+						<StudyResponses {step} {answers} {filter} {ask} onclearfilter={() => (filter = null)} />
+					{/if}
+				</section>
 			{/if}
-		</section>
-	</div>
-
-	{#if focused}
-		<!-- The overview's visible edge: back to it. -->
-		<button
-			type="button"
-			aria-label="Back to the overview"
-			onclick={back}
-			class="absolute inset-y-0 left-0 z-10 w-8 cursor-w-resize outline-none focus-visible:ring-2 focus-visible:ring-ring"
-		></button>
+		</div>
 	{/if}
 </div>

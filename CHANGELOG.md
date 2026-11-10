@@ -6,6 +6,50 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 ## 2026-11-10
 
+**For developers**
+
+- **Tidy-up after today's work**: tone colours (dots, bars, tints, labels) live in one map in `viewer.ts`, so every
+  green, grey and red matches (study responses and the comparison card's sentiment bar now use the bright ones too);
+  `pointer.ts` turns a pointer into a position along a timeline for every chart and player; one slider average
+  (`sliderSpread`) feeds the card, Lumi's context and Ask Lumi; Lumi's surfaces share `--lumi-ink`, `--lumi-edge` and
+  `--lumi-glow` in `layout.css`; a shared `share()` for percentages. The study results' older shape and its fallback
+  are gone (the Storybook studies were written again), and the liked and disliked tiles lost their accent stripe.
+
+**Studies**
+
+- **Results that answer the study**: Lumi now works out what a study set out to learn from how it's built (its videos,
+  and why each question pops up where it does) and answers it. The results open with **headline numbers in the study's
+  own terms** (the trailer's stars, the share giving the new emotions 7 or more, the lead pick), who took part in a
+  quieter line, what the study **set out to learn**, the story in short, then an **answer card** per question behind it:
+  a one-line verdict, evidence chips that open the question they come from, and how clear the result is. Then **What to
+  do next**, and a quote that backs the main finding.
+- **A study's intent, under its title**: what the study is trying to find out, in a line under its title on the
+  setup. Lumi drafts it with the study; click it to rewrite it (Enter or clicking away saves). Her reading of the results
+  starts from it. Studies without one show the intent she read from their results.
+- **Each question, read for you**: a takeaway line and, when an age band answered differently, an age note. Multiple
+  choice says who leads and by how much; a slider shows its whole spread (7 and up in full colour, flagged when opinion
+  is split); an open question shows its **themes** with their shares and an example answer (click one to read its
+  answers); a video shows its stars and how reactions move along it, with the questions popping up in it marked; and a
+  note shows where noticeably fewer people got.
+- **Overview and Questions tabs**: a study's results are two tabs. The **Overview** reads in four blocks, each fact
+  once: the verdict in a line; a tile per question the study set out to answer, with its deciding figure big ("4.2 ★",
+  "Anxiety"), a few words of verdict, where it comes from ("from 1.1", linking to that question) and how clear it is
+  ("Clear", "Close call"); what to do next
+  (titles, the reason on hover or a click) beside a viewer's quote in full, linked to the theme it comes from; and, only
+  for studies that have them, the videos compared and a channel's most opened videos. Who took part sits under the
+  title. **Questions** lists the answers per question at full width, set apart by hairlines; clicking its count of
+  answers ("94 answers", underlined) opens its responses in a panel beside it (the rest of its header isn't clickable;
+  ×, the count again or Escape closes it). Reactions use the app's bright green, grey
+  and red. The quote is plain, without a decorative quotation mark.
+- **Short by default**: Lumi writes each answer's figure and a verdict that doesn't repeat it, a one-line headline, and
+  quotes under 25 words; the full sentences are a hover away. Age notes are a small **By age** pill. Results in an
+  older shape are written again the first time they're shown.
+- **Comparing videos and channels**: a study showing several videos one after another says which did better, side by
+  side; a channel ranks its videos by how many opened them.
+- **Next steps from the results**: the follow-up questions Lumi suggests with the results become the lane's next steps.
+- **Refresh sample results**, under Share, writes them again; results in the older shape are written again on their own
+  the first time they're shown.
+
 **Onboarding**
 
 - **First-visit tour**: on your first visit to the projects page (and after restarting onboarding), a scripted tour
@@ -95,6 +139,10 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   line above it. It opens to the left near the window's right edge, and below the pointer near the top.
 
 **Project page (experimental)**
+
+- **Lumi's dock remembers**: its size (compact, normal or the whole conversation) on this device, and a message you
+  started typing but didn't send, per project, so a reload or coming back later picks up where you left off. Sending it
+  or clearing the field forgets it.
 
 - **A map of the cards**: in place of each lane's ‹ 1/2 › arrows, a small map at the top left shows every card as a
   tiny card in its whole proportions (all at one scale), a row per lane. The card in focus is white and raised, at full

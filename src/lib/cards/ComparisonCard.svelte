@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Badge, SentimentBar, Table, type Sentiment } from '@latitudelabs/design-system';
+	import { Badge, Table, type Sentiment } from '@latitudelabs/design-system';
+	import ToneBar from './viewers/ToneBar.svelte';
 	import { askable, quoted } from '#lib/ask-lumi.js';
 	import CardShell from './CardShell.svelte';
 	import { timecode } from './format';
@@ -382,7 +383,7 @@
 							{#if !cell}
 								<span class="text-muted-foreground">{r.empty(v)}</span>
 							{:else if cell.sentiment}
-								<SentimentBar {...cell.sentiment} />
+								<ToneBar {...cell.sentiment} />
 							{:else}
 								{@const diff = difference(r, i)}
 								<span class={i === best ? 'font-medium' : undefined}>{cell.text}</span>

@@ -41,7 +41,4 @@ export function questionAt(e: MouseEvent): { el: Element; question: string } | n
 export const quoted = (s: string) => `“${s}”`;
 
 /** The pointer's position along an element, 0 to 1 (for questions about a moment on a timeline). */
-export function fractionAlong(e: MouseEvent, el: Element) {
-	const box = el.getBoundingClientRect();
-	return box.width ? Math.min(1, Math.max(0, (e.clientX - box.left) / box.width)) : 0;
-}
+export { fractionAlong } from './pointer';

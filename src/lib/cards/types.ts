@@ -166,6 +166,9 @@ export type ComparedVideo = {
  */
 export type StudyData = {
 	questions: Question[];
+	/** What the study is trying to find out, in a line: Lumi drafts it with the study, the user edits it on the card,
+	 *  and Lumi's reading of the results starts from it. */
+	intent?: string;
 	sample?: { enabled: boolean; results?: SampleResults };
 };
 
@@ -178,18 +181,73 @@ export type SampleResults = {
 	completion: number;
 	rating: number;
 	sentiment: { positive: number; neutral: number; negative: number };
+	/** Two or three sentences: the story overall (Lumi's context; the card shows `headline`). */
 	summary: string;
-	insights: { title: string; body: string }[];
-	quote: { text: string; who: string };
+	/** The story in about twelve words, for the top of the results. */
+	headline?: string;
+	/**
+	 * A telling answer, backing the main finding, and (when it's an open answer) the question and theme it comes from,
+	 * so the card can link to them.
+	 */
+	quote: { text: string; who: string; from?: { id: string; theme: number } };
+	/** Shape version: 2 adds what the study set out to learn and its answers (older results are written again). */
+	version?: number;
+	/** What the study is trying to find out, in one line. */
+	intent?: string;
+	/**
+	 * The questions behind the study (what its author wants to know, from how it's built), each answered: a one-line
+	 * verdict, the evidence for it (by question id, with the numbers in words) and how sure the sample makes it.
+	 */
+	answers?: StudyAnswer[];
+	/** What to do next, given the results. */
+	recommendations?: { title: string; body: string }[];
+	/** Questions to ask Lumi next, written as the user's request (offered as the lane's next steps). */
+	followUps?: string[];
 	/**
 	 * By question id: how many answered (or, for a video, watched; for a channel, reached it), votes per option (multiple
 	 * choice), per value 0–10 (slider), per sentiment (video: positive, neutral, negative) or how many opened each of
 	 * its videos (channel, in order; people open several, so these add up to more), and some individual responses (a sample of
 	 * everyone who answered, newest first; for a video, their reactions).
 	 */
-	questions: Record<string, { responses: number; counts?: number[]; people?: SampleResponse[] }>;
+	questions: Record<string, QuestionResult>;
 	/** Written by Lumi, or generic filler when Lumi couldn't be reached. */
 	by: 'lumi' | 'filler';
+};
+
+/** One question's results (see SampleResults.questions), with Lumi's reading of them. */
+export type QuestionResult = {
+	responses: number;
+	counts?: number[];
+	people?: SampleResponse[];
+	/** A few words naming what it measures, for headline numbers: "Trailer rating", "Lead pick". */
+	label?: string;
+	/** One line: what the answers say. */
+	takeaway?: string;
+	/** When an age band answered noticeably differently, in a line ("" or absent otherwise). */
+	ageNote?: string;
+	/** Open questions: what people's answers have in common, with each theme's share of answers and its tone. */
+	themes?: { label: string; share: number; sentiment: 'positive' | 'neutral' | 'negative' }[];
+	/** Videos: their length in seconds, for placing reactions along it. */
+	duration?: number;
+	/** Videos: everyone's average star rating (the sample of `people` only shows some of them). */
+	stars?: number;
+};
+
+/** A question the study set out to answer, and its answer. */
+export type StudyAnswer = {
+	question: string;
+	/** The verdict in a sentence (on hover; `verdict` is what shows). */
+	answer: string;
+	/** The deciding figure, shown big: "4.2 ★", "73%", "Anxiety". */
+	figure?: string;
+	/** The verdict in a few words, not repeating the figure: "Yes, 72% positive". */
+	verdict?: string;
+	/**
+	 * What backs it: the study question (by id), the finding there in words (on hover), and its number alone ("41%",
+	 * "4.1 ★") for the chip.
+	 */
+	evidence: { id: string; text: string; figure?: string }[];
+	confidence: 'high' | 'medium' | 'low';
 };
 
 /** One (made-up) person's answer to a question. */
@@ -198,6 +256,8 @@ export type SampleResponse = {
 	respondent: number;
 	/** Age band, e.g. "24–32". */
 	age: string;
+	/** Open questions: which of the question's themes the answer belongs to (index). */
+	theme?: number;
 	/** When they answered, e.g. "2 days ago". */
 	when: string;
 	/** Open questions: what they wrote, and how it reads. */

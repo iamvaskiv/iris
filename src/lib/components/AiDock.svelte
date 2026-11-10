@@ -765,13 +765,12 @@
 	/* The prompt field, dressed like BrandButton: white (dark: the brand purple) with soft brand blobs behind it, ink in
 	   the brand's purple, a tinted edge and a glow that warms on hover and focus. */
 	.brand-field {
-		--ink: var(--brand-4);
 		background: var(--neutral-0);
-		color: var(--ink);
-		--placeholder: color-mix(in oklab, var(--brand-4) 55%, transparent);
+		color: var(--lumi-ink);
+		--placeholder: var(--lumi-ink-soft);
 		box-shadow:
-			0 0 0 1px color-mix(in oklab, var(--brand-4) 22%, transparent),
-			0 0 14px -4px color-mix(in oklab, var(--brand-2) 40%, transparent);
+			0 0 0 1px var(--lumi-edge),
+			0 0 14px -4px var(--lumi-glow);
 		transition: box-shadow 0.25s ease-out;
 	}
 	.brand-field:hover,
@@ -806,12 +805,10 @@
 	}
 	/* Dark: barely lifted off the card (a touch of the brand purple), its colours a little stronger than the dock's. */
 	:global(.dark) .brand-field {
-		--ink: var(--dock-ink, var(--neutral-0));
-		--placeholder: color-mix(in oklab, var(--ink) 55%, transparent);
 		background: color-mix(in oklab, var(--brand-4) 18%, var(--card));
 		box-shadow:
-			0 0 0 1px color-mix(in oklab, var(--neutral-0) 12%, transparent),
-			0 0 14px -6px color-mix(in oklab, var(--brand-2) 35%, transparent);
+			0 0 0 1px var(--lumi-edge-faint),
+			0 0 14px -6px var(--lumi-glow);
 	}
 	:global(.dark) .brand-field:hover,
 	:global(.dark) .brand-field:focus-within {
@@ -843,11 +840,10 @@
 	/* The dock: the same wash as its input, fainter, with a lightly tinted edge (the card's shadow stays). */
 	/* The dock's text in the brand's ink too, to match its input: purple in light mode, a warm white in dark. */
 	.brand-dock {
-		--dock-ink: var(--brand-4);
-		--foreground: var(--dock-ink);
-		--card-foreground: var(--dock-ink);
+		--foreground: var(--lumi-ink);
+		--card-foreground: var(--lumi-ink);
 		--muted-foreground: color-mix(in oklab, var(--brand-4) 65%, transparent);
-		color: var(--dock-ink);
+		color: var(--lumi-ink);
 		outline: 1px solid color-mix(in oklab, var(--brand-4) 10%, transparent);
 		outline-offset: -1px;
 	}
@@ -855,8 +851,7 @@
 		opacity: 0.12;
 	}
 	:global(.dark) .brand-dock {
-		--dock-ink: color-mix(in oklab, var(--neutral-0) 90%, var(--brand-2));
-		--muted-foreground: color-mix(in oklab, var(--dock-ink) 65%, transparent);
+		--muted-foreground: color-mix(in oklab, var(--lumi-ink) 65%, transparent);
 		outline-color: color-mix(in oklab, var(--neutral-0) 10%, transparent);
 	}
 	:global(.dark) .brand-dock > span > .blob {

@@ -44,8 +44,8 @@
 		background: var(--neutral-0);
 		color: var(--ink);
 		box-shadow:
-			0 0 0 1px color-mix(in oklab, var(--brand-4) 22%, transparent),
-			0 0 14px -4px color-mix(in oklab, var(--brand-2) 40%, transparent);
+			0 0 0 1px var(--lumi-edge),
+			0 0 14px -4px var(--lumi-glow);
 		transition:
 			box-shadow 0.25s ease-out,
 			scale 0.15s ease-out;

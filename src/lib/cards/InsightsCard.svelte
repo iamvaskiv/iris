@@ -3,6 +3,7 @@
 	import { askable } from '#lib/ask-lumi.js';
 	import CardShell from './CardShell.svelte';
 	import type { Card as CardData, Insights } from './types';
+	import { share } from './format';
 	import ViewerSections from './viewers/ViewerSections.svelte';
 	import { insightsQuestions } from './viewer-questions';
 
@@ -11,7 +12,6 @@
 	const sentimentTotal = $derived(
 		data?.sentiment ? data.sentiment.positive + data.sentiment.neutral + data.sentiment.negative : 0
 	);
-	const percent = (n: number, of: number) => Math.round((n / of) * 100);
 	const number = (n: number) => n.toLocaleString('en-US');
 	const ask = $derived(data && insightsQuestions(card.title, data));
 
@@ -34,7 +34,7 @@
 			},
 			data?.sentiment &&
 				sentimentTotal && {
-					value: `${percent(data.sentiment.positive, sentimentTotal)}%`,
+					value: `${share(data.sentiment.positive, sentimentTotal)}%`,
 					label: 'Positive comments',
 					question: ask?.positive
 				}

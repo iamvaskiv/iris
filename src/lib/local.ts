@@ -17,3 +17,11 @@ export function writeLocal(key: string, value: string) {
 		// Blocked: it's kept for this visit only.
 	}
 }
+
+export function removeLocal(key: string) {
+	try {
+		localStorage.removeItem(key);
+	} catch {
+		// Blocked: nothing was kept.
+	}
+}
