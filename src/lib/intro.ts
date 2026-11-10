@@ -9,14 +9,15 @@
  * - "How Iris works" (INTRO_STEPS, IntroScene.svelte): the first time they open a project: how working with Lumi
  *   goes. The dock sits centred with the cards out of sight meanwhile, then moves down as they appear.
  */
-/** The last step's button: what Next says when there's nothing after it. */
-export const TOUR_DONE = "Let's go";
-export const INTRO_DONE = 'Got it';
+/** The tour's main button: on Lumi's hello, between steps, and on the last step. */
+export const TOUR_BUTTONS = { first: "Let's begin!", next: 'Continue', last: "Let's go" };
+/** The project intro's main button: between steps, and on the last step. */
+export const INTRO_BUTTONS = { next: 'Continue', last: 'Got it' };
 
 export const TOUR_STEPS = [
 	{
 		reply:
-			"**Hey, I'm Lumi**\n\nYour video intelligence. I'll help you uncover insights about your videos, and so much more. Here's a quick look."
+			"**Hey, I'm Lumi**\n\nYour video intelligence. I'll help you uncover insights about your videos, and so much more."
 	},
 	{
 		reply:

@@ -10,7 +10,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { isOnboarding, markTourSeen } from '#lib/onboarding.js';
 	import TourScene from '#lib/components/TourScene.svelte';
-	import { TOUR_DONE, TOUR_STEPS } from '#lib/intro.js';
+	import { TOUR_BUTTONS, TOUR_STEPS } from '#lib/intro.js';
 	import {
 		markWelcomed,
 		maybeTour,
@@ -198,7 +198,11 @@
 					<Button variant="ghost" onclick={() => goTour(tourStep - 1)}>Back</Button>
 				{/if}
 				<BrandButton onclick={() => goTour(tourStep + 1)}
-					>{tourStep === TOUR_STEPS.length - 1 ? TOUR_DONE : 'Next'}</BrandButton
+					>{tourStep === 0
+						? TOUR_BUTTONS.first
+						: tourStep === TOUR_STEPS.length - 1
+							? TOUR_BUTTONS.last
+							: TOUR_BUTTONS.next}</BrandButton
 				>
 			</div>
 		</div>

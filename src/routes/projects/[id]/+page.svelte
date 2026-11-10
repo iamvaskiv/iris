@@ -7,7 +7,7 @@
 	import { page } from '$app/state';
 	import { beforeNavigate, replaceState } from '$app/navigation';
 	import { endOnboarding, markIntroSeen } from '#lib/onboarding.js';
-	import { INTRO_DONE, INTRO_STEPS } from '#lib/intro.js';
+	import { INTRO_BUTTONS, INTRO_STEPS } from '#lib/intro.js';
 	import IntroScene from '#lib/components/IntroScene.svelte';
 	import { completeSteps, type StepId } from '#lib/checklist.svelte.js';
 	import { isFielding } from '#lib/cards/study/fielding.js';
@@ -817,7 +817,9 @@
 					<Button variant="ghost" onclick={() => goIntro(introStep! - 1)}>Back</Button>
 				{/if}
 				<BrandButton onclick={() => goIntro(introStep! + 1)}
-					>{introStep === INTRO_STEPS.length - 1 ? INTRO_DONE : 'Next'}</BrandButton
+					>{introStep === INTRO_STEPS.length - 1
+						? INTRO_BUTTONS.last
+						: INTRO_BUTTONS.next}</BrandButton
 				>
 			</div>
 		</div>
