@@ -1,6 +1,7 @@
 import { goto, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import { readLocal, writeLocal } from './local.js';
+import { startOnboarding, whileRestarting } from './onboarding.js';
 
 /** Projects-page conversation, kept for the browser session so it survives visiting a project and coming back. */
 export const workspaceChat = $state({
@@ -32,11 +33,16 @@ export const WELCOME = {
 	choices: ['Show me an example', 'Upload my own video', 'What can you do?']
 };
 
-/** Shows the welcome when this device hasn't seen it and nothing else is in the conversation yet. */
+/**
+ * Shows the welcome when this device hasn't seen it and nothing else is in the conversation yet. Returns true when
+ * it did: the onboarding sequence starts with it (see onboarding.ts).
+ */
 export function maybeWelcome() {
-	if (readLocal(WELCOMED) || workspaceChat.reply || workspaceChat.history.length) return;
+	if (readLocal(WELCOMED) || workspaceChat.reply || workspaceChat.history.length) return false;
 	workspaceChat.reply = WELCOME.reply;
 	workspaceChat.choices = WELCOME.choices;
+	startOnboarding();
+	return true;
 }
 
 export const markWelcomed = () => writeLocal(WELCOMED, '1');
@@ -49,9 +55,9 @@ export async function restartOnboarding() {
 		// Storage blocked: the welcome shows every visit anyway.
 	}
 	Object.assign(workspaceChat, { history: [], reply: '', choices: [] });
+	startOnboarding();
 	await fetch('/api/onboarding', { method: 'DELETE' }).catch(() => {});
-	if (page.url.pathname === '/') await invalidateAll();
-	else await goto('/');
+	await whileRestarting(() => (page.url.pathname === '/' ? invalidateAll() : goto('/')));
 	// Already on the projects page, its onMount won't run again.
 	maybeWelcome();
 }

@@ -5,7 +5,8 @@
 	import { Button, Dialog, buttonVariants } from '@latitudelabs/design-system';
 	import { ChevronLeft, ChevronRight, Icon, X } from '@latitudelabs/design-system/icons';
 	import { page } from '$app/state';
-	import { replaceState } from '$app/navigation';
+	import { beforeNavigate, replaceState } from '$app/navigation';
+	import { endOnboarding } from '#lib/onboarding.js';
 	import { resolve } from '$app/paths';
 	import AiDock, { timeOfDayGreeting, type DockMode } from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
@@ -31,6 +32,14 @@
 	// Local copy of the project that this page edits as the conversation goes on.
 	// svelte-ignore state_referenced_locally
 	let project = $state(structuredClone(data.project));
+
+	// Onboarding ends on opening any project but the example (a new one included), or on leaving the example.
+	$effect(() => {
+		if (!data.project.example) endOnboarding();
+	});
+	beforeNavigate((nav) => {
+		if (data.project.example && nav.to?.url.pathname !== page.url.pathname) endOnboarding();
+	});
 	// A video card finds the project's studies that show its video, to switch its viewer data to their sample results.
 	shareProjectCards(
 		() => project.cards,

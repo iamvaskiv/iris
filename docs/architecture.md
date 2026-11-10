@@ -74,7 +74,11 @@ flowchart TB
 Someone new is greeted by Lumi on the projects page instead of the usual suggestions. The welcome is client-side (no
 model call) and remembered per device (`iris.welcomed` in localStorage). Restarting onboarding (Settings, or ⌥⇧O anywhere;
 `restartOnboarding`) clears it, deletes the example (`DELETE /api/onboarding`, rebuilt fresh by the projects page load, which makes it whenever it's missing) and
-shows the welcome again. Its first two answers
+shows the welcome again.
+
+The welcome (or a restart) also starts the **onboarding sequence**, kept in the `iris_onboarding` cookie
+(`src/lib/onboarding.ts`) so the server can filter: while it's on, the projects page and Lumi's project list hold only
+the example. Leaving the example, or opening any other project (a new draft included), ends it. Its first two answers
 go straight where they say; anything else is a normal question to Lumi. The example project is one shared project
 (`id: example`, `src/lib/server/example.ts`) built from the cards captured for the Storybook and saved on its first
 visit or on the projects page whenever it's missing, with Lumi's intro already in its conversation.
@@ -97,12 +101,17 @@ flowchart TB
     exists -- "yes" --> show
     store --> show["Cards refreshed from the analysis,<br/>Lumi's intro and three questions"]
 
+    seen -- "no" --> on[["Onboarding on (cookie):<br/>projects page lists only the example"]]
+    show -- "leaves the example" --> off[["Onboarding over:<br/>all projects listed"]]
+    draft -- "opens" --> off
+
     classDef ui stroke:#4c7dff,fill:#4c7dff33
     classDef server stroke:#00bd32,fill:#00bd3233
     classDef ai stroke:#f424ff,fill:#f424ff33
     classDef storage stroke:#918b98,fill:#918b9833
     class open,seen,usual,welcome,draft,show ui
     class load,exists,build server
+    class on,off ui
     class lumi ai
     class store storage
 ```

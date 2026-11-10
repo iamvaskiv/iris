@@ -122,8 +122,9 @@ export type WorkspaceResponse = {
 	error?: string;
 };
 
-async function describeProjects() {
-	const list = await projects.list();
+async function describeProjects(onboarding: boolean) {
+	// During onboarding the page lists only the example, so Lumi talks only about that one too.
+	const list = (await projects.list()).filter((p) => !onboarding || p.id === EXAMPLE_ID);
 	if (!list.length) return 'Projects: none yet.';
 	const lines = list.map(
 		(p) =>
@@ -155,7 +156,8 @@ function pendingDeletions(history: Anthropic.MessageParam[]): Set<string> {
 
 export async function workspaceChat(
 	message: string,
-	history: Anthropic.MessageParam[]
+	history: Anthropic.MessageParam[],
+	{ onboarding = false } = {}
 ): Promise<WorkspaceResponse> {
 	if (!env.ANTHROPIC_API_KEY) return scripted(message, history);
 	let navigate: Navigate | undefined;
@@ -240,7 +242,7 @@ export async function workspaceChat(
 
 	try {
 		const res = await runLoop({
-			system: `${systemPrompt(library)}\n\n${await describeProjects()}\n${describeAssets(userAssets)}`,
+			system: `${systemPrompt(library)}\n\n${await describeProjects(onboarding)}\n${describeAssets(userAssets)}`,
 			tools: toolsFor(library),
 			history,
 			message,

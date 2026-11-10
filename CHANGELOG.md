@@ -11,6 +11,9 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 - **Lumi's welcome**: the first time someone opens the projects page, Lumi says what she does (answers with cards)
   and offers three first steps: **Show me an example**, **Upload my own video** (opens a new project to drop it into)
   and **What can you do?** Any answer or message ends it; it's remembered per device.
+- **Onboarding sequence**: from Lumi's welcome until you've been into the example project and out again, or opened
+  any other project (starting a new one counts), the projects page lists only the example (and **New**), and Lumi
+  there only knows about the example. Then all projects come back.
 - **Restart onboarding**: Settings → Assistant → **Onboarding** → Restart, or **⌥⇧O** anywhere in the app. Lumi's
   welcome comes back on this device, the example project goes back to how it first opens (for everyone), and you
   land on the projects page, where the example's tile is always first after a restart (it's made whenever it's

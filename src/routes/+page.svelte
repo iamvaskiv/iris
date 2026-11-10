@@ -6,6 +6,7 @@
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import CardPreview from '#lib/components/CardPreview.svelte';
 	import { onMount } from 'svelte';
+	import { isOnboarding } from '#lib/onboarding.js';
 	import {
 		markWelcomed,
 		maybeWelcome,
@@ -42,7 +43,13 @@
 	}
 
 	// Someone new is greeted by Lumi, offering the example project (see maybeWelcome).
-	onMount(maybeWelcome);
+	// The welcome starts onboarding, which lists only the example: reload the list without the others.
+	// The list can also be stale the other way: links preload the page on hover, so leaving the example (which ends
+	// onboarding) can arrive with the short list fetched just before. Either way, fetch it again.
+	onMount(() => {
+		const welcomed = maybeWelcome();
+		if (welcomed ? !data.onboarding : data.onboarding && !isOnboarding()) invalidateAll();
+	});
 
 	/** Chat at the projects level: quick answers above the input; the assistant creates/opens projects only when asked. */
 	async function send(message: string) {
