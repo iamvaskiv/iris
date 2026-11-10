@@ -71,9 +71,16 @@
 {#if !state.dismissed}
 	{#if variant === 'tile'}
 		<Card.Root
-			class={cn('h-72 overflow-hidden', className)}
+			class={cn('relative isolate h-72 overflow-hidden', className)}
 			aria-labelledby="getting-started-title"
 		>
+			<!-- A soft glow of the brand colours (the same as Lumi's orb) on the right, away from the text: onboarding
+			     is a brand moment. -->
+			<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+				<div class="absolute -top-12 -right-8 size-44 rounded-full bg-brand-3/50 blur-3xl"></div>
+				<div class="absolute top-24 -right-16 size-48 rounded-full bg-brand-2/40 blur-3xl"></div>
+				<div class="absolute -right-4 -bottom-16 size-40 rounded-full bg-brand-4/40 blur-3xl"></div>
+			</div>
 			<Card.Header>
 				<Card.Title id="getting-started-title"
 					>{allDone ? "You're all set" : 'Getting started'}</Card.Title
