@@ -149,8 +149,9 @@
 							<Card.Header>
 								<Card.Title>{project.name}</Card.Title>
 								{#if project.summary}<Card.Description>{project.summary}</Card.Description>{/if}
-								{#if project.fielding}
-									<!-- Under the description: a quiz in the project is fielding (see isFielding). -->
+								{#if project.fielding && !project.example}
+									<!-- Under the description: a quiz in the project is fielding (see isFielding). Not on the demo, whose study
+									     only shows sample answers. -->
 									<div class="mt-2"><Badge variant="success">Fielding in progress</Badge></div>
 								{/if}
 								{#if project.example}
