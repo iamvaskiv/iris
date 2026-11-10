@@ -19,7 +19,7 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   video** (a video's scenes filling its timeline, characters and themes popping in), **Ask real viewers** (questions
   sliding in, pinned to moments in the video), **Learn how it landed** (the numbers, a sentiment curve drawing
   itself, a standout comment) and **Compare your videos** (two cuts' scores racing, one marked as preferred).
-  **Back** / **Let's begin!** (on Lumi's hello), then **Continue**, under the scene, in the Getting started card's colours, step dots at the bottom of the screen, **Let's go** at the end; arrow keys and Escape work too. Shown once per browser.
+  **Back** / **Let's begin!** (on Lumi's hello), then **Continue**, under the scene, in the Getting started card's colours (with a shimmer sweeping across the label now and then), step dots at the bottom of the screen, **Let's go** at the end; arrow keys and Escape work too. Shown once per browser.
 - **How Iris works** now plays the first time you open a project (the demo, usually), as an overlay on top of it: the
   project stays in place, dimmed and blurred under a scrim (and out of reach until it closes), with Lumi, the scene,
   Back / Next and **Skip** on top: **Just ask**, **Answers come as cards** and **Your cards stay up

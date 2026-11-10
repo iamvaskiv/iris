@@ -6,7 +6,7 @@
 	/**
 	 * The onboarding's main button (Next, Let's go, Got it), dressed like the Getting started card: a pastel wash of the
 	 * brand colours with brand-purple text in light mode, the full colours with white text in dark mode. Its colours
-	 * drift a little on hover. Brand moments only; everything else uses the design system's Button.
+	 * drift a little on hover, and a shimmer sweeps across the label now and then. Brand moments only; everything else uses the design system's Button.
 	 * Candidate for the design system: a "brand" Button variant.
 	 */
 	let {
@@ -31,13 +31,16 @@
 		></span>
 		<span class="blob blob-3 absolute top-2 left-1/2 size-8 rounded-full bg-brand-4 blur-md"></span>
 	</span>
-	{@render children()}
+	<!-- The label, with a shimmer sweeping across it from left to right now and then. -->
+	<span class="label">{@render children()}</span>
 </button>
 
 <style>
 	.brand-button {
+		--ink: var(--brand-4);
+		--shine: color-mix(in oklab, var(--brand-2) 55%, var(--neutral-0));
 		background: var(--neutral-0);
-		color: var(--brand-4);
+		color: var(--ink);
 		box-shadow:
 			0 0 0 1px color-mix(in oklab, var(--brand-4) 22%, transparent),
 			0 0 14px -4px color-mix(in oklab, var(--brand-2) 40%, transparent);
@@ -67,8 +70,10 @@
 		translate: -8px 2px;
 	}
 	:global(.dark) .brand-button {
+		--ink: var(--neutral-0);
+		--shine: color-mix(in oklab, var(--brand-3) 45%, var(--neutral-0));
 		background: var(--brand-4);
-		color: var(--neutral-0);
+		color: var(--ink);
 		box-shadow:
 			0 0 0 1px color-mix(in oklab, var(--neutral-0) 25%, transparent),
 			0 0 16px -2px color-mix(in oklab, var(--brand-2) 50%, transparent);
@@ -76,7 +81,30 @@
 	:global(.dark) .blob {
 		opacity: 1;
 	}
+	/* The text is painted by a gradient (ink, a lighter band, ink) that slides left to right, then rests off to the side. */
+	.label {
+		background: linear-gradient(110deg, var(--ink) 42%, var(--shine) 50%, var(--ink) 58%);
+		background-size: 250% 100%;
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+		animation: shimmer 3.2s ease-in-out 1s infinite;
+		background-position: 100% 0;
+	}
+	@keyframes shimmer {
+		0% {
+			background-position: 100% 0;
+		}
+		55%,
+		100% {
+			background-position: 0% 0;
+		}
+	}
+
 	@media (prefers-reduced-motion: reduce) {
+		.label {
+			animation: none;
+		}
 		.blob {
 			transition: none;
 		}
