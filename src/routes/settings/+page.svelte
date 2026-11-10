@@ -22,6 +22,8 @@
 	// svelte-ignore state_referenced_locally
 	let libraryAccess = $state(data.settings.libraryAccess);
 	let error = $state('');
+	// Restarting rebuilds the example before leaving for the projects page, which takes a moment.
+	let restarting = $state(false);
 
 	const themes = [
 		{ value: 'light', label: 'Light' },
@@ -146,7 +148,11 @@
 							size="sm"
 							aria-describedby="welcome-label"
 							aria-keyshortcuts="Alt+Shift+O"
-							onclick={restartOnboarding}>Restart</Button
+							disabled={restarting}
+							onclick={async () => {
+								restarting = true;
+								await restartOnboarding();
+							}}>{restarting ? 'Restarting…' : 'Restart'}</Button
 						>
 					</div>
 				</div>
