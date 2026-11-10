@@ -82,7 +82,7 @@
 	let dragging = $state(false);
 
 	// "How Iris works" (INTRO_STEPS in intro.ts): the first time someone opens a project, a scripted intro plays in
-	// Lumi's dock, centred, with the cards out of sight. When it ends the dock moves down as the cards appear.
+	// Lumi's dock, centred, over the project (dimmed under a scrim). When it ends the dock moves down to its place.
 	// svelte-ignore state_referenced_locally
 	let introStep = $state<number | null>(data.intro ? 0 : null);
 	function endIntro() {
@@ -868,12 +868,12 @@
 	{/if}
 	<main
 		bind:this={scroller}
+		inert={introStep !== null}
 		bind:clientHeight={viewHeight}
 		bind:offsetWidth={scrollerWidth}
 		bind:clientWidth={scrollerInnerWidth}
 		class={[
 			'flex-1 overflow-y-auto',
-			introStep !== null && 'intro-hidden',
 			!birdsEye && (lanesOn ? 'snap-y snap-mandatory' : 'snap-y snap-proximity')
 		]}
 		style:scrollbar-color={assetsOpen ? 'transparent transparent' : undefined}
@@ -1230,10 +1230,19 @@
 		</div>
 	{/if}
 
+	{#if introStep !== null}
+		<!-- The intro sits over the project: the project stays in place, dimmed and blurred under a scrim of the page's
+		     own background (so Lumi's text keeps its contrast), and can't be reached until the intro closes. -->
+		<div
+			transition:fade={{ duration: 400 }}
+			class="fixed inset-0 z-30 bg-background/80 backdrop-blur-md"
+		></div>
+	{/if}
+
 	<!-- Where we are in it, at the bottom of the screen (outside the dock, whose transform would hold it). -->
 	{#if introStep !== null}
 		<div
-			class="fixed bottom-8 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2"
+			class="fixed bottom-8 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2"
 			aria-hidden="true"
 		>
 			{#each INTRO_STEPS as _, i (i)}
@@ -1249,27 +1258,30 @@
 
 	{#if introStep !== null}
 		<!-- During the intro, nothing but Lumi and a way out, where the header's corner is. -->
-		<div class="fixed top-0 right-0 z-30 flex h-30 items-center px-8">
+		<div class="fixed top-0 right-0 z-40 flex h-30 items-center px-8">
 			<Button variant="ghost" onclick={endIntro}>Skip</Button>
 		</div>
 	{/if}
 
-	<AiDock
-		{centered}
-		greeting={project.cards.length
-			? `${timeOfDayGreeting()} What would you like to know about ${project.name}?`
-			: `${timeOfDayGreeting()} Drop a video here, or ask me about one you already have.`}
-		reply={introStep === null ? project.reply : INTRO_STEPS[introStep].reply}
-		choices={introStep === null ? project.choices : []}
-		thinking={introStep === null && thinking}
-		below={introStep === null ? undefined : introControls}
-		{error}
-		bind:draft
-		bind:mode={dockMode}
-		{messages}
-		bind:height={dockHeight}
-		onsubmit={ask}
-	/>
+	<!-- Above the intro's scrim while it plays (the dock itself sets no stacking order). -->
+	<div class={introStep !== null ? 'relative z-40' : 'contents'}>
+		<AiDock
+			{centered}
+			greeting={project.cards.length
+				? `${timeOfDayGreeting()} What would you like to know about ${project.name}?`
+				: `${timeOfDayGreeting()} Drop a video here, or ask me about one you already have.`}
+			reply={introStep === null ? project.reply : INTRO_STEPS[introStep].reply}
+			choices={introStep === null ? project.choices : []}
+			thinking={introStep === null && thinking}
+			below={introStep === null ? undefined : introControls}
+			{error}
+			bind:draft
+			bind:mode={dockMode}
+			{messages}
+			bind:height={dockHeight}
+			onsubmit={ask}
+		/>
+	</div>
 </div>
 
 <!-- The assets pane, over the page, sliding in from the right edge: flush with the top, right and bottom,
@@ -1347,16 +1359,6 @@
 </div>
 
 <style>
-	/* During the intro everything but Lumi is out of sight (cards, breadcrumb, checklist); it fades in as her dock
-	   moves down. */
-	main > :global(:not(header)) {
-		transition: opacity 0.6s ease-out;
-	}
-	main.intro-hidden > :global(*) {
-		opacity: 0;
-		pointer-events: none;
-	}
-
 	/* The tab's inner corners, against the pane's edge (see the tab). */
 	.fillet {
 		position: absolute;

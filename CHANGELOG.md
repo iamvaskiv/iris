@@ -17,9 +17,10 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   sliding in, pinned to moments in the video), **Learn how it landed** (the numbers, a sentiment curve drawing
   itself, a standout comment) and **Compare your videos** (two cuts' scores racing, one marked as preferred).
   **Back** / **Next** under the scene, step dots at the bottom of the screen, **Let's go** at the end; arrow keys and Escape work too. Shown once per browser.
-- **How Iris works** now plays the first time you open a project (the demo, usually), with only Lumi and **Skip** on
-  screen (no breadcrumb, checklist or view toggle): **Just ask**, **Answers come as cards** and **Your cards stay up
-  to date**, ending with **Got it**. Then her dock moves down to the bottom as the cards appear. Not when you arrive
+- **How Iris works** now plays the first time you open a project (the demo, usually), as an overlay on top of it: the
+  project stays in place, dimmed and blurred under a scrim (and out of reach until it closes), with Lumi, the scene,
+  Back / Next and **Skip** on top: **Just ask**, **Answers come as cards** and **Your cards stay up
+  to date**, ending with **Got it**. Then the scrim lifts and her dock moves down to its place. Not when you arrive
   with a video to upload or a question to ask (it waits for the next project). Shown once per browser; restarting
   onboarding replays it.
 - **Lumi's welcome**: the first time someone opens the projects page, Lumi says what she does (answers with cards)
