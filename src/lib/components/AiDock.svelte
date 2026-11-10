@@ -450,20 +450,23 @@
 		{#if showChoices}
 			<ChoiceList bind:ref={choiceList} options={choices} onselect={send} />
 		{/if}
-		<!-- Same field in both cases, so focus and the draft survive choices appearing and going. Dressed like the
-		     onboarding's Continue button (BrandButton): Lumi's colours washed behind it, a brand-purple edge and glow. -->
-		<div class="brand-field relative isolate overflow-hidden rounded-lg">
-			<span class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-				<span class="blob blob-1 absolute -top-10 -left-6 size-28 rounded-full bg-brand-3 blur-xl"
-				></span>
-				<span
-					class="blob blob-2 absolute -right-8 -bottom-12 size-32 rounded-full bg-brand-2 blur-xl"
-				></span>
-				<span class="blob blob-3 absolute top-3 left-1/2 size-16 rounded-full bg-brand-4 blur-xl"
-				></span>
-			</span>
+		<!-- Same field in both cases, so focus and the draft survive choices appearing and going. On its own it's dressed
+		     like the onboarding's Continue button (BrandButton): Lumi's colours washed behind it, a brand-purple edge and
+		     glow. As the last of Lumi's choices ("Something else…") it's a plain input, like the choices above it. -->
+		<div class={['relative isolate overflow-hidden rounded-lg', !showChoices && 'brand-field']}>
+			{#if !showChoices}
+				<span class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+					<span class="blob blob-1 absolute -top-10 -left-6 size-28 rounded-full bg-brand-3 blur-xl"
+					></span>
+					<span
+						class="blob blob-2 absolute -right-8 -bottom-12 size-32 rounded-full bg-brand-2 blur-xl"
+					></span>
+					<span class="blob blob-3 absolute top-3 left-1/2 size-16 rounded-full bg-brand-4 blur-xl"
+					></span>
+				</span>
+			{/if}
 			<PromptInput
-				class="bg-transparent"
+				class={showChoices ? undefined : 'bg-transparent'}
 				bind:ref={input}
 				bind:value={draft}
 				placeholder={showChoices ? 'Something else…' : placeholder}

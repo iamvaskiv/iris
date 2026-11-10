@@ -163,12 +163,12 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   with soft peach, pink and purple washed behind it, brand-purple text and placeholder, a tinted edge and a glow that
   warms on hover and focus (the colours drift a little). The whole dock carries the same colours, fainter, with a
   lightly tinted edge, and its text is in the same brand purple. In dark mode it's all quieter: warm white text, and the
-  input only just lifted off the card with a touch of purple, its colours a little stronger than the dock's.
+  input only just lifted off the card with a touch of purple, its colours a little stronger than the dock's. When Lumi
+  offers choices, the input becomes their last row ("Something else…") and looks like them: a plain field.
 
 ## 2026-10-30
 
 **Cards**
-
 - **Viewers card**: how viewers reacted to two to four videos, compared. Ask Lumi to "compare how viewers reacted to
   these videos". A row per video in its own colour, with its poster (play opens it in the card, with a playhead
   along the curves), a **Source** picker (Lumiere's real viewers, or any study in the project that shows the video and
