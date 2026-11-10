@@ -10,8 +10,10 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 - **Lumi's welcome**: the first time someone opens the projects page, Lumi says what she does (answers with cards)
   and offers three first steps: **Show me an example**, **Upload my own video** (opens a new project to drop it into)
-  and **What can you do?** Any answer or message ends it; it's remembered per device, and Settings → Assistant →
-  **Welcome** → Show again brings it back.
+  and **What can you do?** Any answer or message ends it; it's remembered per device.
+- **Restart onboarding**: Settings → Assistant → **Onboarding** → Restart, or **⌥⇧O** anywhere in the app. Lumi's
+  welcome comes back on this device, the example project goes back to how it first opens (for everyone), and you
+  land on the projects page.
 - **Example project** ("Example: Inside Out 2"): one shared project with the Inside Out 2 trailer's video card,
   viewer insights and study already in it, so people see Lumi's cards before uploading anything. It opens with Lumi
   explaining the cards and three questions to try; Lumi says what each new card is for while there. Its tile says

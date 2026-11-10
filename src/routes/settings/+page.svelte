@@ -3,6 +3,7 @@
 	import {
 		Button,
 		Card,
+		Kbd,
 		Label,
 		Orb,
 		SegmentedControl,
@@ -12,7 +13,7 @@
 	import { onMount } from 'svelte';
 	import { dev } from '$app/env';
 	import AppHeader from '#lib/components/AppHeader.svelte';
-	import { resetWelcome } from '#lib/workspace-chat.svelte.js';
+	import { restartOnboarding, RESTART_KEYS } from '#lib/workspace-chat.svelte.js';
 	import { experimental, loadExperimental, setLanes } from '#lib/experimental.svelte.js';
 	import { loadOrbVariant, orbVariant, useOrbVariant } from '#lib/orb-variant.svelte.js';
 	import type { PageProps } from './$types';
@@ -21,7 +22,6 @@
 	// svelte-ignore state_referenced_locally
 	let libraryAccess = $state(data.settings.libraryAccess);
 	let error = $state('');
-	let welcomeReset = $state(false);
 
 	const themes = [
 		{ value: 'light', label: 'Light' },
@@ -133,22 +133,22 @@
 				</div>
 				<div class="flex items-start justify-between gap-4">
 					<div class="flex flex-col gap-1">
-						<Label id="welcome-label">Welcome</Label>
+						<Label id="welcome-label">Onboarding</Label>
 						<p class="text-caption text-muted-foreground">
-							Lumi greets new people on the projects page and offers an example project. Only on
-							this device.
+							Start over as someone new: Lumi's welcome on the projects page, and the example
+							project as it first opens. Only on this device (the example resets for everyone).
 						</p>
 					</div>
-					<Button
-						variant="secondary"
-						size="sm"
-						aria-describedby="welcome-label"
-						onclick={() => {
-							resetWelcome();
-							welcomeReset = true;
-						}}
-						disabled={welcomeReset}>{welcomeReset ? 'Shows next visit' : 'Show again'}</Button
-					>
+					<div class="flex shrink-0 items-center gap-3">
+						<Kbd>{RESTART_KEYS.label}</Kbd>
+						<Button
+							variant="secondary"
+							size="sm"
+							aria-describedby="welcome-label"
+							aria-keyshortcuts="Alt+Shift+O"
+							onclick={restartOnboarding}>Restart</Button
+						>
+					</div>
 				</div>
 				{#if error}<p class="text-caption text-destructive" role="alert">{error}</p>{/if}
 			</Card.Content>

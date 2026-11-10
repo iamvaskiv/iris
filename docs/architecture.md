@@ -72,7 +72,9 @@ flowchart TB
 ## First visit
 
 Someone new is greeted by Lumi on the projects page instead of the usual suggestions. The welcome is client-side (no
-model call) and remembered per device (`iris.welcomed` in localStorage, reset from Settings). Its first two answers
+model call) and remembered per device (`iris.welcomed` in localStorage). Restarting onboarding (Settings, or ⌥⇧O anywhere;
+`restartOnboarding`) clears it, deletes the example (`DELETE /api/onboarding`, so it's rebuilt on its next visit) and
+shows the welcome again. Its first two answers
 go straight where they say; anything else is a normal question to Lumi. The example project is one shared project
 (`id: example`, `src/lib/server/example.ts`) built from the cards captured for the Storybook and saved on its first
 visit, with Lumi's intro already in its conversation.

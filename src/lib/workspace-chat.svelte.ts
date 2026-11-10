@@ -1,3 +1,5 @@
+import { goto, invalidateAll } from '$app/navigation';
+import { page } from '$app/state';
 import { readLocal, writeLocal } from './local.js';
 
 /** Projects-page conversation, kept for the browser session so it survives visiting a project and coming back. */
@@ -39,12 +41,24 @@ export function maybeWelcome() {
 
 export const markWelcomed = () => writeLocal(WELCOMED, '1');
 
-/** Settings: show the welcome again on the next visit to the projects page. */
-export function resetWelcome() {
+/** Restarts onboarding on this device: the example back to how it starts, then Lumi's welcome on the projects page. */
+export async function restartOnboarding() {
 	try {
 		localStorage.removeItem(WELCOMED);
 	} catch {
 		// Storage blocked: the welcome shows every visit anyway.
 	}
 	Object.assign(workspaceChat, { history: [], reply: '', choices: [] });
+	await fetch('/api/onboarding', { method: 'DELETE' }).catch(() => {});
+	if (page.url.pathname === '/') await invalidateAll();
+	else await goto('/');
+	// Already on the projects page, its onMount won't run again.
+	maybeWelcome();
 }
+
+/** The shortcut for restartOnboarding, anywhere in the app. */
+export const RESTART_KEYS = {
+	label: '⌥⇧O',
+	matches: (e: KeyboardEvent) =>
+		e.altKey && e.shiftKey && !e.metaKey && !e.ctrlKey && e.code === 'KeyO'
+};

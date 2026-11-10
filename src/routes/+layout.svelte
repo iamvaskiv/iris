@@ -3,6 +3,7 @@
 	import { ModeWatcher } from 'mode-watcher';
 	import { dev } from '$app/env';
 	import favicon from '#lib/assets/favicon.svg';
+	import { restartOnboarding, RESTART_KEYS } from '#lib/workspace-chat.svelte.js';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
@@ -11,6 +12,15 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
+
+<!-- Restart onboarding from anywhere (also in Settings → Assistant). -->
+<svelte:window
+	onkeydown={(e) => {
+		if (!RESTART_KEYS.matches(e)) return;
+		e.preventDefault();
+		restartOnboarding();
+	}}
+/>
 
 <!-- Follows the system light/dark setting and remembers the user's choice. -->
 <ModeWatcher />
