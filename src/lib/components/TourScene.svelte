@@ -5,7 +5,7 @@
 
 	/**
 	 * The small looping scene under Lumi during the first-visit tour (TOUR_STEPS in intro.ts), one per thing Iris does:
-	 * a video broken down, a study drafted, viewers' feelings over time, two videos compared. Decorative: what Lumi says
+	 * a video broken down, a study drafted, viewers' feelings over time, two videos compared (one marked as preferred). Decorative: what Lumi says
 	 * above it carries the meaning. Every scene loops every 6s and shows its finished state with reduced motion.
 	 */
 	let { step, class: className }: { step: number; class?: string } = $props();
@@ -135,7 +135,7 @@
 							<div class={['aspect-video w-full rounded-sm', v.poster]}></div>
 							<div class="flex items-center justify-between gap-2">
 								<span class="text-caption">{v.label}</span>
-								{#if i === 0}<span class="lead"><Badge variant="success">Lands better</Badge></span
+								{#if i === 0}<span class="lead"><Badge variant="success">Preferred</Badge></span
 									>{/if}
 							</div>
 							<div class="h-2 w-full overflow-hidden rounded-full bg-muted">

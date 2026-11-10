@@ -9,7 +9,7 @@
 	import { onMount } from 'svelte';
 	import { isOnboarding, markTourSeen } from '#lib/onboarding.js';
 	import TourScene from '#lib/components/TourScene.svelte';
-	import { TOUR_STEPS } from '#lib/intro.js';
+	import { TOUR_DONE, TOUR_STEPS } from '#lib/intro.js';
 	import {
 		markWelcomed,
 		maybeTour,
@@ -131,8 +131,8 @@
 
 <svelte:window onkeydown={tourKeys} />
 
-<!-- The tour is scripted: in place of Lumi's input, what she's describing and the way through it. Arrow keys and
-     Escape work too. -->
+<!-- The tour is scripted: in place of Lumi's input, what she's describing and Back / Next (Skip is top right).
+     Arrow keys and Escape work too. -->
 {#snippet tourControls()}
 	{#if tourStep !== null}
 		<div class="flex w-full flex-col items-center gap-6">
@@ -151,11 +151,9 @@
 			<div class="flex items-center gap-2">
 				{#if tourStep > 0}
 					<Button variant="ghost" onclick={() => goTour(tourStep - 1)}>Back</Button>
-				{:else}
-					<Button variant="ghost" onclick={endTour}>Skip</Button>
 				{/if}
 				<Button onclick={() => goTour(tourStep + 1)}
-					>{tourStep === TOUR_STEPS.length - 1 ? 'Get started' : 'Next'}</Button
+					>{tourStep === TOUR_STEPS.length - 1 ? TOUR_DONE : 'Next'}</Button
 				>
 			</div>
 		</div>
@@ -178,7 +176,15 @@
 			<p class="text-title">Drop a video to start a project</p>
 		</div>
 	{/if}
-	<AppHeader />
+	<!-- During the tour, nothing but Lumi and a way out: Skip where the nav usually is. -->
+	{#if tilesHidden}
+		<!-- As tall as the header, so Lumi stays put when it comes back. -->
+		<div class="flex h-30 items-center justify-end px-8">
+			<Button variant="ghost" onclick={endTour}>Skip</Button>
+		</div>
+	{:else}
+		<AppHeader />
+	{/if}
 
 	<main class="mx-auto flex w-full max-w-[970px] flex-col gap-16 px-4 pb-16">
 		<!-- Lumi, large: the projects-level assistant above the grid, centred in about half the screen. -->

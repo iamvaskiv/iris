@@ -9,16 +9,17 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 **Onboarding**
 
 - **First-visit tour**: on your first visit to the projects page (and after restarting onboarding), a scripted tour
-  plays in Lumi's own dock, before her welcome: what Iris does for you, in four steps, each with a small looping
-  scene right under Lumi's line: **Video analysis** (a video's scenes filling its timeline, characters and themes
-  popping in), **Viewer studies** (questions sliding in, pinned to moments in the video), **Insights** (the numbers,
-  a sentiment curve drawing itself, a standout comment) and **Comparison** (two videos' scores racing, one marked as
-  landing better). **Skip** / **Back** and **Next** / **Get started** in place of her input; arrow keys and Escape
-  work too. Shown once per browser.
-- **How Iris works** now plays the first time you open a project (the demo, usually): Lumi's dock sits centred with
-  the cards out of sight while she goes through **Ask Lumi anything**, **Lumi answers in cards** and **Cards keep up
-  with you**, then moves down to the bottom as the cards appear. Not when you arrive with a video to upload or a
-  question to ask (it waits for the next project). Shown once per browser; restarting onboarding replays it.
+  plays in Lumi's own dock, before her welcome, with nothing else on screen but **Skip** in the top-right corner. Four
+  steps, written for someone new, each with a small looping scene right under Lumi's line: **See what's in your
+  video** (a video's scenes filling its timeline, characters and themes popping in), **Ask real viewers** (questions
+  sliding in, pinned to moments in the video), **Learn how it landed** (the numbers, a sentiment curve drawing
+  itself, a standout comment) and **Compare your videos** (two cuts' scores racing, one marked as preferred).
+  **Back** / **Next** under the scene, **Let's go** at the end; arrow keys and Escape work too. Shown once per browser.
+- **How Iris works** now plays the first time you open a project (the demo, usually), with only Lumi and **Skip** on
+  screen (no breadcrumb, checklist or view toggle): **Just ask**, **Answers come as cards** and **Your cards stay up
+  to date**, ending with **Got it**. Then her dock moves down to the bottom as the cards appear. Not when you arrive
+  with a video to upload or a question to ask (it waits for the next project). Shown once per browser; restarting
+  onboarding replays it.
 - **Lumi's welcome**: the first time someone opens the projects page, Lumi says what she does (answers with cards)
   and offers three first steps: **Show me a demo**, **Upload my own video** (opens a new project to drop it into)
   and **What can you do?** Any answer or message ends it; it's remembered per device.

@@ -7,7 +7,7 @@
 	import { page } from '$app/state';
 	import { beforeNavigate, replaceState } from '$app/navigation';
 	import { endOnboarding, markIntroSeen } from '#lib/onboarding.js';
-	import { INTRO_STEPS } from '#lib/intro.js';
+	import { INTRO_DONE, INTRO_STEPS } from '#lib/intro.js';
 	import IntroScene from '#lib/components/IntroScene.svelte';
 	import { completeSteps, type StepId } from '#lib/checklist.svelte.js';
 	import { isFielding } from '#lib/cards/study/fielding.js';
@@ -804,7 +804,8 @@
 	}
 </script>
 
-<!-- The intro is scripted: in place of Lumi's input, what she's describing and the way through it (Escape skips). -->
+<!-- The intro is scripted: in place of Lumi's input, what she's describing and Back / Next. Skip is top right;
+     Escape skips too. -->
 {#snippet introControls()}
 	{#if introStep !== null}
 		<div class="flex w-full flex-col items-center gap-6">
@@ -823,11 +824,9 @@
 			<div class="flex items-center gap-2">
 				{#if introStep > 0}
 					<Button variant="ghost" onclick={() => goIntro(introStep! - 1)}>Back</Button>
-				{:else}
-					<Button variant="ghost" onclick={endIntro}>Skip</Button>
 				{/if}
 				<Button onclick={() => goIntro(introStep! + 1)}
-					>{introStep === INTRO_STEPS.length - 1 ? 'Get started' : 'Next'}</Button
+					>{introStep === INTRO_STEPS.length - 1 ? INTRO_DONE : 'Next'}</Button
 				>
 			</div>
 		</div>
@@ -1205,7 +1204,7 @@
 		></div>
 	{/if}
 
-	{#if project.cards.length > 1}
+	{#if project.cards.length > 1 && introStep === null}
 		<!-- Bird's eye toggle: bottom of the left safe zone, level with the bottom of Lumi's dock. With lanes the left side
 		     holds their titles (the next lane's peeks in there), so it moves to the right, clear of the scrollbar. -->
 		<div
@@ -1238,6 +1237,13 @@
 					{/snippet}
 				</Tooltip>
 			</TooltipGroup>
+		</div>
+	{/if}
+
+	{#if introStep !== null}
+		<!-- During the intro, nothing but Lumi and a way out, where the header's corner is. -->
+		<div class="fixed top-0 right-0 z-30 flex h-30 items-center px-8">
+			<Button variant="ghost" onclick={endIntro}>Skip</Button>
 		</div>
 	{/if}
 
@@ -1334,11 +1340,12 @@
 </div>
 
 <style>
-	/* During the intro the cards are out of sight (the header stays); they fade in as Lumi's dock moves down. */
+	/* During the intro everything but Lumi is out of sight (cards, breadcrumb, checklist); it fades in as her dock
+	   moves down. */
 	main > :global(:not(header)) {
 		transition: opacity 0.6s ease-out;
 	}
-	main.intro-hidden > :global(:not(header)) {
+	main.intro-hidden > :global(*) {
 		opacity: 0;
 		pointer-events: none;
 	}
