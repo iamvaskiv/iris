@@ -29,6 +29,8 @@
 		></span>
 		<span class="blob blob-2 absolute -right-4 -bottom-5 size-14 rounded-full bg-brand-2 blur-md"
 		></span>
+		<!-- The shimmer's band across the whole button, over its colours and under the label (in step with it). -->
+		<span class="sheen absolute inset-y-0 -left-1/2 w-1/2"></span>
 		<span class="blob blob-3 absolute top-2 left-1/2 size-8 rounded-full bg-brand-4 blur-md"></span>
 	</span>
 	<!-- The label, with a shimmer sweeping across it from left to right now and then. -->
@@ -38,7 +40,7 @@
 <style>
 	.brand-button {
 		--ink: var(--brand-4);
-		--shine: color-mix(in oklab, var(--brand-2) 55%, var(--neutral-0));
+		--shine: color-mix(in oklab, var(--brand-2) 25%, var(--neutral-0));
 		background: var(--neutral-0);
 		color: var(--ink);
 		box-shadow:
@@ -71,7 +73,7 @@
 	}
 	:global(.dark) .brand-button {
 		--ink: var(--neutral-0);
-		--shine: color-mix(in oklab, var(--brand-3) 45%, var(--neutral-0));
+		--shine: color-mix(in oklab, var(--brand-3) 25%, var(--neutral-0));
 		background: var(--brand-4);
 		color: var(--ink);
 		box-shadow:
@@ -91,6 +93,25 @@
 		animation: shimmer 3.2s ease-in-out 1s infinite;
 		background-position: 100% 0;
 	}
+	/* The band: a bright diagonal streak travelling from off the left edge to off the right, on the label's beat. */
+	.sheen {
+		background: linear-gradient(
+			105deg,
+			transparent 20%,
+			color-mix(in oklab, var(--neutral-0) 85%, transparent) 50%,
+			transparent 80%
+		);
+		animation: sheen 3.2s ease-in-out 1s infinite;
+	}
+	@keyframes sheen {
+		0% {
+			translate: 0 0;
+		}
+		55%,
+		100% {
+			translate: 300% 0;
+		}
+	}
 	@keyframes shimmer {
 		0% {
 			background-position: 100% 0;
@@ -104,6 +125,9 @@
 	@media (prefers-reduced-motion: reduce) {
 		.label {
 			animation: none;
+		}
+		.sheen {
+			display: none;
 		}
 		.blob {
 			transition: none;
