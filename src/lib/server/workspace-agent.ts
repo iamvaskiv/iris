@@ -17,6 +17,7 @@ import { lumiere } from './lumiere.js';
 import { projects } from './projects.js';
 import { settings } from './settings.js';
 import { assets, describeAssets } from './assets.js';
+import { EXAMPLE_ID, ensureExample } from './example.js';
 
 function systemPrompt(library: boolean) {
 	return `${BRAND}
@@ -32,6 +33,7 @@ Projects:
 - Create a project only when the user asks for one or agrees to your offer. Then call create_project and tell them in your reply ("Creating 'Women Talking' and taking you there."). The app shows your reply, then moves them into the project.
 - Pass firstMessage when there is a question to continue inside the new project, and videoIds for the videos it's about: any of the user's videos${library ? ' or video library videos' : ''}. Never ask them to upload a video they already have.
 - open_project works the same way for existing projects: say where you're taking them.
+- New people get a welcome from you that offers the example project (an Inside Out 2 trailer with a video card, viewer insights and a study already in it). When someone asks what Iris or you can do, answer in a sentence and offer to show it ("Want to see an example?"); on yes, call open_example.
 
 ${CHOICES}
 
@@ -83,6 +85,12 @@ const allTools: Anthropic.Tool[] = [
 			properties: { id: { type: 'string' }, confirmed: { type: 'boolean' } },
 			required: ['id']
 		}
+	},
+	{
+		name: 'open_example',
+		description:
+			'Take the user into the example project (made if it is missing), to show what Lumi and her cards do.',
+		input_schema: { type: 'object', properties: {} }
 	},
 	{
 		name: 'open_project',
@@ -216,6 +224,11 @@ export async function workspaceChat(
 			await projects.remove(project.id);
 			refresh = true;
 			return { deleted: true, name: project.name };
+		}
+		if (name === 'open_example') {
+			await ensureExample();
+			navigate = { projectId: EXAMPLE_ID };
+			return { opened: true };
 		}
 		if (name === 'open_project') {
 			if (!(await projects.get(input.id as string))) throw new Error(`No project with id ${input.id}`);

@@ -69,6 +69,42 @@ flowchart TB
 | Card data     | `src/lib/server/video-card.ts`, `insights.ts`, `comparison.ts` | Fill cards from Lumiere; insights cached for six hours                                                                                                                      |
 | Store         | `src/lib/server/store.ts`                                      | Projects, assets, insights, settings as JSON documents; versioned updates retried on conflict                                                                               |
 
+## First visit
+
+Someone new is greeted by Lumi on the projects page instead of the usual suggestions. The welcome is client-side (no
+model call) and remembered per device (`iris.welcomed` in localStorage, reset from Settings). Its first two answers
+go straight where they say; anything else is a normal question to Lumi. The example project is one shared project
+(`id: example`, `src/lib/server/example.ts`) built from the cards captured for the Storybook and saved on its first
+visit, with Lumi's intro already in its conversation.
+
+```mermaid
+---
+config:
+  look: classic
+---
+flowchart TB
+    open(["Opens the projects page"]) --> seen{"Welcomed on<br/>this device?"}
+    seen -- "yes" --> usual["Usual greeting<br/>and suggestions"]
+    seen -- "no" --> welcome["Lumi's welcome<br/>with three choices"]
+    welcome -- "Show me an example" --> load["/projects/example<br/>page load"]
+    welcome -- "Upload my own video" --> draft["New draft project<br/>(drop a video)"]
+    welcome -- "What can you do? / typed" --> lumi["Lumi on the projects page"]
+    lumi -- "open_example tool" --> load
+    load --> exists{"Example saved?"}
+    exists -- "no" --> build["Build from fixture cards:<br/>video · insights · study<br/>+ Lumi's intro"] --> store[("store.ts")]
+    exists -- "yes" --> show
+    store --> show["Cards refreshed from the analysis,<br/>Lumi's intro and three questions"]
+
+    classDef ui stroke:#4c7dff,fill:#4c7dff33
+    classDef server stroke:#00bd32,fill:#00bd3233
+    classDef ai stroke:#f424ff,fill:#f424ff33
+    classDef storage stroke:#918b98,fill:#918b9833
+    class open,seen,usual,welcome,draft,show ui
+    class load,exists,build server
+    class lumi ai
+    class store storage
+```
+
 ## How a question flows
 
 ```mermaid

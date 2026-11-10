@@ -4,6 +4,20 @@ What changed in Iris, newest first. Add a line under today's date with every cha
 notable behind-the-scenes ones); the app Storybook shows this file as its **Changelog** page. The deployed app
 (`iris.<account>.workers.dev`) runs whatever was last released with `pnpm run deploy`.
 
+## 2026-11-10
+
+**Onboarding**
+
+- **Lumi's welcome**: the first time someone opens the projects page, Lumi says what she does (answers with cards)
+  and offers three first steps: **Show me an example**, **Upload my own video** (opens a new project to drop it into)
+  and **What can you do?** Any answer or message ends it; it's remembered per device, and Settings → Assistant →
+  **Welcome** → Show again brings it back.
+- **Example project** ("Example: Inside Out 2"): one shared project with the Inside Out 2 trailer's video card,
+  viewer insights and study already in it, so people see Lumi's cards before uploading anything. It opens with Lumi
+  explaining the cards and three questions to try; Lumi says what each new card is for while there. Its tile says
+  **Example**, it keeps its name, and it's made again on the next visit if someone deletes it. Lumi on the projects
+  page can open it too ("show me an example").
+
 ## 2026-10-30
 
 **Cards**

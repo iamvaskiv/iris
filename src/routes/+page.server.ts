@@ -15,6 +15,7 @@ export const load: PageServerLoad = async () => ({
 			name: p.name,
 			summary: p.summary,
 			status: p.status,
+			example: p.example,
 			/** A study in the project is fielding (has sample results on): the tile says so, like the card does. */
 			fielding: p.cards.some(isFielding),
 			// The latest cards peek out of the bottom of the tile, oldest first (the newest lies on top). Their data

@@ -90,7 +90,10 @@ ${CHOICES}${library ? `\n\n${LIBRARY}` : ''}`;
 
 function describeProject(p: Project) {
 	const videos = p.videoIds.length ? p.videoIds.join(', ') : 'none yet';
-	return `Project: "${p.name}"${p.summary ? ` — summary: ${p.summary}` : ''}\nProject videos: ${videos}`;
+	const example = p.example
+		? `\nThis is the EXAMPLE project people open from your welcome to see how Iris works. They're new: when you add or update a card, say in a few words what kind of card it is and what it's for. Don't rename it.`
+		: '';
+	return `Project: "${p.name}"${p.summary ? ` — summary: ${p.summary}` : ''}\nProject videos: ${videos}${example}`;
 }
 
 /** Compact description of the cards on screen, so the model can focus/update instead of duplicating. */
@@ -449,7 +452,8 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 			return { focused: true };
 		}
 		case 'update_project':
-			if (input.name) project.name = input.name as string;
+			// The example keeps its name, so people can find it again.
+			if (input.name && !project.example) project.name = input.name as string;
 			if (input.summary) project.summary = input.summary as string;
 			return { updated: true };
 		case 'add_video': {

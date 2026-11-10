@@ -7,6 +7,8 @@ export type Project = {
 	summary?: string;
 	/** Short in-progress status, e.g. "Analysing video…". */
 	status?: string;
+	/** The shared example project from Lumi's welcome (see server/example.ts): its tile says "Example". */
+	example?: boolean;
 	videoIds: string[];
 	cards: Card[];
 	focusedId?: string;

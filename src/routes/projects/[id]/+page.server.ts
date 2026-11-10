@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { ProjectAsset } from '#lib/assets.js';
 import { assets, thumbnail } from '#lib/server/assets.js';
 import { refreshCardData } from '#lib/server/card-data.js';
+import { EXAMPLE_ID, ensureExample } from '#lib/server/example.js';
 import { projects } from '#lib/server/projects.js';
 import type { Project } from '#lib/projects.js';
 import { transcript } from '#lib/transcript.js';
@@ -21,7 +22,8 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		};
 		return { project: draft, transcript: [], assets: [] as ProjectAsset[] };
 	}
-	const project = await projects.get(params.id);
+	// The example project is made on its first visit (and again if it was deleted).
+	const project = params.id === EXAMPLE_ID ? await ensureExample() : await projects.get(params.id);
 	if (!project) error(404, 'Project not found');
 	const { history: _, ...rest } = project;
 

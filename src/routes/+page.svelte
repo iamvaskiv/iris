@@ -5,7 +5,14 @@
 	import AiDock from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import CardPreview from '#lib/components/CardPreview.svelte';
-	import { workspaceChat, type WorkspaceResponse } from '#lib/workspace-chat.svelte.js';
+	import { onMount } from 'svelte';
+	import {
+		markWelcomed,
+		maybeWelcome,
+		WELCOME,
+		workspaceChat,
+		type WorkspaceResponse
+	} from '#lib/workspace-chat.svelte.js';
 	import { draftProjectUrl, newProject, newProjectWithVideo } from '#lib/new-project.js';
 	import type { PageProps } from './$types';
 
@@ -34,8 +41,21 @@
 		else error = 'Drop a video file to start a project with it.';
 	}
 
+	// Someone new is greeted by Lumi, offering the example project (see maybeWelcome).
+	onMount(maybeWelcome);
+
 	/** Chat at the projects level: quick answers above the input; the assistant creates/opens projects only when asked. */
 	async function send(message: string) {
+		markWelcomed();
+		// The welcome's first two answers go straight where they say, without a round trip to Lumi.
+		if (message === WELCOME.example) {
+			Object.assign(workspaceChat, { reply: '', choices: [] });
+			return goto('/projects/example');
+		}
+		if (message === WELCOME.upload) {
+			Object.assign(workspaceChat, { reply: '', choices: [] });
+			return newProject();
+		}
 		draft = '';
 		error = '';
 		thinking = true;
@@ -120,7 +140,9 @@
 									<!-- Under the description: a quiz in the project is fielding (see isFielding). -->
 									<div class="mt-2"><Badge variant="success">Fielding in progress</Badge></div>
 								{/if}
-								{#if project.status}
+								{#if project.example}
+									<Card.Action><Badge variant="secondary">Example</Badge></Card.Action>
+								{:else if project.status}
 									<Card.Action><Badge variant="secondary">{project.status}</Badge></Card.Action>
 								{/if}
 							</Card.Header>

@@ -3,6 +3,7 @@
 	import type { ComponentProps } from 'svelte';
 	import { ChartColumn, Users, Video } from '@latitudelabs/design-system/icons';
 	import AiDock from '#lib/components/AiDock.svelte';
+	import { WELCOME } from '#lib/workspace-chat.svelte.js';
 
 	const { Story } = defineMeta({
 		title: 'Lumi/Dock',
@@ -139,5 +140,12 @@ typed. Messages sent here are only logged.`
 			{ from: 'user', text: 'Compare it with the trailer' }
 		]
 	}}
+	template={page}
+/>
+
+<!-- What someone new sees first on the projects page (see maybeWelcome). -->
+<Story
+	name="Centred, welcome"
+	args={{ centered: true, inline: true, reply: WELCOME.reply, choices: WELCOME.choices }}
 	template={page}
 />
