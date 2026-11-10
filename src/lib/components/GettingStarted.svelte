@@ -96,13 +96,17 @@
 			     card is hovered, and stop where they are when it isn't. -->
 			<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
 				<div
-					class="blob blob-1 absolute -top-20 -left-12 size-64 rounded-full bg-brand-3 blur-3xl"
+					class="blob blob-1 absolute -top-32 -left-24 size-64 rounded-full bg-brand-3 blur-3xl"
 				></div>
 				<div
-					class="blob blob-2 absolute -top-8 -right-16 size-64 rounded-full bg-brand-2 blur-3xl"
+					class="blob blob-2 absolute top-1/4 -right-36 size-64 rounded-full bg-brand-2 blur-3xl"
 				></div>
 				<div
-					class="blob blob-3 absolute -bottom-24 left-1/4 size-64 rounded-full bg-brand-1 blur-3xl"
+					class="blob blob-3 absolute -bottom-40 left-1/4 size-64 rounded-full bg-brand-1 blur-3xl"
+				></div>
+				<!-- Light in the middle, with the colours around the edges. -->
+				<div
+					class="center absolute top-1/2 left-1/2 size-56 -translate-1/2 rounded-full blur-3xl"
 				></div>
 				<!-- Follows the pointer while it's over the card. -->
 				<div class="glow absolute size-40 rounded-full bg-brand-3 blur-2xl"></div>
@@ -167,6 +171,13 @@
 	}
 	:global(.dark) .blob {
 		opacity: 1;
+	}
+	.center {
+		background: var(--neutral-0);
+		opacity: 0.75;
+	}
+	:global(.dark) .center {
+		opacity: 0.12;
 	}
 	/* Parallax: each colour leans away from the pointer by its own depth (and direction), on top of its drift. */
 	.blob {
