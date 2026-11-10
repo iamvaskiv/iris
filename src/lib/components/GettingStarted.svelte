@@ -20,17 +20,26 @@
 		class?: string;
 	} = $props();
 
-	const state = $derived(shown ?? checklist());
-	const doneCount = $derived(state.done.length);
+	const progress = $derived(shown ?? checklist());
+	const doneCount = $derived(progress.done.length);
 	const allDone = $derived(doneCount === STEPS.length);
-	const next = $derived(STEPS.find((s) => !state.done.includes(s.id)));
+	const next = $derived(STEPS.find((s) => !progress.done.includes(s.id)));
+
+	// The tile's blobs play with the pointer: a glow follows it, the colours lean away from it at different depths, and
+	// they swell while it's pressed. Where it is, as a share of the card (0–1), centred when it's elsewhere.
+	let pointer = $state({ x: 0.5, y: 0.5, pressed: false });
+	function track(e: PointerEvent) {
+		const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		pointer.x = (e.clientX - r.left) / r.width;
+		pointer.y = (e.clientY - r.top) / r.height;
+	}
 </script>
 
 <!-- `fill`: in the tile, the steps spread out to fill the card's height. -->
 {#snippet list(fill = false)}
 	<ol class={['flex flex-col', fill ? 'flex-1 justify-between' : 'gap-2']}>
 		{#each STEPS as step (step.id)}
-			{@const done = state.done.includes(step.id)}
+			{@const done = progress.done.includes(step.id)}
 			<li class="flex gap-2">
 				{#if done}
 					<Icon icon={CircleCheck} class="mt-0.5 size-4 shrink-0 text-success" label="Done" />
@@ -68,13 +77,20 @@
 	</div>
 {/snippet}
 
-{#if !state.dismissed}
+{#if !progress.dismissed}
 	{#if variant === 'tile'}
 		<!-- Light: a pastel wash with text tinted in the brand's dark red and purple. Dark: the brand colours at full
 		     strength under the dark theme's light text. See the styles below. -->
 		<Card.Root
 			class={cn('getting-started relative isolate h-72 overflow-hidden', className)}
 			aria-labelledby="getting-started-title"
+			data-pressed={pointer.pressed || undefined}
+			style="--x: {pointer.x}; --y: {pointer.y}"
+			onpointermove={track}
+			onpointerenter={track}
+			onpointerleave={() => Object.assign(pointer, { x: 0.5, y: 0.5, pressed: false })}
+			onpointerdown={() => (pointer.pressed = true)}
+			onpointerup={() => (pointer.pressed = false)}
 		>
 			<!-- The brand colours (Lumi's orb) across the whole card: onboarding is a brand moment. They drift while the
 			     card is hovered, and stop where they are when it isn't. -->
@@ -88,6 +104,8 @@
 				<div
 					class="blob blob-3 absolute -bottom-24 left-1/4 size-64 rounded-full bg-brand-1 blur-3xl"
 				></div>
+				<!-- Follows the pointer while it's over the card. -->
+				<div class="glow absolute size-40 rounded-full bg-brand-3 blur-2xl"></div>
 				<!-- A little depth under the text. -->
 				<div class="absolute inset-0 bg-gradient-to-r from-background/40 to-transparent"></div>
 			</div>
@@ -144,9 +162,53 @@
 	:global(.dark) .blob {
 		opacity: 1;
 	}
+	/* Parallax: each colour leans away from the pointer by its own depth (and direction), on top of its drift. */
+	.blob {
+		transform: translate(
+			calc((var(--x) - 0.5) * var(--depth)),
+			calc((var(--y) - 0.5) * var(--depth))
+		);
+		transition:
+			transform 0.5s ease-out,
+			scale 0.6s ease-out;
+	}
+	.blob-1 {
+		--depth: -70px;
+	}
+	.blob-2 {
+		--depth: 90px;
+	}
+	.blob-3 {
+		--depth: -50px;
+	}
+	:global(.getting-started[data-pressed]:hover) .blob {
+		scale: 1.4;
+		transition:
+			transform 0.5s ease-out,
+			scale 0.25s ease-out;
+	}
+	.glow {
+		left: calc(var(--x) * 100%);
+		top: calc(var(--y) * 100%);
+		translate: -50% -50%;
+		opacity: 0;
+		transition:
+			opacity 0.4s ease-out,
+			left 0.25s ease-out,
+			top 0.25s ease-out,
+			scale 0.25s ease-out;
+	}
+	:global(.getting-started:hover) .glow {
+		opacity: 0.55;
+	}
+	:global(.dark .getting-started:hover) .glow {
+		opacity: 0.9;
+	}
+	:global(.getting-started[data-pressed]) .glow {
+		scale: 1.5;
+	}
 	.blob {
 		animation: 4s ease-in-out infinite alternate paused;
-		transition: scale 0.6s ease-out;
 	}
 	.blob-1 {
 		animation-name: drift-1;
@@ -179,12 +241,19 @@
 		}
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.blob {
+		.blob,
+		.glow {
 			animation: none;
 			transition: none;
+			transform: none;
 		}
-		:global(.getting-started:hover) .blob {
+		:global(.getting-started:hover) .blob,
+		:global(.getting-started[data-pressed]) .blob,
+		:global(.getting-started[data-pressed]) .glow {
 			scale: none;
+		}
+		.glow {
+			display: none;
 		}
 	}
 </style>
