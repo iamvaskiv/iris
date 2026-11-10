@@ -71,9 +71,12 @@ flowchart TB
 
 ## First visit
 
-Someone new first gets **How Iris works** (`src/lib/intro.ts`): three steps scripted through Lumi's own dock on the
-projects page, with a looping scene (`IntroScene.svelte`) and Back / Next in place of her input (the dock's `below`). It plays until it's
-finished or skipped once (the `iris_intro` cookie, so the server leaves the tiles out on a first visit). Then they're
+Someone new first gets the **tour** (`TOUR_STEPS` in `src/lib/intro.ts`): what Iris does (video analysis, viewer
+studies, insights, comparison), scripted through Lumi's own dock on the projects page, with a looping scene
+(`TourScene.svelte`) and Back / Next in place of her input (the dock's `below`). It plays until it's finished or
+skipped once (the `iris_tour` cookie, so the server leaves the tiles out on a first visit). The first project they
+open then plays **How Iris works** (`INTRO_STEPS`, `IntroScene.svelte`, the `iris_intro` cookie): the dock centred
+with the cards out of sight, moving down as they appear when it ends. Then they're
 greeted by Lumi on the projects page instead of the usual suggestions. The welcome is client-side (no
 model call) and remembered per device (`iris.welcomed` in localStorage). Restarting onboarding (Settings, or ⌥⇧O anywhere;
 `restartOnboarding`) clears it, deletes the example (`DELETE /api/onboarding`, rebuilt fresh by the projects page load, which makes it whenever it's missing) and
@@ -121,8 +124,8 @@ config:
   look: classic
 ---
 flowchart TB
-    open(["Opens the projects page"]) --> introSeen{"Intro seen?<br/>(iris_intro cookie)"}
-    introSeen -- "no" --> intro["How Iris works, scripted in Lumi's dock:<br/>Ask → cards → cards update"]
+    open(["Opens the projects page"]) --> introSeen{"Tour seen?<br/>(iris_tour cookie)"}
+    introSeen -- "no" --> intro["Tour in Lumi's dock:<br/>analysis · studies · insights · comparison"]
     intro -- "Get started · Skip · Escape" --> seen
     introSeen -- "yes" --> seen{"Welcomed on<br/>this device?"}
     seen -- "yes" --> usual["Usual greeting<br/>and suggestions"]
@@ -134,6 +137,7 @@ flowchart TB
     load --> exists{"Example saved?"}
     exists -- "no" --> build["Build from fixture cards:<br/>video · insights · study<br/>+ Lumi's intro"] --> store[("store.ts")]
     exists -- "yes" --> show
+    load --> introDue{"First project<br/>opened?"} -- "yes" --> howIris["How Iris works in the centred dock,<br/>then it moves down as the cards appear"]
     store --> show["Cards refreshed from the analysis,<br/>Lumi's intro and three questions"]
 
     seen -- "no" --> on[["Onboarding on (cookie):<br/>projects page lists only the example"]]
@@ -146,6 +150,7 @@ flowchart TB
     classDef storage stroke:#918b98,fill:#918b9833
     class open,introSeen,intro,seen,usual,welcome,draft,show ui
     class load,exists,build server
+    class introDue,howIris ui
     class on,off ui
     class lumi ai
     class store storage

@@ -32,8 +32,8 @@ export async function whileRestarting(navigate: () => Promise<unknown>) {
 }
 
 /**
- * "How Iris works" (intro.ts): played in Lumi's dock on the projects page until it's finished or skipped once,
- * then her welcome follows. A cookie, so the server knows to leave the project tiles out on a first visit.
+ * "How Iris works" (INTRO_STEPS in intro.ts): played in Lumi's dock the first time someone opens a project, until
+ * it's finished or skipped once.
  */
 export const INTRO_COOKIE = 'iris_intro';
 
@@ -45,4 +45,20 @@ export function markIntroSeen() {
 
 export function resetIntro() {
 	document.cookie = `${INTRO_COOKIE}=; path=/; max-age=0; samesite=lax`;
+}
+
+/**
+ * The first-visit tour on the projects page (TOUR_STEPS in intro.ts): what Iris does, played in Lumi's dock before her
+ * welcome. A cookie, so the server leaves the project tiles out while it's due.
+ */
+export const TOUR_COOKIE = 'iris_tour';
+
+export const isTourSeen = () => document.cookie.includes(`${TOUR_COOKIE}=seen`);
+
+export function markTourSeen() {
+	document.cookie = `${TOUR_COOKIE}=seen; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+}
+
+export function resetTour() {
+	document.cookie = `${TOUR_COOKIE}=; path=/; max-age=0; samesite=lax`;
 }

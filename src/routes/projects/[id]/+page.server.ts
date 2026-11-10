@@ -4,11 +4,14 @@ import { assets, thumbnail } from '#lib/server/assets.js';
 import { refreshCardData } from '#lib/server/card-data.js';
 import { EXAMPLE_ID, ensureExample } from '#lib/server/example.js';
 import { projects } from '#lib/server/projects.js';
+import { INTRO_COOKIE } from '#lib/onboarding.js';
 import type { Project } from '#lib/projects.js';
 import { transcript } from '#lib/transcript.js';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, url }) => {
+export const load: PageServerLoad = async ({ params, url, cookies }) => {
+	// "How Iris works" plays the first time someone opens a project, unless they arrive with a question to ask.
+	const intro = cookies.get(INTRO_COOKIE) !== 'seen' && !url.searchParams.has('q');
 	// /projects/new is an unsaved draft: the page saves it on the first message or upload.
 	if (params.id === 'new') {
 		const now = new Date().toISOString();
@@ -20,7 +23,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			createdAt: now,
 			updatedAt: now
 		};
-		return { project: draft, transcript: [], assets: [] as ProjectAsset[] };
+		return { project: draft, transcript: [], assets: [] as ProjectAsset[], intro };
 	}
 	// The example project is made on its first visit (and again if it was deleted).
 	const project = params.id === EXAMPLE_ID ? await ensureExample() : await projects.get(params.id);
@@ -43,5 +46,5 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			})
 		)
 	]);
-	return { project: rest, transcript: transcript(project.history), assets: projectAssets };
+	return { project: rest, transcript: transcript(project.history), assets: projectAssets, intro };
 };

@@ -7,14 +7,14 @@
 	import CardPreview from '#lib/components/CardPreview.svelte';
 	import GettingStarted from '#lib/components/GettingStarted.svelte';
 	import { onMount } from 'svelte';
-	import { isOnboarding, markIntroSeen } from '#lib/onboarding.js';
-	import IntroScene from '#lib/components/IntroScene.svelte';
-	import { INTRO_STEPS } from '#lib/intro.js';
+	import { isOnboarding, markTourSeen } from '#lib/onboarding.js';
+	import TourScene from '#lib/components/TourScene.svelte';
+	import { TOUR_STEPS } from '#lib/intro.js';
 	import {
 		markWelcomed,
-		maybeIntro,
+		maybeTour,
 		maybeWelcome,
-		showIntroStep,
+		showTourStep,
 		WELCOME,
 		workspaceChat,
 		type WorkspaceResponse
@@ -27,32 +27,32 @@
 	let error = $state('');
 	let draft = $state('');
 
-	// "How Iris works" plays in Lumi's dock (see intro.ts); its scene takes the project tiles' place meanwhile. On a
+	// The first-visit tour plays in Lumi's dock (TOUR_STEPS in intro.ts), with the tiles out of the way meanwhile. On a
 	// first visit the server already leaves the tiles out, so they don't show for a moment before it starts.
-	const introStep = $derived(workspaceChat.introStep);
-	let introEnded = $state(false);
-	const tilesHidden = $derived(introStep !== null || (data.intro && !introEnded));
+	const tourStep = $derived(workspaceChat.tourStep);
+	let tourEnded = $state(false);
+	const tilesHidden = $derived(tourStep !== null || (data.tour && !tourEnded));
 
-	/** The intro's over (finished, skipped, or the person typed something else): the welcome follows it. */
-	function endIntro() {
-		markIntroSeen();
-		introEnded = true;
-		Object.assign(workspaceChat, { introStep: null, reply: '', choices: [] });
+	/** The tour's over (finished or skipped): the welcome follows it. */
+	function endTour() {
+		markTourSeen();
+		tourEnded = true;
+		Object.assign(workspaceChat, { tourStep: null, reply: '', choices: [] });
 		if (maybeWelcome() && !data.onboarding) invalidateAll();
 	}
 
-	/** Moves through the intro. Scripted, so each step shows straight away (no thinking). */
-	function goIntro(to: number) {
-		if (workspaceChat.introStep === null || to < 0) return;
-		if (to >= INTRO_STEPS.length) return endIntro();
-		showIntroStep(to);
+	/** Moves through the tour. Scripted, so each step shows straight away (no thinking). */
+	function goTour(to: number) {
+		if (workspaceChat.tourStep === null || to < 0) return;
+		if (to >= TOUR_STEPS.length) return endTour();
+		showTourStep(to);
 	}
 
-	function introKeys(e: KeyboardEvent) {
-		if (workspaceChat.introStep === null || e.defaultPrevented) return;
-		if (e.key === 'ArrowRight') goIntro(workspaceChat.introStep + 1);
-		else if (e.key === 'ArrowLeft') goIntro(workspaceChat.introStep - 1);
-		else if (e.key === 'Escape') endIntro();
+	function tourKeys(e: KeyboardEvent) {
+		if (workspaceChat.tourStep === null || e.defaultPrevented) return;
+		if (e.key === 'ArrowRight') goTour(workspaceChat.tourStep + 1);
+		else if (e.key === 'ArrowLeft') goTour(workspaceChat.tourStep - 1);
+		else if (e.key === 'Escape') endTour();
 	}
 
 	/** What Iris is for, offered above the input until the conversation starts. */
@@ -80,7 +80,7 @@
 	// The list can also be stale the other way: links preload the page on hover, so leaving the example (which ends
 	// onboarding) can arrive with the short list fetched just before. Either way, fetch it again.
 	onMount(() => {
-		if (maybeIntro()) return;
+		if (maybeTour()) return;
 		const welcomed = maybeWelcome();
 		if (welcomed ? !data.onboarding : data.onboarding && !isOnboarding()) invalidateAll();
 	});
@@ -129,33 +129,33 @@
 
 <svelte:head><title>Projects · Iris</title></svelte:head>
 
-<svelte:window onkeydown={introKeys} />
+<svelte:window onkeydown={tourKeys} />
 
-<!-- The intro is scripted: in place of Lumi's input, what she's describing and the way through it. Arrow keys and
+<!-- The tour is scripted: in place of Lumi's input, what she's describing and the way through it. Arrow keys and
      Escape work too. -->
-{#snippet introControls()}
-	{#if introStep !== null}
+{#snippet tourControls()}
+	{#if tourStep !== null}
 		<div class="flex w-full flex-col items-center gap-6">
-			<IntroScene step={introStep} />
+			<TourScene step={tourStep} />
 			<div class="flex items-center gap-2" aria-hidden="true">
-				{#each INTRO_STEPS as _, i (i)}
+				{#each TOUR_STEPS as _, i (i)}
 					<span
 						class={[
 							'h-2 rounded-full transition-all duration-300',
-							i === introStep ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/40'
+							i === tourStep ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/40'
 						]}
 					></span>
 				{/each}
 			</div>
-			<p class="sr-only" aria-live="polite">Step {introStep + 1} of {INTRO_STEPS.length}</p>
+			<p class="sr-only" aria-live="polite">Step {tourStep + 1} of {TOUR_STEPS.length}</p>
 			<div class="flex items-center gap-2">
-				{#if introStep > 0}
-					<Button variant="ghost" onclick={() => goIntro(introStep - 1)}>Back</Button>
+				{#if tourStep > 0}
+					<Button variant="ghost" onclick={() => goTour(tourStep - 1)}>Back</Button>
 				{:else}
-					<Button variant="ghost" onclick={endIntro}>Skip</Button>
+					<Button variant="ghost" onclick={endTour}>Skip</Button>
 				{/if}
-				<Button onclick={() => goIntro(introStep + 1)}
-					>{introStep === INTRO_STEPS.length - 1 ? 'Get started' : 'Next'}</Button
+				<Button onclick={() => goTour(tourStep + 1)}
+					>{tourStep === TOUR_STEPS.length - 1 ? 'Get started' : 'Next'}</Button
 				>
 			</div>
 		</div>
@@ -193,7 +193,7 @@
 				{error}
 				bind:draft
 				onsubmit={send}
-				below={introStep === null ? undefined : introControls}
+				below={tourStep === null ? undefined : tourControls}
 			/>
 		</section>
 

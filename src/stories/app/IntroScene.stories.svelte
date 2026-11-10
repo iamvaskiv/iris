@@ -9,7 +9,8 @@
 		parameters: {
 			docs: {
 				description: {
-					component: `The looping scenes under Lumi's dock during "How Iris works" (src/lib/intro.ts), one per step:
+					component: `The looping scenes under Lumi's dock during "How Iris works", the first time someone opens a
+project (INTRO_STEPS in src/lib/intro.ts), one per step:
 a question typing itself, her cards popping in, a card updating instead of a second one appearing.`
 				}
 			}

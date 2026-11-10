@@ -2,31 +2,37 @@ import { goto, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import { readLocal, writeLocal } from './local.js';
 import { resetChecklist } from './checklist.svelte.js';
-import { INTRO_STEPS } from './intro.js';
-import { isIntroSeen, resetIntro, startOnboarding, whileRestarting } from './onboarding.js';
+import { TOUR_STEPS } from './intro.js';
+import {
+	isTourSeen,
+	resetIntro,
+	resetTour,
+	startOnboarding,
+	whileRestarting
+} from './onboarding.js';
 
 /** Projects-page conversation, kept for the browser session so it survives visiting a project and coming back. */
 export const workspaceChat = $state({
 	history: [] as unknown[],
 	reply: '',
 	choices: [] as string[],
-	/** "How Iris works" playing in the dock: the step shown, or null when it isn't (see intro.ts). */
-	introStep: null as number | null
+	/** The first-visit tour playing in the dock: the step shown, or null when it isn't (TOUR_STEPS in intro.ts). */
+	tourStep: null as number | null
 });
 
-/** Plays one step of "How Iris works": Lumi's line and the answers to it. */
-export function showIntroStep(step: number) {
+/** Plays one step of the tour: Lumi's line (the controls are the projects page's). */
+export function showTourStep(step: number) {
 	Object.assign(workspaceChat, {
-		introStep: step,
-		reply: INTRO_STEPS[step].reply,
+		tourStep: step,
+		reply: TOUR_STEPS[step].reply,
 		choices: []
 	});
 }
 
-/** Starts "How Iris works" if this browser hasn't seen it yet; true when it did. */
-export function maybeIntro() {
-	if (isIntroSeen() || workspaceChat.history.length) return false;
-	if (workspaceChat.introStep === null) showIntroStep(0);
+/** Starts the tour if this browser hasn't seen it yet; true when it did. */
+export function maybeTour() {
+	if (isTourSeen() || workspaceChat.history.length) return false;
+	if (workspaceChat.tourStep === null) showTourStep(0);
 	return true;
 }
 
@@ -58,10 +64,10 @@ export const WELCOME = {
  * it did: the onboarding sequence starts with it (see onboarding.ts).
  */
 export function maybeWelcome() {
-	if (readLocal(WELCOMED) || workspaceChat.history.length || workspaceChat.introStep !== null)
+	if (readLocal(WELCOMED) || workspaceChat.history.length || workspaceChat.tourStep !== null)
 		return false;
-	// The intro comes first; the welcome follows it (see the projects page).
-	if (!isIntroSeen()) return false;
+	// The tour comes first; the welcome follows it (see the projects page).
+	if (!isTourSeen()) return false;
 	if (workspaceChat.reply) return false;
 	workspaceChat.reply = WELCOME.reply;
 	workspaceChat.choices = WELCOME.choices;
@@ -78,14 +84,15 @@ export async function restartOnboarding() {
 	} catch {
 		// Storage blocked: the welcome shows every visit anyway.
 	}
-	Object.assign(workspaceChat, { history: [], reply: '', choices: [], introStep: null });
+	Object.assign(workspaceChat, { history: [], reply: '', choices: [], tourStep: null });
 	startOnboarding();
 	resetChecklist();
 	resetIntro();
+	resetTour();
 	await fetch('/api/onboarding', { method: 'DELETE' }).catch(() => {});
 	await whileRestarting(() => (page.url.pathname === '/' ? invalidateAll() : goto('/')));
-	// Already on the projects page, its onMount won't run again: the intro starts here (the welcome follows it).
-	maybeIntro();
+	// Already on the projects page, its onMount won't run again: the tour starts here (the welcome follows it).
+	maybeTour();
 }
 
 /** The shortcut for restartOnboarding, anywhere in the app. */

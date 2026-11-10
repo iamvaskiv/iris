@@ -6,7 +6,9 @@
 	import { ChevronLeft, ChevronRight, Icon, X } from '@latitudelabs/design-system/icons';
 	import { page } from '$app/state';
 	import { beforeNavigate, replaceState } from '$app/navigation';
-	import { endOnboarding } from '#lib/onboarding.js';
+	import { endOnboarding, markIntroSeen } from '#lib/onboarding.js';
+	import { INTRO_STEPS } from '#lib/intro.js';
+	import IntroScene from '#lib/components/IntroScene.svelte';
 	import { completeSteps, type StepId } from '#lib/checklist.svelte.js';
 	import { isFielding } from '#lib/cards/study/fielding.js';
 	import GettingStarted from '#lib/components/GettingStarted.svelte';
@@ -79,11 +81,26 @@
 	let messages = $state<TranscriptMessage[]>(data.transcript);
 	let dragging = $state(false);
 
-	// Empty projects show the dock centred; when the first card arrives it morphs down to the bottom panel
-	// (View Transitions where supported, an instant switch otherwise).
-	let centered = $state(project.cards.length === 0);
+	// "How Iris works" (INTRO_STEPS in intro.ts): the first time someone opens a project, a scripted intro plays in
+	// Lumi's dock, centred, with the cards out of sight. When it ends the dock moves down as the cards appear.
+	// svelte-ignore state_referenced_locally
+	let introStep = $state<number | null>(data.intro ? 0 : null);
+	function endIntro() {
+		markIntroSeen();
+		introStep = null;
+	}
+	function goIntro(to: number) {
+		if (introStep === null || to < 0) return;
+		if (to >= INTRO_STEPS.length) return endIntro();
+		introStep = to;
+	}
+
+	// Empty projects (and the intro) show the dock centred; when the first card arrives it morphs down to the bottom
+	// panel (View Transitions where supported, an instant switch otherwise).
+	// svelte-ignore state_referenced_locally
+	let centered = $state(project.cards.length === 0 || introStep !== null);
 	$effect(() => {
-		const next = project.cards.length === 0;
+		const next = project.cards.length === 0 || introStep !== null;
 		if (next === centered) return;
 		if (!document.startViewTransition) return void (centered = next);
 		document.startViewTransition(async () => {
@@ -99,6 +116,8 @@
 		const q = page.url.searchParams.get('q');
 		// A video dropped on the projects page arrives here to be uploaded into this new project.
 		const video = takePendingVideo();
+		// Someone arriving with a video to upload is busy: the intro waits for the next project they open.
+		if (video) introStep = null;
 		if (video) {
 			upload(video);
 		} else if (q) {
@@ -696,6 +715,7 @@
 
 	function onkeydown(e: KeyboardEvent) {
 		if (e.key !== 'Escape' || e.defaultPrevented) return;
+		if (introStep !== null) return endIntro();
 		if (assetsOpen) closeAssets();
 		else if (birdsEye) setBirdsEye(false);
 	}
@@ -784,6 +804,36 @@
 	}
 </script>
 
+<!-- The intro is scripted: in place of Lumi's input, what she's describing and the way through it (Escape skips). -->
+{#snippet introControls()}
+	{#if introStep !== null}
+		<div class="flex w-full flex-col items-center gap-6">
+			<IntroScene step={introStep} />
+			<div class="flex items-center gap-2" aria-hidden="true">
+				{#each INTRO_STEPS as _, i (i)}
+					<span
+						class={[
+							'h-2 rounded-full transition-all duration-300',
+							i === introStep ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/40'
+						]}
+					></span>
+				{/each}
+			</div>
+			<p class="sr-only" aria-live="polite">Step {introStep + 1} of {INTRO_STEPS.length}</p>
+			<div class="flex items-center gap-2">
+				{#if introStep > 0}
+					<Button variant="ghost" onclick={() => goIntro(introStep! - 1)}>Back</Button>
+				{:else}
+					<Button variant="ghost" onclick={endIntro}>Skip</Button>
+				{/if}
+				<Button onclick={() => goIntro(introStep! + 1)}
+					>{introStep === INTRO_STEPS.length - 1 ? 'Get started' : 'Next'}</Button
+				>
+			</div>
+		</div>
+	{/if}
+{/snippet}
+
 <svelte:head><title>{project.name} · Iris</title></svelte:head>
 
 <svelte:window {onkeydown} />
@@ -834,6 +884,7 @@
 		bind:clientWidth={scrollerInnerWidth}
 		class={[
 			'flex-1 overflow-y-auto',
+			introStep !== null && 'intro-hidden',
 			!birdsEye && (lanesOn ? 'snap-y snap-mandatory' : 'snap-y snap-proximity')
 		]}
 		style:scrollbar-color={assetsOpen ? 'transparent transparent' : undefined}
@@ -1195,9 +1246,10 @@
 		greeting={project.cards.length
 			? `${timeOfDayGreeting()} What would you like to know about ${project.name}?`
 			: `${timeOfDayGreeting()} Drop a video here, or ask me about one you already have.`}
-		reply={project.reply}
-		choices={project.choices}
-		{thinking}
+		reply={introStep === null ? project.reply : INTRO_STEPS[introStep].reply}
+		choices={introStep === null ? project.choices : []}
+		thinking={introStep === null && thinking}
+		below={introStep === null ? undefined : introControls}
 		{error}
 		bind:draft
 		bind:mode={dockMode}
@@ -1215,7 +1267,7 @@
 	style:width="{ASSETS_WIDTH}px"
 	style:translate={assetsOpen ? undefined : '100% 0'}
 >
-	{#if !birdsEye && project.cards.length}
+	{#if !birdsEye && project.cards.length && introStep === null}
 		<!-- The pull tab, vertically centred between the header and the dock, its label reading bottom to top. Closed, it
 		     rests against the page's scrollbar (not over it); open, against the pane, above its edge (so the pane's
 		     shadow doesn't cut between them) and in the same surface, so the two read as one. 8px of it tuck behind that
@@ -1282,6 +1334,15 @@
 </div>
 
 <style>
+	/* During the intro the cards are out of sight (the header stays); they fade in as Lumi's dock moves down. */
+	main > :global(:not(header)) {
+		transition: opacity 0.6s ease-out;
+	}
+	main.intro-hidden > :global(:not(header)) {
+		opacity: 0;
+		pointer-events: none;
+	}
+
 	/* The tab's inner corners, against the pane's edge (see the tab). */
 	.fillet {
 		position: absolute;
