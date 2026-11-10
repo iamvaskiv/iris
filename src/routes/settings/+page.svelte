@@ -137,8 +137,8 @@
 					<div class="flex flex-col gap-1">
 						<Label id="welcome-label">Onboarding</Label>
 						<p class="text-caption text-muted-foreground">
-							Start over as someone new: Lumi's welcome on the projects page, and the example
-							project as it first opens. Only on this device (the example resets for everyone).
+							Start over as someone new: Lumi's welcome on the projects page, and the demo project
+							as it first opens. Only on this device (the demo resets for everyone).
 						</p>
 					</div>
 					<div class="flex shrink-0 items-center gap-3">

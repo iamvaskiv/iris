@@ -9,7 +9,7 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 **Onboarding**
 
 - **Lumi's welcome**: the first time someone opens the projects page, Lumi says what she does (answers with cards)
-  and offers three first steps: **Show me an example**, **Upload my own video** (opens a new project to drop it into)
+  and offers three first steps: **Show me a demo**, **Upload my own video** (opens a new project to drop it into)
   and **What can you do?** Any answer or message ends it; it's remembered per device.
 - **Getting started checklist**: five steps from your first video to viewer feedback (upload your first video,
   review the analysed video, ask a question about it, start a study, review viewer feedback), with no count or
@@ -18,20 +18,20 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   follows the pointer, the colours lean away from it at different depths, and they swell while you press. It's the first tile on
   the projects page, with **Start a project** on the first step, and a pill at the top right of every project page
   ("Next: … 2/5") that opens the whole list. Steps tick off by themselves as you do them in your own projects (the
-  example doesn't count). Once all five are done, **Hide checklist** removes it; restarting onboarding brings it back
+  demo doesn't count). Once all five are done, **Hide checklist** removes it; restarting onboarding brings it back
   empty. Per browser.
-- **Onboarding sequence**: from Lumi's welcome until you've been into the example project and out again, or opened
-  any other project (starting a new one counts), the projects page lists only the example (and **New**), and Lumi
-  there only knows about the example. Then all projects come back.
+- **Onboarding sequence**: from Lumi's welcome until you've been into the demo project and out again, or opened
+  any other project (starting a new one counts), the projects page lists only the demo (and **New**), and Lumi
+  there only knows about the demo. Then all projects come back.
 - **Restart onboarding**: Settings → Assistant → **Onboarding** → Restart, or **⌥⇧O** anywhere in the app. Lumi's
-  welcome comes back on this device, the example project goes back to how it first opens (for everyone), and you
-  land on the projects page, where the example's tile is always first after a restart (it's made whenever it's
+  welcome comes back on this device, the demo project goes back to how it first opens (for everyone), and you
+  land on the projects page, where the demo's tile is always first after a restart (it's made whenever it's
   missing).
-- **Example project** ("Example: Inside Out 2"): one shared project with the Inside Out 2 trailer's video card,
+- **Demo project** ("Demo: Inside Out 2"): one shared project with the Inside Out 2 trailer's video card,
   viewer insights and study already in it, so people see Lumi's cards before uploading anything. It opens with Lumi
   explaining the cards and three questions to try; Lumi says what each new card is for while there. Its tile has a bright **Demo**
-  badge and glows in the brand colours, it keeps its name, and it's made again on the next visit if someone deletes it. Lumi on the projects
-  page can open it too ("show me an example").
+  badge and glows in the brand colours, it keeps its name (renamed from "Example" to "Demo" everywhere people read it), and it's made again on the next visit if someone deletes it. Lumi on the projects
+  page can open it too ("show me a demo").
 
 ## 2026-10-30
 

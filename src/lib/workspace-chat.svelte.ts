@@ -28,10 +28,10 @@ const WELCOMED = 'iris.welcomed';
 /** Lumi's welcome for someone new: what she does, and a first step to pick. */
 export const WELCOME = {
 	reply:
-		"Hi, I'm **Lumi**. Ask me about a video and I'll answer with cards: its scenes and characters, what viewers thought, side-by-side comparisons.\n\nWant to see an example first?",
-	example: 'Show me an example',
+		"Hi, I'm **Lumi**. Ask me about a video and I'll answer with cards: its scenes and characters, what viewers thought, side-by-side comparisons.\n\nWant to see a demo first?",
+	example: 'Show me a demo',
 	upload: 'Upload my own video',
-	choices: ['Show me an example', 'Upload my own video', 'What can you do?']
+	choices: ['Show me a demo', 'Upload my own video', 'What can you do?']
 };
 
 /**

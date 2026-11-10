@@ -14,6 +14,8 @@ import { store } from './store.js';
  */
 export const EXAMPLE_ID = 'example';
 const VIDEO_ID = 'vuvIanfCkI8R';
+/** What people see it called: "demo" in everything they read (the code keeps calling it the example). */
+export const DEMO_NAME = 'Demo: Inside Out 2';
 
 const CARDS = [
 	'Inside Out 2 Reception · Inside Out 2 trailer',
@@ -22,7 +24,7 @@ const CARDS = [
 ];
 
 /** Lumi's first reply in the example, shown in the dock when it opens: what the cards are and what to try. */
-export const EXAMPLE_REPLY = `This is an example project on the **Inside Out 2** trailer, and each card is one of my answers: the video's scenes and characters, what **174 viewers** said about it, and a study to ask them more.
+export const EXAMPLE_REPLY = `This is a demo project on the **Inside Out 2** trailer, and each card is one of my answers: the video's scenes and characters, what **174 viewers** said about it, and a study to ask them more.
 
 Ask me anything about it, or pick a question to try.`;
 
@@ -37,7 +39,7 @@ function build(): Project {
 	const cards = CARDS.map((key) => structuredClone(fixtures[key])).filter((c): c is Card => !!c);
 	return {
 		id: EXAMPLE_ID,
-		name: 'Example: Inside Out 2',
+		name: DEMO_NAME,
 		summary: 'Viewers loved the trailer (4.7/5); a study asks which new emotion they want more of.',
 		example: true,
 		videoIds: [VIDEO_ID],
@@ -47,7 +49,7 @@ function build(): Project {
 		choices: EXAMPLE_CHOICES,
 		// The conversation so far, so Lumi knows she already introduced the project.
 		history: [
-			{ role: 'user', content: 'Show me an example project.' },
+			{ role: 'user', content: 'Show me a demo.' },
 			{ role: 'assistant', content: EXAMPLE_REPLY }
 		],
 		createdAt: now,
@@ -58,6 +60,9 @@ function build(): Project {
 /** The example project, made first if it isn't there. */
 export async function ensureExample(): Promise<Project> {
 	const existing = await projects.get(EXAMPLE_ID);
+	// It keeps its name (Lumi can't rename it); this also renames one saved under an earlier name.
+	if (existing && existing.name !== DEMO_NAME)
+		return (await projects.update(EXAMPLE_ID, (p) => void (p.name = DEMO_NAME)))!;
 	if (existing) return existing;
 	await assets.ensure(VIDEO_ID).catch(() => {});
 	return (await store.update<Project>('projects', EXAMPLE_ID, () => {}, build))!;

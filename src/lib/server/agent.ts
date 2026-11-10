@@ -91,7 +91,7 @@ ${CHOICES}${library ? `\n\n${LIBRARY}` : ''}`;
 function describeProject(p: Project) {
 	const videos = p.videoIds.length ? p.videoIds.join(', ') : 'none yet';
 	const example = p.example
-		? `\nThis is the EXAMPLE project people open from your welcome to see how Iris works. They're new: when you add or update a card, say in a few words what kind of card it is and what it's for. Don't rename it.`
+		? `\nThis is the DEMO project people open from your welcome to see how Iris works; call it "the demo". They're new: when you add or update a card, say in a few words what kind of card it is and what it's for. Don't rename it.`
 		: '';
 	return `Project: "${p.name}"${p.summary ? ` — summary: ${p.summary}` : ''}\nProject videos: ${videos}${example}`;
 }

@@ -108,7 +108,7 @@ flowchart LR
     class page,cards,dock,tile,pill,s1,s2,s3,s4,s5 ui
     class cookie storage
 ``` Its first two answers
-go straight where they say; anything else is a normal question to Lumi. The example project is one shared project
+go straight where they say; anything else is a normal question to Lumi. The example project ("Demo: Inside Out 2" to people) is one shared project
 (`id: example`, `src/lib/server/example.ts`) built from the cards captured for the Storybook and saved on its first
 visit or on the projects page whenever it's missing, with Lumi's intro already in its conversation.
 
@@ -121,7 +121,7 @@ flowchart TB
     open(["Opens the projects page"]) --> seen{"Welcomed on<br/>this device?"}
     seen -- "yes" --> usual["Usual greeting<br/>and suggestions"]
     seen -- "no" --> welcome["Lumi's welcome<br/>with three choices"]
-    welcome -- "Show me an example" --> load["/projects/example<br/>page load"]
+    welcome -- "Show me a demo" --> load["/projects/example<br/>page load"]
     welcome -- "Upload my own video" --> draft["New draft project<br/>(drop a video)"]
     welcome -- "What can you do? / typed" --> lumi["Lumi on the projects page"]
     lumi -- "open_example tool" --> load
