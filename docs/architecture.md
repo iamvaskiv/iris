@@ -203,7 +203,8 @@ Anything on a card can offer Lumi a question about itself. Cards mark elements w
 at the right-click, so a chart asks about the moment under the pointer ("Viewers' comments turn negative around 1:00
 (in “Meet the New Emotions”) in “Inside Out 2 trailer”. What happened there, and why…?"). The video card's wording
 lives in `src/lib/cards/video/questions.ts`. One `AskLumi` layer per page (`src/lib/components/AskLumi.svelte`)
-watches the pointer, shows the glow (and, once the pointer rests, a "Right-click to ask Lumi" hint), and on a
+watches the pointer, shows the glow (and, once the pointer rests, a hint with the question it would ask, under a small
+"Right-click to ask Lumi"), and on a
 right-click hands the question to the page's `ask`, the same path as a typed message. Storybook's card frame has the layer too and shows the question instead of sending it.
 
 ```mermaid
@@ -228,7 +229,8 @@ sequenceDiagram
     L->>E: innermost askable element under the pointer?
     L-->>U: soft glow by the cursor
     opt pointer rests (1.4 s)
-        L-->>U: hint "Right-click to ask Lumi"
+        L->>E: question at this pointer position
+        L-->>U: hint: the question (revealing word by word)<br/>under "Right-click to ask Lumi"
     end
     U->>L: right-click
     L->>E: question at this pointer position

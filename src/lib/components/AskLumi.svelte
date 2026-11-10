@@ -5,7 +5,8 @@
 	/**
 	 * The page's Ask Lumi layer (one per page): over anything a card marked `askable`, a soft glow follows the
 	 * cursor, and right-clicking sends that thing's question to Lumi (`onask`) instead of opening the browser's menu.
-	 * When the pointer rests with the glow on, a hint says so ("Right-click to ask Lumi"). Leaving the window,
+	 * When the pointer rests with the glow on, a hint shows the question it would ask, revealing word by word like
+	 * Lumi's replies, under a small "Right-click to ask Lumi". Leaving the window,
 	 * scrolling or Escape clears it. Long-press on touch screens opens the same way (it fires the same event), though
 	 * there's no glow or hint there.
 	 */
@@ -19,7 +20,8 @@
 	const OFFSET = 16;
 
 	let glow = $state<{ x: number; y: number } | null>(null);
-	let hint = $state(false);
+	/** The question for where the pointer rests, shown in the hint (null: no hint). */
+	let hint = $state<{ question: string; words: string[]; delay: number } | null>(null);
 	/** A brief swell of the glow once a question is sent. */
 	let sent = $state(false);
 	let rest = { x: 0, y: 0 };
@@ -28,8 +30,17 @@
 	function letGo() {
 		clearTimeout(timer);
 		glow = null;
-		hint = false;
+		hint = null;
 	}
+
+	/** The question's words, revealing one after another like Lumi's replies (quick for short ones, ~0.8s at most). */
+	function hintFor(question: string) {
+		const words = question.split(/\s+/).filter(Boolean);
+		return { question, words, delay: Math.min(35, 800 / Math.max(1, words.length)) };
+	}
+	/** Near the window's right edge the hint opens to the left of the cursor; near the top, below it. */
+	const flipX = $derived(!!glow && glow.x > window.innerWidth - 320);
+	const flipY = $derived(!!glow && glow.y < 160);
 
 	function onpointermove(e: PointerEvent) {
 		if (e.pointerType === 'touch') return;
@@ -38,11 +49,13 @@
 		// Small drift doesn't count as moving; otherwise the hint goes and the wait starts over.
 		if (Math.hypot(e.clientX - rest.x, e.clientY - rest.y) <= DRIFT && (hint || timer)) return;
 		rest = { x: e.clientX, y: e.clientY };
-		hint = false;
+		hint = null;
 		clearTimeout(timer);
 		timer = setTimeout(() => {
 			timer = undefined;
-			if (glow) hint = true;
+			// The question for where the pointer rests now (a chart asks about the moment under it).
+			const now = glow && questionAt(e);
+			if (now) hint = hintFor(now.question);
 		}, REST_MS);
 	}
 
@@ -52,7 +65,7 @@
 		e.preventDefault();
 		clearTimeout(timer);
 		timer = undefined;
-		hint = false;
+		hint = null;
 		glow = { x: e.clientX, y: e.clientY };
 		sent = true;
 		setTimeout(() => {
@@ -97,15 +110,29 @@
 	></div>
 {/if}
 
-<!-- The hint, once the pointer rests with the glow on: in the Getting started card's brand wash, softer still. -->
+<!-- The hint, once the pointer rests with the glow on: the question it would ask (revealing like Lumi's replies) under
+     a small "Right-click to ask Lumi", in the Getting started card's brand wash, softer still. Above-right of the
+     cursor, flipping left near the right edge and below near the top. -->
 {#if glow && hint}
 	<div
-		class="hint pointer-events-none fixed z-50 -translate-y-full rounded-md px-2.5 py-1 text-caption motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-300"
-		style:left="{glow.x + OFFSET}px"
-		style:top="{glow.y - OFFSET / 2}px"
+		class={[
+			'hint pointer-events-none fixed z-50 flex w-max max-w-72 flex-col gap-0.5 rounded-md px-3 py-2 motion-safe:animate-in motion-safe:duration-300 motion-safe:fade-in-0',
+			flipX && '-translate-x-full',
+			!flipY && '-translate-y-full'
+		]}
+		style:left="{flipX ? glow.x - OFFSET : glow.x + OFFSET}px"
+		style:top="{flipY ? glow.y + OFFSET : glow.y - OFFSET / 2}px"
 		aria-hidden="true"
 	>
-		Right-click to ask Lumi
+		<span class="text-caption opacity-60">Right-click to ask Lumi</span>
+		{#key hint.question}
+			<p class="text-body-sm">
+				{#each hint.words as word, i (i)}<span
+						class="reveal-word"
+						style:animation-delay="{120 + i * hint.delay}ms">{word}</span
+					>{' '}{/each}
+			</p>
+		{/key}
 	</div>
 {/if}
 
@@ -115,8 +142,16 @@
 	.hint {
 		color: var(--brand-4);
 		background:
-			radial-gradient(circle at 0% 0%, color-mix(in oklab, var(--brand-3) 16%, transparent), transparent 70%),
-			radial-gradient(circle at 100% 100%, color-mix(in oklab, var(--brand-2) 12%, transparent), transparent 70%),
+			radial-gradient(
+				circle at 0% 0%,
+				color-mix(in oklab, var(--brand-3) 16%, transparent),
+				transparent 70%
+			),
+			radial-gradient(
+				circle at 100% 100%,
+				color-mix(in oklab, var(--brand-2) 12%, transparent),
+				transparent 70%
+			),
 			var(--neutral-0);
 		outline: 1px solid color-mix(in oklab, var(--brand-4) 12%, transparent);
 		outline-offset: -1px;
@@ -125,10 +160,35 @@
 	:global(.dark) .hint {
 		color: color-mix(in oklab, var(--neutral-0) 90%, transparent);
 		background:
-			radial-gradient(circle at 0% 0%, color-mix(in oklab, var(--brand-3) 22%, transparent), transparent 70%),
-			radial-gradient(circle at 100% 100%, color-mix(in oklab, var(--brand-2) 18%, transparent), transparent 70%),
+			radial-gradient(
+				circle at 0% 0%,
+				color-mix(in oklab, var(--brand-3) 22%, transparent),
+				transparent 70%
+			),
+			radial-gradient(
+				circle at 100% 100%,
+				color-mix(in oklab, var(--brand-2) 18%, transparent),
+				transparent 70%
+			),
 			color-mix(in oklab, var(--brand-4) 45%, var(--neutral-900));
 		outline-color: color-mix(in oklab, var(--neutral-0) 12%, transparent);
 		box-shadow: 0 2px 12px color-mix(in oklab, var(--brand-4) 30%, transparent);
+	}
+	/* As Lumi's replies (AiDock): each word fades in out of a slight blur, one after another. */
+	.reveal-word {
+		display: inline-block;
+		animation: hint-reveal 420ms cubic-bezier(0.2, 0, 0, 1) both;
+	}
+	@keyframes hint-reveal {
+		from {
+			opacity: 0;
+			filter: blur(6px);
+			transform: translateY(3px);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.reveal-word {
+			animation: none;
+		}
 	}
 </style>

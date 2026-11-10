@@ -90,6 +90,9 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 - **Views are counted again**: Lumiere renamed its view count, so every video's views read as 0 and were hidden (the
   Inside Out 2 trailer has 1,442 in the last 12 months). Videos with views but no responses yet show their viewer data
   again too, instead of "nobody has watched".
+- **Ask Lumi shows the question**: rest the pointer on something you can ask about and the hint now shows the
+  question Lumi would be asked, revealing word by word like her replies, with "Right-click to ask Lumi" as a small
+  line above it. It opens to the left near the window's right edge, and below the pointer near the top.
 
 **Project page (experimental)**
 
