@@ -17,7 +17,10 @@
 		)
 	);
 
-	/** What the table can ask Lumi (see ask-lumi.ts): about a row, from its cells, or how the rows compare on a column. */
+	/**
+	 * What the table can ask Lumi (see ask-lumi.ts): about a row, with its values under their column names, or about a
+	 * column. Worded to read right whichever way the table runs (videos as rows or as columns).
+	 */
 	const table = $derived(quoted(card.title));
 	function rowQuestion(row: (string | number)[]) {
 		const name = String(row[0] ?? '').trim();
@@ -25,16 +28,27 @@
 		const cells = row
 			.slice(1)
 			.map((cell, c) =>
-				cell === '' || cell === undefined ? '' : `${columns[c + 1] ?? ''} ${cell}`.trim()
+				cell === '' || cell === undefined
+					? ''
+					: columns[c + 1]
+						? `${cell} for ${quoted(columns[c + 1])}`
+						: String(cell)
 			)
 			.filter(Boolean);
-		return cells.length && numeric.slice(1).some(Boolean)
-			? `In ${table}, ${quoted(name)} has ${cells.join(', ')}. What's behind those numbers?`
-			: `Tell me more about ${quoted(name)} in ${table}.`;
+		if (!cells.length) return `Tell me more about ${quoted(name)} in ${table}.`;
+		// Values with commas of their own are set apart with semicolons; the last joins with "and".
+		const sep = cells.some((c) => c.includes(',')) ? '; ' : ', ';
+		const values = row.slice(1).filter((cell) => cell !== '' && cell !== undefined);
+		const differ = new Set(values.map(String)).size > 1;
+		const joined =
+			cells.length > 2
+				? `${cells.slice(0, -1).join(sep)}${sep === '; ' ? ';' : ','} and ${cells.at(-1)}`
+				: cells.join(' and ');
+		return `In ${table}, ${quoted(name)} is ${joined}. What's behind ${differ ? 'the difference' : 'that'}?`;
 	}
 	const columnQuestion = (c: number) =>
 		c > 0 && columns[c] && rows.length > 1
-			? `How do the rows in ${table} compare on ${quoted(columns[c])}, and why?`
+			? `What stands out about ${quoted(columns[c])} in ${table}, and why?`
 			: null;
 </script>
 

@@ -3,20 +3,17 @@
 	import { askable } from '#lib/ask-lumi.js';
 	import { timecode } from '../format';
 	import type { VideoQuestions } from './questions';
-	import { TONE_DOT, initials, type Tone } from '../viewer';
-	import type { InsightComment, Span, VideoCardData } from '../types';
+	import { initials } from '../viewer';
+	import type { Span, VideoCardData } from '../types';
 
 	type Kind = 'character' | 'theme' | 'brand';
 
 	/**
-	 * A video card's sections in the regular view, each a row of tiles: Scenes (the one playing outlined), viewers'
-	 * Comments (each at its moment, then a study's reactions to the whole video), Characters, Themes and Brands
-	 * (picked to see where they're on screen). Playing and picking go back to the card (`onplay`, `onpick`).
+	 * A video card's Overview tab, each section a row of tiles: Scenes (the one playing outlined), Characters, Themes
+	 * and Brands (picked to see where they're on screen). Viewers' comments are on the Viewers tab (VideoComments). Playing and picking go back to the card (`onplay`, `onpick`).
 	 */
 	let {
 		data,
-		comments,
-		reactions,
 		currentScene,
 		isPicked,
 		appearsLabel,
@@ -25,8 +22,6 @@
 		onpick
 	}: {
 		data: Partial<VideoCardData>;
-		comments: (InsightComment & { tone: Tone })[];
-		reactions: { text: string; tone: Tone }[];
 		/** The scene playing now (-1 for none). */
 		currentScene: number;
 		isPicked: (kind: Kind, index: number) => boolean;
@@ -72,42 +67,6 @@
 					<span class="line-clamp-2 text-caption">{scene.title}</span>
 					<span class="text-caption text-muted-foreground">{timecode(scene.start)}</span>
 				</button>
-			</li>
-		{/each}
-	</Card.Section>
-{/if}
-
-{#if comments.length || reactions.length}
-	<Card.Section title="Comments" count={comments.length + reactions.length}>
-		{#each comments as c, i (i)}
-			<li class="w-56">
-				<Tile
-					{@attach askable(ask?.comment(c))}
-					class="h-full w-full"
-					disabled={!canPlay}
-					onclick={() => onplay(c.time)}
-				>
-					<span class="line-clamp-3 text-caption">“{c.text}”</span>
-					<span class="flex items-center gap-1.5 text-caption text-muted-foreground">
-						<span class={['size-1.5 shrink-0 rounded-full', TONE_DOT[c.tone]]} aria-hidden="true"
-						></span>
-						{[timecode(c.time), ...(c.emotions ?? []).slice(0, 2)].join(' · ')}
-						<span class="sr-only">({c.tone})</span>
-					</span>
-				</Tile>
-			</li>
-		{/each}
-		{#each reactions as r, i (i)}
-			<li class="w-56">
-				<Tile {@attach askable(ask?.comment(r))} class="h-full w-full">
-					<span class="line-clamp-3 text-caption">“{r.text}”</span>
-					<span class="flex items-center gap-1.5 text-caption text-muted-foreground">
-						<span class={['size-1.5 shrink-0 rounded-full', TONE_DOT[r.tone]]} aria-hidden="true"
-						></span>
-						About the whole video
-						<span class="sr-only">({r.tone})</span>
-					</span>
-				</Tile>
 			</li>
 		{/each}
 	</Card.Section>

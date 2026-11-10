@@ -18,7 +18,15 @@
 	type Diff = { of: number; format: (d: number) => string; neutral?: boolean; scale?: number };
 	/** `value` ranks numeric cells: the highest one in a row is emphasised. `comment` is a quoted comment's own. */
 	type Cell =
-		| { text: string; value?: number; diff?: Diff; sentiment?: Sentiment; comment?: InsightComment }
+		| {
+				text: string;
+				value?: number;
+				diff?: Diff;
+				sentiment?: Sentiment;
+				comment?: InsightComment;
+				/** A names cell's whole list (its text is cut short), for questions. */
+				items?: string[];
+		  }
 		| undefined;
 	/** `kind` is what the row holds, for its questions to Lumi (see `question` below). */
 	type Kind = 'number' | 'names' | 'sentiment' | 'liked' | 'disliked' | 'question' | 'custom';
@@ -31,7 +39,8 @@
 		list && {
 			text: list.length
 				? list.slice(0, max).join(', ') + (list.length > max ? ` +${list.length - max}` : '')
-				: 'None'
+				: 'None',
+			items: list
 		};
 	const percent = (n: number) => `${Math.round(n * 100)}%`;
 	const number = (n: number) => n.toLocaleString('en-US');
@@ -266,10 +275,23 @@
 					? `The most positive comment on ${video} is ${quoted(c.text)} (at ${timecode(c.time)}). What were viewers reacting to?`
 					: `The top criticism of ${video} is ${quoted(c.text)} (at ${timecode(c.time)}). What put viewers off, and do others agree?`;
 			}
-			case 'names':
-				return others.length
-					? `How do the ${r.label.toLowerCase()} in ${video} (${cell.text}) differ from those in ${listed(others.map((o) => quoted(o.v.name)))}?`
-					: `What part do ${cell.text} play in ${video}?`;
+			case 'names': {
+				const items = cell.items ?? [];
+				if (!items.length) return null;
+				const what = r.label.toLowerCase();
+				// Up to six by name; past that, five and "and 3 more".
+				const named =
+					items.length > 6
+						? `${items.slice(0, 5).join(', ')} and ${items.length - 5} more`
+						: listed(items);
+				if (others.length)
+					return `How do the ${what} in ${video} (${named}) differ from those in ${listed(others.map((o) => quoted(o.v.name)))}?`;
+				return what === 'characters'
+					? `Who are ${named} in ${video}, and what roles do they play?`
+					: what === 'themes'
+						? `How do the themes ${named} come through in ${video}?`
+						: `How do ${named} appear in ${video}?`;
+			}
 			case 'sentiment': {
 				const s = cell.sentiment!;
 				return `Comments on ${video} are ${s.positive} positive, ${s.neutral} neutral and ${s.negative} negative. What did viewers like and dislike${
@@ -280,10 +302,14 @@
 				return `Viewers of ${video} answered ${quoted(r.label)} with ${cell.text}${against}. Why?`;
 		}
 		const diff = difference(r, i);
-		const label = r.kind === 'custom' ? r.label : r.label.toLowerCase();
+		// "Scenes for “A”: 4, against 6 for “B”. Why is it lower?" reads right for any row, singular or plural.
+		const label = r.label;
 		if (diff)
-			return `The ${label} of ${video} is ${cell.text}, ${diff.text} against ${quoted(videos[baseline].name)}. Why?`;
-		if (!others.length) return `Why is the ${label} of ${video} ${cell.text}?`;
+			return `${label} for ${video}: ${cell.text}, ${diff.text} against ${quoted(videos[baseline].name)}. Why?`;
+		if (!others.length) return `${label} for ${video}: ${cell.text}. What's behind that?`;
+		// Words rather than a number (like Analysis): ask how they compare, without pasting the descriptions in.
+		if (cell.value === undefined)
+			return `How does ${video} compare with ${listed(others.map((o) => quoted(o.v.name)))} on ${label.toLowerCase()}, and why?`;
 		const best = leader(r.cells);
 		const values = r.cells.map((c) => c?.value).filter((v) => v !== undefined);
 		const why =
@@ -298,7 +324,7 @@
 							? 'Why is it the lowest?'
 							: 'Why is it lower?'
 						: 'What makes the difference?';
-		return `The ${label} of ${video} is ${cell.text}${against}. ${why}`;
+		return `${label} for ${video}: ${cell.text}${against}. ${why}`;
 	}
 </script>
 

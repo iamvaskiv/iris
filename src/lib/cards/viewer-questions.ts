@@ -299,8 +299,12 @@ export function viewersQuestions(videos: ViewersVideo[]) {
 }
 
 /** Questions for the Insights card: what an audience made of one video, named by the card's title. */
-export function insightsQuestions(title: string, data: Insights) {
-	const video = `the video in ${quoted(title)}`;
+export function insightsQuestions(
+	title: string,
+	data: Pick<Insights, 'responses' | 'views' | 'rating' | 'sentiment'>,
+	/** How to name the video: the video card passes its own title; the viewer data card names the video by the card. */
+	video = `the video in ${quoted(title)}`
+) {
 	const counts = data.sentiment;
 	const total = counts ? counts.positive + counts.neutral + counts.negative : 0;
 
@@ -325,10 +329,11 @@ export function insightsQuestions(title: string, data: Insights) {
 				return `Viewers of ${video} answered ${quoted(q.question)} with ${q.average} / ${q.max} on average. Why?`;
 			const all = q.options?.reduce((n, o) => n + o.count, 0) ?? 0;
 			const top = q.options?.[0];
+			const share = top && all ? Math.round((top.count / all) * 100) : 0;
 			return top && all
-				? `Most viewers of ${video} answered ${quoted(q.question)} with ${quoted(top.label)} (${Math.round(
-						(top.count / all) * 100
-					)}%). Why?`
+				? share > 50
+					? `Most viewers of ${video} answered ${quoted(q.question)} with ${quoted(top.label)} (${share}%). Why?`
+					: `The top answer to ${quoted(q.question)} from viewers of ${video} was ${quoted(top.label)} (${share}%). Why?`
 				: `How did viewers of ${video} answer ${quoted(q.question)}?`;
 		},
 

@@ -239,8 +239,11 @@ export type Question = {
 };
 
 /** What the assistant did to the cards this turn, in order. */
+/** `tab`: for a video card, the tab to show (all video cards share it), e.g. Viewers when Lumi points to how it landed. */
 export type CardOp =
-	{ op: 'add'; card: Card } | { op: 'update'; card: Card } | { op: 'focus'; id: string };
+	| { op: 'add'; card: Card; tab?: 'overview' | 'timeline' | 'viewers' }
+	| { op: 'update'; card: Card }
+	| { op: 'focus'; id: string; tab?: 'overview' | 'timeline' | 'viewers' };
 
 export type ChatResponse = {
 	text: string;

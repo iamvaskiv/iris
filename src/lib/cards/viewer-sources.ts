@@ -1,19 +1,28 @@
 import { getContext, setContext } from 'svelte';
 import { SCALE_MAX, SCALE_MIN, flatSteps } from './study/question-types';
-import type { Card, InsightComment, StudyData, ViewerData } from './types';
+import { toneOf } from './viewer';
+import type { Card, InsightComment, Insights, StudyData, ViewerData } from './types';
 
 /**
  * Where a video card's viewer data comes from: Lumiere (real viewers, wherever the video was shown), or one of the
  * project's studies that shows the video (a video step, or a video in a channel) and has sample results, named after
- * its card. `reactions` are comments on the whole video, with no moment (a study's video reactions).
+ * its card. `reactions` are comments on the whole video, with no moment (a study's video reactions). Its viewers
+ * also carry what the video card's Viewers tab shows: answers to questions asked in the video, and the comments viewers
+ * liked and disliked most; a study adds its `summary`.
  */
 export type ViewerSource = {
 	id: string;
 	name: string;
 	kind: 'lumiere' | 'study';
-	viewers: ViewerData;
+	viewers: SourceViewers;
 	reactions?: { text: string; sentiment: number }[];
+	summary?: string;
 };
+export type SourceViewers = ViewerData &
+	Partial<Pick<Insights, 'questions' | 'liked' | 'disliked'>>;
+
+/** How many liked and disliked comments to pick, as Lumiere's insights do. */
+const TOP_COMMENTS = 4;
 
 /** A sample response's sentiment as a number, like Lumiere's (-1 to 1). */
 const score = { positive: 0.6, neutral: 0, negative: -0.6 } as const;
@@ -40,6 +49,8 @@ export function studySources(cards: Card[], videoId: string): ViewerSource[] {
 		const comments: InsightComment[] = [];
 		const stars: NonNullable<ViewerData['ratings']> = [];
 		const sliders: NonNullable<ViewerData['ratings']> = [];
+		// Multiple-choice and slider questions popping up in the video, in Lumiere's insights' shape.
+		const questions: NonNullable<SourceViewers['questions']> = [];
 		for (const { q } of showings) {
 			const a = results.questions[q.id];
 			if (a) {
@@ -58,8 +69,30 @@ export function studySources(cards: Card[], videoId: string): ViewerSource[] {
 				}
 			}
 			for (const popUp of q.questions ?? []) {
-				const answers = results.questions[popUp.id]?.people ?? [];
+				const result = results.questions[popUp.id];
+				const answers = result?.people ?? [];
 				const time = popUp.time ?? 0;
+				if (result?.responses && popUp.type === 'choice' && popUp.options?.length)
+					questions.push({
+						question: popUp.text,
+						type: 'choice',
+						responses: result.responses,
+						options: popUp.options
+							.map((label, i) => ({ label, count: result.counts?.[i] ?? 0 }))
+							.sort((x, y) => y.count - x.count)
+					});
+				if (result?.responses && popUp.type === 'scale' && result.counts?.length) {
+					const votes = result.counts.reduce((n, c) => n + c, 0);
+					const sum = result.counts.reduce((n, c, value) => n + c * value, 0);
+					if (votes)
+						questions.push({
+							question: popUp.text,
+							type: 'scale',
+							responses: result.responses,
+							average: Math.round((sum / votes) * 10) / 10,
+							max: SCALE_MAX
+						});
+				}
 				for (const p of answers) {
 					if (popUp.type === 'open' && p.text)
 						comments.push({ text: p.text, time, sentiment: score[p.sentiment ?? 'neutral'] });
@@ -74,20 +107,27 @@ export function studySources(cards: Card[], videoId: string): ViewerSource[] {
 			? Math.round((ratings.reduce((n, r) => n + r.value, 0) / ratings.length) * 10) / 10
 			: undefined;
 		const counted = sentiment.positive + sentiment.neutral + sentiment.negative;
+		comments.sort((x, y) => x.time - y.time);
+		const byTone = (tone: 'positive' | 'negative') =>
+			comments.filter((c) => toneOf(c.sentiment) === tone).slice(0, TOP_COMMENTS);
 		return [
 			{
 				id: card.id,
 				name: card.title,
 				kind: 'study',
 				reactions,
+				summary: results.summary,
 				viewers: {
 					views: results.views,
 					responses: watched,
 					rating:
 						average !== undefined ? { average, max: ratingMax, count: ratings.length } : undefined,
 					sentiment: counted ? sentiment : undefined,
-					comments: comments.sort((x, y) => x.time - y.time),
-					ratings: ratings.sort((x, y) => x.time - y.time)
+					comments,
+					ratings: ratings.sort((x, y) => x.time - y.time),
+					questions: questions.sort((x, y) => y.responses - x.responses),
+					liked: byTone('positive'),
+					disliked: byTone('negative')
 				}
 			}
 		];
@@ -99,7 +139,7 @@ export function studySources(cards: Card[], videoId: string): ViewerSource[] {
  * that show it.
  */
 export function viewerSources(
-	lumiere: ViewerData | undefined,
+	lumiere: SourceViewers | undefined,
 	cards: Card[],
 	videoId: string | undefined
 ) {

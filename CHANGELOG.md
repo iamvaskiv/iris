@@ -74,6 +74,35 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   What happened there, and why did they react that way?" Clicking the thing itself still does what it did (jump the
   video, pick a character). On the video card's Timeline and Overview tabs and its viewer numbers, and the other
   cards. The Timeline's summary box now hangs just below the pointer, leaving room for the hint above.
+- **Viewers tab on the video card**, replacing the separate viewer data card: **Overview · Timeline · Viewers**. Viewers
+  shows how the video landed: the comment sentiment split, **Questions** asked in it (an average, or a bar per option),
+  **What viewers liked** and **didn't like** (click one to play from its moment) and every **Comment** (moved here
+  from Overview). The numbers stay under the title on every tab. It follows **Source**: pick a study and it shows that
+  study's summary, its multiple-choice and slider questions popping up in the video, and its viewers' comments. Ask
+  Lumi how a video landed and she opens its Viewers tab instead of adding another card. The demo starts without the
+  separate viewer data card (after restarting onboarding); older viewer data cards still show as before. The tab you
+  pick is remembered on this device (a Timeline view picked earlier carries over).
+- **A more colourful Viewers tab** (and viewer data card): the sentiment split is a tinted tile per tone (green,
+  grey, red) with its share and count over a bright bar; question tiles are tinted by type in a study's step colours
+  (multiple choice orange, sliders and ratings magenta) with bars in that colour and the top answer in bold; what
+  viewers liked is green and what they didn't is red, with an accent stripe and their emotions as small pills; every
+  comment is lightly tinted by its tone.
+- **Views are counted again**: Lumiere renamed its view count, so every video's views read as 0 and were hidden (the
+  Inside Out 2 trailer has 1,442 in the last 12 months). Videos with views but no responses yet show their viewer data
+  again too, instead of "nobody has watched".
+
+**Project page (experimental)**
+
+- **Next steps above Lumi's dock**: a lane's suggested next steps no longer sit beside its last card (which was
+  narrowed to make room, so every card now keeps its full width). The focused lane's steps are a row of slides just
+  above Lumi's input and as wide as it, one step each on one line, scrolling sideways (the mouse wheel too) and snapping to each; the row's edges
+  softly fade and slides ease back as they near them (staying solid), so none looks cut off. Moving to another lane, its steps rise in as the
+  old ones leave. Hidden while Lumi offers choices of her own, and in the expanded conversation.
+- **Lumi's input in her colours**: the field you type to Lumi in looks like the onboarding's Continue button: white
+  with soft peach, pink and purple washed behind it, brand-purple text and placeholder, a tinted edge and a glow that
+  warms on hover and focus (the colours drift a little). The whole dock carries the same colours, fainter, with a
+  lightly tinted edge, and its text is in the same brand purple. In dark mode it's all quieter: warm white text, and the
+  input only just lifted off the card with a touch of purple, its colours a little stronger than the dock's.
 
 ## 2026-10-30
 

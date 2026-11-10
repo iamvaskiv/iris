@@ -4,16 +4,20 @@
 	import { onMount, untrack } from 'svelte';
 	import {
 		hasLanes as lanesIn,
-		loadTimelineView,
-		setTimelineView,
-		timelineView
-	} from './timeline-view.svelte';
+		loadVideoTab,
+		setVideoTab,
+		videoTab,
+		type VideoTab
+	} from './video-tab.svelte';
 	import VideoLanes, { type LaneGroup } from './VideoLanes.svelte';
 	import VideoTimeline from './VideoTimeline.svelte';
 	import VideoSections from './video/VideoSections.svelte';
 	import ViewerPanel from './video/ViewerPanel.svelte';
+	import VideoComments from './video/VideoComments.svelte';
+	import ViewerSections from './viewers/ViewerSections.svelte';
+	import { insightsQuestions } from './viewer-questions';
 	import { videoQuestions } from './video/questions';
-	import { askable, fractionAlong } from '#lib/ask-lumi.js';
+	import { askable, fractionAlong, quoted } from '#lib/ask-lumi.js';
 	import { toneOf } from './viewer';
 	import { projectCards, viewerSources } from './viewer-sources';
 	import { timecode } from './format';
@@ -21,8 +25,8 @@
 
 	/**
 	 * For Storybook: `studies` stands in for the project's other cards (the page shares them otherwise), and `initial`
-	 * sets how it starts: a character, theme or brand picked, the Timeline tab or Overview (instead of what was
-	 * remembered), and which viewer data source.
+	 * sets how it starts: a character, theme or brand picked, which tab (instead of what was remembered), and which
+	 * viewer data source.
 	 */
 	let {
 		card,
@@ -33,7 +37,7 @@
 		studies?: CardData[];
 		initial?: {
 			pick?: { kind: 'character' | 'theme' | 'brand'; index: number };
-			lanes?: boolean;
+			tab?: VideoTab;
 			source?: string;
 		};
 	} = $props();
@@ -114,17 +118,17 @@
 	}
 	const isPicked = (kind: Kind, index: number) => picked?.kind === kind && picked.index === index;
 
-	// The Timeline tab: everything on the card as lanes along the video, in place of the Overview's sections
-	// (remembered on this device). Coloured by kind: characters blue, themes magenta, brands orange.
+	// Tabs: Overview (what's in it), Timeline (everything as lanes along the video; coloured by kind: characters blue,
+	// themes magenta, brands orange) and Viewers (how it landed). Shared by all video cards and remembered on this device.
 	onMount(() => {
-		if (initial.lanes === undefined) loadTimelineView();
+		if (initial.tab === undefined) loadVideoTab();
 	});
 	/** Storybook's starting tab, switched locally (not remembered) once someone clicks; otherwise the shared choice. */
-	let localTab = $state(untrack(() => initial.lanes));
-	const lanesOn = $derived(localTab ?? timelineView.on);
-	function pickTab(timeline: boolean) {
-		if (localTab === undefined) setTimelineView(timeline);
-		else localTab = timeline;
+	let localTab = $state(untrack(() => initial.tab));
+	const wantedTab = $derived(localTab ?? videoTab.current);
+	function pickTab(tab: VideoTab) {
+		if (localTab === undefined) setVideoTab(tab);
+		else localTab = tab;
 	}
 	const laneGroups = $derived<LaneGroup[]>([
 		{
@@ -146,8 +150,9 @@
 			lanes: brands.map((b, index) => ({ ...b, index }))
 		}
 	]);
-	// Viewer data, when the video was shown to an audience: its key numbers under the summary, and every comment, at
-	// its moment (a section of them, dots on the timeline, and lanes in the Timeline tab). It comes from Lumiere (real
+	// Viewer data, when the video was shown to an audience: its key numbers under the summary, the Viewers tab (answers
+	// to its questions, what viewers liked and didn't, every comment at its moment), dots on the timeline and lanes in
+	// the Timeline tab. It comes from Lumiere (real
 	// viewers), or one of the project's studies that shows this video (its sample results), picked with Source.
 	const sharedCards = projectCards();
 	const sources = $derived(
@@ -171,8 +176,21 @@
 	);
 	/** Go to a moment: play from there, or just move the playhead when there's no stream. */
 	const seek = (t: number) => (data.streamUrl ? play(t) : (time = t));
-	/** The Timeline tab is showing (it's picked, and there's something to put in lanes). */
-	const lanesView = $derived(lanesOn && hasLanes);
+	/** The tabs this card has: Timeline when there's something to put in lanes, Viewers when there's viewer data. */
+	const tabs = $derived(
+		[
+			{ value: 'overview', label: 'Overview' },
+			hasLanes && { value: 'timeline', label: 'Timeline' },
+			source && { value: 'viewers', label: 'Viewers' }
+		].filter((t) => !!t)
+	);
+	/** The tab showing: the one picked, if this card has it; Overview otherwise. */
+	const tab = $derived<VideoTab>(tabs.some((t) => t.value === wantedTab) ? wantedTab : 'overview');
+	const lanesView = $derived(tab === 'timeline');
+	/** The Viewers tab's questions for Lumi, naming the video by this card's title. */
+	const askViewers = $derived(
+		viewers && insightsQuestions(card.title, viewers, quoted(card.title))
+	);
 	const appearsLabel = (item?: { appearances?: Span[] }) =>
 		presence(item?.appearances).replace(/^o/, 'O') || undefined;
 </script>
@@ -281,22 +299,19 @@
 			</div>
 		</div>
 
-		<!-- Overview (the sections) or Timeline (everything as lanes along the video), when there's something to put in
-		     lanes. -->
-		{#if hasLanes}
+		<!-- Tabs: Overview (the sections), Timeline (everything as lanes along the video) and Viewers (how it landed),
+		     each when the card has something for it. -->
+		{#if tabs.length > 1}
 			<SegmentedControl
 				aria-label="View"
 				class="-mb-2"
-				options={[
-					{ value: 'overview', label: 'Overview' },
-					{ value: 'timeline', label: 'Timeline' }
-				]}
-				value={lanesView ? 'timeline' : 'overview'}
-				onValueChange={(v) => pickTab(v === 'timeline')}
+				options={tabs}
+				value={tab}
+				onValueChange={(v) => pickTab(v as VideoTab)}
 			/>
 		{/if}
 
-		{#if lanesView}
+		{#if tab === 'timeline'}
 			<VideoLanes
 				duration={data.duration!}
 				{time}
@@ -309,11 +324,25 @@
 				onseek={seek}
 				onpick={pick}
 			/>
+		{:else if tab === 'viewers' && viewers}
+			<!-- How it landed, in colour: the source's summary (a study's), the sentiment split, answers, liked and
+			     disliked, every comment. The numbers are in the header, on every tab. -->
+			{#if source?.summary}<p class="text-body text-muted-foreground">{source.summary}</p>{/if}
+			<ViewerSections
+				sentiment={viewers.sentiment}
+				questions={viewers.questions}
+				liked={viewers.liked}
+				disliked={viewers.disliked}
+				ask={askViewers}
+				onplay={data.streamUrl ? play : undefined}
+			/>
+			<VideoComments {comments} {reactions} canPlay={!!data.streamUrl} {ask} onplay={play} />
+			{#if !viewers.questions?.length && !viewers.liked?.length && !comments.length && !reactions.length}
+				<p class="text-body text-muted-foreground">No answers or comments yet.</p>
+			{/if}
 		{:else}
 			<VideoSections
 				{data}
-				{comments}
-				{reactions}
 				{currentScene}
 				{isPicked}
 				{appearsLabel}

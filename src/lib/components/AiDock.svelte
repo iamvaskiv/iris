@@ -46,6 +46,9 @@
 		onsubmit: (message: string) => void;
 		/** Centered only: shown in place of the input and choices, for a scripted moment (the intro, see intro.ts). */
 		below?: Snippet;
+		/** Docked only: shown just above the dock, as wide as it (the focused lane's next steps). Hidden while the whole
+		 *  conversation is open. */
+		above?: Snippet;
 	};
 	let {
 		reply,
@@ -62,7 +65,8 @@
 		mode = $bindable('default'),
 		messages = [],
 		onsubmit,
-		below
+		below,
+		above
 	}: Props = $props();
 
 	let input = $state<HTMLTextAreaElement | null>(null);
@@ -446,17 +450,30 @@
 		{#if showChoices}
 			<ChoiceList bind:ref={choiceList} options={choices} onselect={send} />
 		{/if}
-		<!-- Same field in both cases, so focus and the draft survive choices appearing and going. -->
-		<PromptInput
-			bind:ref={input}
-			bind:value={draft}
-			placeholder={showChoices ? 'Something else…' : placeholder}
-			focusedPlaceholder={showChoices ? 'Something else…' : 'What interests you?'}
-			disabled={thinking}
-			leading={showChoices ? fieldKey : undefined}
-			submitOnFocus={showChoices}
-			onsubmit={send}
-		/>
+		<!-- Same field in both cases, so focus and the draft survive choices appearing and going. Dressed like the
+		     onboarding's Continue button (BrandButton): Lumi's colours washed behind it, a brand-purple edge and glow. -->
+		<div class="brand-field relative isolate overflow-hidden rounded-lg">
+			<span class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+				<span class="blob blob-1 absolute -top-10 -left-6 size-28 rounded-full bg-brand-3 blur-xl"
+				></span>
+				<span
+					class="blob blob-2 absolute -right-8 -bottom-12 size-32 rounded-full bg-brand-2 blur-xl"
+				></span>
+				<span class="blob blob-3 absolute top-3 left-1/2 size-16 rounded-full bg-brand-4 blur-xl"
+				></span>
+			</span>
+			<PromptInput
+				class="bg-transparent"
+				bind:ref={input}
+				bind:value={draft}
+				placeholder={showChoices ? 'Something else…' : placeholder}
+				focusedPlaceholder={showChoices ? 'Something else…' : 'What interests you?'}
+				disabled={thinking}
+				leading={showChoices ? fieldKey : undefined}
+				submitOnFocus={showChoices}
+				onsubmit={send}
+			/>
+		</div>
 	</div>
 {/snippet}
 
@@ -494,7 +511,7 @@
 		data-dock
 		{onfocusin}
 		class={[
-			'fixed bottom-8 left-1/2 flex w-full max-w-140 -translate-x-1/2 flex-col rounded-xl bg-card px-2 pb-2 shadow-raised',
+			'brand-dock fixed bottom-8 left-1/2 isolate flex w-full max-w-140 -translate-x-1/2 flex-col rounded-xl bg-card px-2 pb-2 shadow-raised',
 			ready && 'dock-animate'
 		]}
 		class:pull-release={pullStart === null}
@@ -503,6 +520,25 @@
 		style:--dock-duration="{duration}ms"
 		style:view-transition-name="iris-dock"
 	>
+		<!-- Lumi's colours, faintly, across the whole dock (as on her input, but softer). -->
+		<span
+			class="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-xl"
+			aria-hidden="true"
+		>
+			<span class="blob blob-1 absolute -top-24 -left-16 size-64 rounded-full bg-brand-3 blur-3xl"
+			></span>
+			<span
+				class="blob blob-2 absolute -right-20 -bottom-28 size-72 rounded-full bg-brand-2 blur-3xl"
+			></span>
+			<span class="blob blob-3 absolute top-1/3 left-1/2 size-40 rounded-full bg-brand-4 blur-3xl"
+			></span>
+		</span>
+		{#if above && mode !== 'expanded'}
+			<!-- As wide as the dock, just above it. -->
+			<div class="absolute inset-x-0 bottom-full mb-2">
+				{@render above()}
+			</div>
+		{/if}
 		<!-- In the taller top padding, or just above the dock when compact, whose padding is even all round. Drag or
 		     arrow keys step the size; click shows more. -->
 		<button
@@ -725,5 +761,105 @@
 	}
 	:global(::view-transition-new(iris-avatar)) {
 		animation: none;
+	}
+	/* The prompt field, dressed like BrandButton: white (dark: the brand purple) with soft brand blobs behind it, ink in
+	   the brand's purple, a tinted edge and a glow that warms on hover and focus. */
+	.brand-field {
+		--ink: var(--brand-4);
+		background: var(--neutral-0);
+		color: var(--ink);
+		--placeholder: color-mix(in oklab, var(--brand-4) 55%, transparent);
+		box-shadow:
+			0 0 0 1px color-mix(in oklab, var(--brand-4) 22%, transparent),
+			0 0 14px -4px color-mix(in oklab, var(--brand-2) 40%, transparent);
+		transition: box-shadow 0.25s ease-out;
+	}
+	.brand-field:hover,
+	.brand-field:focus-within {
+		box-shadow:
+			0 0 0 1px color-mix(in oklab, var(--brand-4) 30%, transparent),
+			0 0 22px -2px color-mix(in oklab, var(--brand-3) 50%, transparent);
+	}
+	.brand-field .blob {
+		opacity: 0.35;
+		transition: translate 0.8s ease-out;
+	}
+	.brand-field:hover .blob-1,
+	.brand-field:focus-within .blob-1 {
+		translate: 24px 6px;
+	}
+	.brand-field:hover .blob-2,
+	.brand-field:focus-within .blob-2 {
+		translate: -28px -4px;
+	}
+	.brand-field:hover .blob-3,
+	.brand-field:focus-within .blob-3 {
+		translate: -20px 3px;
+	}
+	/* The send button: a soft white chip on the colours (dark: a lighter purple). */
+	.brand-field :global([data-slot='prompt-input'] button[type='submit']) {
+		background: color-mix(in oklab, var(--neutral-0) 75%, transparent);
+		color: color-mix(in oklab, var(--brand-4) 60%, transparent);
+	}
+	.brand-field :global([data-slot='prompt-input'] button[type='submit']:enabled:hover) {
+		color: var(--brand-4);
+	}
+	/* Dark: barely lifted off the card (a touch of the brand purple), its colours a little stronger than the dock's. */
+	:global(.dark) .brand-field {
+		--ink: var(--dock-ink, var(--neutral-0));
+		--placeholder: color-mix(in oklab, var(--ink) 55%, transparent);
+		background: color-mix(in oklab, var(--brand-4) 18%, var(--card));
+		box-shadow:
+			0 0 0 1px color-mix(in oklab, var(--neutral-0) 12%, transparent),
+			0 0 14px -6px color-mix(in oklab, var(--brand-2) 35%, transparent);
+	}
+	:global(.dark) .brand-field:hover,
+	:global(.dark) .brand-field:focus-within {
+		box-shadow:
+			0 0 0 1px color-mix(in oklab, var(--neutral-0) 18%, transparent),
+			0 0 18px -6px color-mix(in oklab, var(--brand-3) 40%, transparent);
+	}
+	:global(.dark) .brand-field .blob {
+		opacity: 0.32;
+	}
+	:global(.dark) .brand-field :global([data-slot='prompt-input'] button[type='submit']) {
+		background: color-mix(in oklab, var(--neutral-0) 14%, transparent);
+		color: color-mix(in oklab, var(--neutral-0) 75%, transparent);
+	}
+	:global(.dark)
+		.brand-field
+		:global([data-slot='prompt-input'] button[type='submit']:enabled:hover) {
+		color: var(--neutral-0);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.brand-field .blob {
+			transition: none;
+		}
+		.brand-field:hover .blob,
+		.brand-field:focus-within .blob {
+			translate: none;
+		}
+	}
+	/* The dock: the same wash as its input, fainter, with a lightly tinted edge (the card's shadow stays). */
+	/* The dock's text in the brand's ink too, to match its input: purple in light mode, a warm white in dark. */
+	.brand-dock {
+		--dock-ink: var(--brand-4);
+		--foreground: var(--dock-ink);
+		--card-foreground: var(--dock-ink);
+		--muted-foreground: color-mix(in oklab, var(--brand-4) 65%, transparent);
+		color: var(--dock-ink);
+		outline: 1px solid color-mix(in oklab, var(--brand-4) 10%, transparent);
+		outline-offset: -1px;
+	}
+	.brand-dock > span > .blob {
+		opacity: 0.12;
+	}
+	:global(.dark) .brand-dock {
+		--dock-ink: color-mix(in oklab, var(--neutral-0) 90%, var(--brand-2));
+		--muted-foreground: color-mix(in oklab, var(--dock-ink) 65%, transparent);
+		outline-color: color-mix(in oklab, var(--neutral-0) 10%, transparent);
+	}
+	:global(.dark) .brand-dock > span > .blob {
+		opacity: 0.22;
 	}
 </style>

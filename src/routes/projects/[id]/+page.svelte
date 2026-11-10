@@ -31,6 +31,7 @@
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 	import { takePendingVideo } from '#lib/new-project.js';
 	import AskLumi from '#lib/components/AskLumi.svelte';
+	import { setVideoTab, videoTab } from '#lib/cards/video-tab.svelte.js';
 	import { transcript, type TranscriptMessage } from '#lib/transcript.js';
 	import type { PageProps } from './$types';
 
@@ -53,6 +54,9 @@
 			if (c.type === 'video') steps.push('review');
 			if (c.type === 'study') steps.push('study');
 			if (['insights', 'viewers', 'sources'].includes(c.type) || isFielding(c))
+				steps.push('feedback');
+			// Or a video card's Viewers tab, open on a video with viewer data.
+			if (c.type === 'video' && c.data?.viewers && videoTab.current === 'viewers')
 				steps.push('feedback');
 		}
 		completeSteps(...steps);
@@ -235,6 +239,8 @@
 
 	function apply(op: CardOp) {
 		if (op.op === 'add') project.cards.push(op.card);
+		// Lumi pointing to a video card's viewers (or timeline) opens that tab.
+		if (op.op !== 'update' && op.tab) setVideoTab(op.tab);
 		if (op.op === 'update') {
 			const i = project.cards.findIndex((c) => c.id === op.card.id);
 			if (i >= 0) project.cards[i] = op.card;
@@ -450,6 +456,11 @@
 
 	const laneOf = (key: string | undefined) =>
 		laneList.find((l) => l.slots.some((s) => s.key === key));
+	/** The focused lane, and its next steps: shown as slides above Lumi's dock. */
+	const focusedLane = $derived(lanesOn ? laneOf(focusedSlot) : undefined);
+	const focusedNext = $derived(
+		focusedLane ? laneSuggestions(focusedLane, project.suggestions, asked) : []
+	);
 	const currentOf = (lane: Lane) =>
 		lane.slots.find((s) => s.key === laneCurrent[lane.key]) ?? lane.slots[0];
 
@@ -736,12 +747,6 @@
 	let scrollerInnerWidth = $state(0);
 	const scrollbarWidth = $derived(Math.max(0, scrollerWidth - scrollerInnerWidth));
 	/** After a lane's last card, less the card's width: room so it too can come to the lane's left edge. */
-	/** The last card of a lane with suggestions leaves room for them beside it (but never less than half the row). */
-	const SUGGESTED_MAX = {
-		normal: 'min(48rem, max(100% - 28rem, 50%))',
-		wide: 'min(64rem, max(100% - 28rem, 50%))',
-		full: 'max(100% - 28rem, 50%)'
-	};
 	const roomAfter = $derived(scrollerInnerWidth - rowStart - ROW_PAD - CARD_GAP);
 	let assetsOpen = $state(false);
 	let assetsPane = $state<HTMLElement | null>(null);
@@ -827,6 +832,17 @@
 	{/if}
 {/snippet}
 
+<!-- The focused lane's next steps, above Lumi's dock (not while she offers choices of her own). -->
+{#snippet nextSteps()}
+	<LaneSuggestions
+		suggestions={focusedNext}
+		topic={focusedLane?.title ?? ''}
+		key={focusedLane?.key}
+		disabled={thinking}
+		onselect={send}
+	/>
+{/snippet}
+
 <svelte:head><title>{project.name} · Iris</title></svelte:head>
 
 <svelte:window {onkeydown} />
@@ -909,7 +925,6 @@
 					{@const current = currentOf(lane)}
 					{@const at = lane.slots.indexOf(current)}
 					{@const last = lane.slots.at(-1)!}
-					{@const next = laneSuggestions(lane, project.suggestions, asked)}
 					<!-- A click anywhere in a lane that isn't the focused one (its title, the room beside its cards) brings it
 					     in, at its current card; a click on one of its cards brings in that card instead (handled there
 					     first). The keyboard has the cards and the arrows. -->
@@ -1002,9 +1017,6 @@
 									style:width={birdsEye
 										? `${(cardWidths[slot.key] ?? 0) * birdScale}px`
 										: undefined}
-									style:max-width={!birdsEye && next.length && slot === last
-										? SUGGESTED_MAX[size]
-										: undefined}
 									style:height={birdsEye
 										? `${Math.min(cardHeights[slot.key] ?? 0, laneHeight) * birdScale}px`
 										: undefined}
@@ -1048,22 +1060,12 @@
 								</div>
 							{/each}
 							{#if !birdsEye}
-								<!-- After the last card: the lane's next steps, and room so the last card too can come to the lane's
-								     left edge. -->
-								{#if next.length || lane.slots.length > 1}
+								<!-- After the last card: room so it too can come to the lane's left edge. -->
+								{#if lane.slots.length > 1}
 									<div
 										class="shrink-0"
-										style:min-width={lane.slots.length > 1
-											? `${Math.max(0, roomAfter - (cardWidths[last.key] ?? 0))}px`
-											: undefined}
-									>
-										<LaneSuggestions
-											suggestions={next}
-											topic={lane.title}
-											disabled={thinking}
-											onselect={send}
-										/>
-									</div>
+										style:min-width="{Math.max(0, roomAfter - (cardWidths[last.key] ?? 0))}px"
+									></div>
 								{/if}
 							{/if}
 						</div>
@@ -1284,6 +1286,9 @@
 			{messages}
 			bind:height={dockHeight}
 			onsubmit={ask}
+			above={introStep === null && !birdsEye && !project.choices?.length && focusedNext.length
+				? nextSteps
+				: undefined}
 		/>
 	</div>
 </div>

@@ -77,7 +77,7 @@ Projects:
 - After the first real exchange, give the project a short name (2-4 words) with update_project. Keep its summary as one plain sentence with the current key takeaway, and refresh it when a new finding replaces the old one. Don't mention these updates in your reply.
 - The user's own videos (assets, listed below) can be used in any project. When they mention a video they already have, attach it with add_video instead of asking them to upload it again. To compare videos, attach each one.
 - If the project has no video yet and none of their videos fits, suggest dropping one onto the page to upload it${library ? ', or picking one from the video library (list_folder)' : ''}.
-- Viewer insights (views, ratings, sentiment, answers and comments) exist only for videos shown to an audience. When the user asks how a video landed, how viewers reacted, or about performance, call get_insights and show an insights card if there is data; if not, say nobody has watched or responded yet.
+- Viewer insights (views, ratings, sentiment, answers and comments) exist only for videos shown to an audience. When the user asks how a video landed, how viewers reacted, or about performance, call get_insights; if there is data, show it on the video's own card, on its Viewers tab (numbers, answers to its questions, what viewers liked and didn't, every comment): focus_card with tab "viewers" when a video card for it is on screen, else show_card a video card with tab "viewers". Don't make a separate insights card. If there's no data, say nobody has watched or responded yet.
 - When the user says a video finished uploading, fetch its summary, entities, chapters and transcript, then show a video card for it plus at most one more card with the analysis.
 
 Data:
@@ -141,6 +141,8 @@ function describeSample(data: StudyData | undefined) {
 }
 
 /** Card types the assistant can create (upload cards are the app's own). */
+const VIDEO_TABS = ['overview', 'timeline', 'viewers'];
+const isVideoTab = (tab: unknown): tab is 'overview' | 'timeline' | 'viewers' => VIDEO_TABS.includes(tab as string);
 const CARD_TYPES = ['video', 'insights', 'comparison', 'sources', 'viewers', 'list', 'quotes', 'table', 'text', 'study'];
 
 const tableSchema = {
@@ -303,7 +305,7 @@ const allTools: Anthropic.Tool[] = [
 		name: 'show_card',
 		description: `Add a NEW card for a subject no existing card covers. It becomes the focused card. Types:
 - "video": a video with its summary, scenes and characters. Pass videoId; the player, scenes and characters are added for you. Title: what the video is (e.g. "Women Talking trailer"), not the file name. Body: a two or three sentence summary.
-- "insights": viewer insights for a video (views, rating, sentiment, answers to questions, liked and disliked comments). Pass videoId; the numbers are filled in for you. Only when get_insights has data. Body: one sentence with the key takeaway.
+- "insights": older viewer insights cards. Don't add new ones: a video card's Viewers tab shows the same (pass tab "viewers").
 - "comparison": two to four videos side by side. Pass videoIds; posters, length, scenes, characters, themes and brands, and from audience data views, responses, response rate, rating, comment sentiment, the top liked and criticised comments and answers to questions asked in several of the videos are filled in for you. Pass focus "audience" to compare only how viewers responded (views, sentiment, ratings...), "content" for only what's in the videos; leave it out for both. Add your own rows for what the numbers don't show (e.g. tone, opening, pacing, call to action): rows of [label, one short value per video in videoIds order]. Never repeat the automatic rows. Body: one sentence with the key difference. Prefer this over a table when comparing videos.
 - "sources": ONE video's viewer data compared across its sources: Lumiere's real viewers, and each study card in the project that shows the video and has sample results (named after the study). Each source's key numbers in a row and, along the video, every source's sentiment and rating curves laid over each other and their comments. Pass videoId; everything is filled in for you. Use it whenever the user wants to compare real and sample (or several studies') viewer data for a video, rather than a table. Title: e.g. "Real vs sample viewers". Body: one sentence with the key difference.
 - "viewers": how viewers reacted to two to four videos, compared. Pass videoIds; everything is filled in for you. A row per video (its poster and key numbers: viewers, rating, positive and negative shares, comments) and, along each video (0–100% of its length, so videos of different lengths line up), every video's sentiment and rating curves laid over each other and their comments. Each video's viewer data is Lumiere's real viewers or, picked on the card, a study card in the project that shows it and has sample results. Use it whenever the user wants to compare how viewers reacted to several videos (e.g. "compare how viewers reacted to these videos"); a "comparison" is for side-by-side facts. Title: e.g. "How viewers reacted". Body: one sentence with the key difference.
@@ -323,6 +325,7 @@ const allTools: Anthropic.Tool[] = [
 				videoId: { type: 'string' },
 				videoIds: { type: 'array', items: { type: 'string' }, description: 'Comparison and viewers cards: the videos, in order.' },
 				focus: { type: 'string', enum: ['all', 'content', 'audience'], description: 'Comparison cards: which rows to show.' },
+				tab: { type: 'string', enum: VIDEO_TABS, description: 'Video cards: the tab to open it on ("viewers" for how it landed, "timeline" for when things happen).' },
 				items: itemsSchema,
 				questions: questionsSchema,
 				...tableSchema
@@ -353,7 +356,14 @@ const allTools: Anthropic.Tool[] = [
 	{
 		name: 'focus_card',
 		description: 'Bring an existing card into focus (scrolls to it) when it already answers the question.',
-		input_schema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
+		input_schema: {
+			type: 'object',
+			properties: {
+				id: { type: 'string' },
+				tab: { type: 'string', enum: VIDEO_TABS, description: 'Video cards: switch to this tab ("viewers": how it landed; "timeline": when things happen; "overview": what\'s in it).' }
+			},
+			required: ['id']
+		}
 	},
 	{
 		name: 'update_project',
@@ -427,9 +437,10 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 		case 'show_card': {
 			const others = ((input.videoIds as string[] | undefined) ?? []).filter((v) => !assetIds.has(v) && !project.videoIds.includes(v));
 			if (!library && others.length) throw new Error(`Not the user's videos: ${others.join(', ')}.`);
-			const card = await makeCard(input as unknown as CardInput);
+			const { tab, ...cardInput } = input;
+			const card = await makeCard(cardInput as unknown as CardInput);
 			project.cards.push(card);
-			ops.push({ op: 'add', card });
+			ops.push({ op: 'add', card, ...(card.type === 'video' && isVideoTab(tab) ? { tab } : {}) });
 			return { shown: true, id: card.id };
 		}
 		case 'update_card': {
@@ -448,7 +459,8 @@ async function runTool(name: string, input: Record<string, unknown>, turn: Turn)
 			return { updated: true };
 		}
 		case 'focus_card': {
-			ops.push({ op: 'focus', id: find().id });
+			const card = find();
+			ops.push({ op: 'focus', id: card.id, ...(card.type === 'video' && isVideoTab(input.tab) ? { tab: input.tab } : {}) });
 			return { focused: true };
 		}
 		case 'update_project':

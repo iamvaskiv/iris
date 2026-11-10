@@ -21,8 +21,8 @@ Under the video, a timeline of its scenes (click or drag to go to a moment). Pic
 where it's on screen (from Lumiere's moments, about ten seconds each) and watch from its first appearance; pick it
 again, or use the arrows, for the next one. While the video plays, its current scene is outlined.
 
-Two tabs under the header (remembered on this device): **Overview**, the sections, and **Timeline**, everything as
-lanes along the video: the scenes across the top, then each character, theme and brand on its own lane with bars
+Three tabs under the header (remembered on this device): **Overview**, the sections; **Timeline**, everything as
+lanes along the video; and **Viewers**, how it landed (when there's viewer data). Timeline: the scenes across the top, then each character, theme and brand on its own lane with bars
 where it's on screen and its share of screen time, longest first, coloured by kind. A box beside the playhead sums up
 that moment: the scene, what's on screen, nearby comments and the rating around then; hover over the lanes to move
 it to the moment under the pointer.
@@ -32,13 +32,16 @@ ask Lumi about that thing (the question is worded from the card's data, e.g. why
 pointer and a hint says so. Here the question shows under the card instead of being sent. The card stays wide either way.
 
 When the video was shown to an audience (\`data.viewers\`, the insights card's data): its key numbers under the
-summary (views, responses, rating, comment sentiment), a **Comments** section with each comment at its moment (click
-to play from there), and a dot per comment on the timeline in its sentiment's colour. In the Timeline tab, a
+summary (views, responses, rating, comment sentiment) on every tab, a dot per comment on the timeline in its
+sentiment's colour, and the **Viewers** tab: the sentiment split, **Questions** asked in the video (an average, or a
+bar per option), **What viewers liked** and **didn't like**, and **Comments**, each at its moment (click to play from
+there). A study adds its summary at the top. This replaces the separate viewer data card. In the Timeline tab, a
 **Sentiment** group (a curve of how positive the comments are along the video, then lanes of positive, neutral and
 negative comments) and a **Rating** group with a curve of the average rating where ratings were given. **Source**
 switches it between Lumiere (real viewers) and each of the project's studies that shows the video and has sample
 results, named after its card: their watched count, reactions, open answers to questions popping up in the video (as
-comments at their moments) and slider answers there (as ratings out of 10).`
+comments at their moments), slider answers there (as ratings out of 10, and in Questions) and multiple-choice answers
+(in Questions).`
 				}
 			}
 		}
@@ -85,7 +88,7 @@ comments at their moments) and slider answers there (as ratings out of 10).`
 	<CardFrame wide
 		><VideoCard
 			card={womenTalking}
-			initial={{ lanes: true, pick: { kind: 'character', index: 0 } }}
+			initial={{ tab: 'timeline', pick: { kind: 'character', index: 0 } }}
 		/></CardFrame
 	>
 </Story>
@@ -95,7 +98,21 @@ comments at their moments) and slider answers there (as ratings out of 10).`
 </Story>
 
 <Story name="Timeline with viewer data">
-	<CardFrame wide><VideoCard card={withViewers} initial={{ lanes: true }} /></CardFrame>
+	<CardFrame wide><VideoCard card={withViewers} initial={{ tab: 'timeline' }} /></CardFrame>
+</Story>
+
+<Story name="Viewers">
+	<CardFrame wide><VideoCard card={withViewers} initial={{ tab: 'viewers' }} /></CardFrame>
+</Story>
+
+<Story name="Viewers from a study">
+	<CardFrame wide
+		><VideoCard
+			card={withViewers}
+			studies={[study]}
+			initial={{ tab: 'viewers', source: study.id }}
+		/></CardFrame
+	>
 </Story>
 
 <Story name="Viewer data from a study">
@@ -103,13 +120,13 @@ comments at their moments) and slider answers there (as ratings out of 10).`
 		><VideoCard
 			card={withViewers}
 			studies={[study]}
-			initial={{ lanes: true, source: study.id }}
+			initial={{ tab: 'timeline', source: study.id }}
 		/></CardFrame
 	>
 </Story>
 
 <Story name="Rating along the video">
-	<CardFrame wide><VideoCard card={spreadRatings} initial={{ lanes: true }} /></CardFrame>
+	<CardFrame wide><VideoCard card={spreadRatings} initial={{ tab: 'timeline' }} /></CardFrame>
 </Story>
 
 <Story name="Short clip">

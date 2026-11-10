@@ -63,7 +63,7 @@ flowchart TB
 | Part          | Where                                                          | What it does                                                                                                                                                                |
 | ------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Pages         | `src/routes`                                                   | Projects page (tiles, Lumi, drop a video → new project), project page (card stack, or topic lanes with Settings → Experimental; focus, uploads), assets, settings, `/login` |
-| Cards         | `src/lib/cards`                                                | Video, Insights, Comparison, Sources, List, Quotes, Table, Text, Upload, Study; built from design-system components                                                         |
+| Cards         | `src/lib/cards`                                                | Video (Overview · Timeline · Viewers tabs), Insights (older cards), Comparison, Sources, List, Quotes, Table, Text, Upload, Study; built from design-system components                                                         |
 | Password gate | `src/hooks.server.ts`                                          | Production only: a session cookie from `SITE_PASSWORD`, otherwise `/login`                                                                                                  |
 | Lumi          | `src/lib/server/agent.ts`, `workspace-agent.ts`                | Claude tool loops: read analysis and insights, browse the library across the user's teams, add/update/focus cards                                                           |
 | Card data     | `src/lib/server/video-card.ts`, `insights.ts`, `comparison.ts` | Fill cards from Lumiere; insights cached for six hours                                                                                                                      |
@@ -105,7 +105,7 @@ flowchart LR
     cards -- "video card" --> s2["2 · Review the analysed video"]
     dock -- "project has a video card" --> s3["3 · Ask a question about it"]
     cards -- "study card" --> s4["4 · Start a study"]
-    cards -- "insights, viewers or sources card,<br/>or a study with sample results" --> s5["5 · Review viewer feedback"]
+    cards -- "a video card's Viewers tab, a viewers<br/>or sources card, or a study with sample results" --> s5["5 · Review viewer feedback"]
     s1 & s2 & s3 & s4 & s5 --> cookie[("iris_checklist cookie")]
     cookie --> tile["Tile on the projects page"] & pill["Pill in the project header"]
 
@@ -135,7 +135,7 @@ flowchart TB
     welcome -- "What can you do? / typed" --> lumi["Lumi on the projects page"]
     lumi -- "open_example tool" --> load
     load --> exists{"Example saved?"}
-    exists -- "no" --> build["Build from fixture cards:<br/>video · insights · study<br/>+ Lumi's intro"] --> store[("store.ts")]
+    exists -- "no" --> build["Build from fixture cards:<br/>video · study<br/>+ Lumi's intro"] --> store[("store.ts")]
     exists -- "yes" --> show
     load --> introDue{"First project<br/>opened?"} -- "yes" --> howIris["How Iris works in the centred dock,<br/>then it moves down as the cards appear"]
     store --> show["Cards refreshed from the analysis,<br/>Lumi's intro and three questions"]
@@ -330,7 +330,11 @@ ratings with their moments, from `insights.ts`, cached for a few hours). And eac
 the video (a video step, or a video in a channel) and has sample results: its made-up viewers' comments and star
 ratings at their moments, and the answers to questions popping up in the video (`viewer-sources.ts`, worked out in the
 browser from the project's cards, which the project page shares). The video card switches between them with
-**Source**; the sources card lays them over each other. The viewers card compares several videos, each with its own
+**Source**, and its **Viewers** tab shows the chosen one: the sentiment split, answers to the questions asked in the
+video (Lumiere's from `insights.ts`; a study's multiple-choice and slider pop-ups, counted from its sample results),
+what viewers liked and didn't, and every comment (a study adds its summary). It replaces the separate insights card:
+Lumi opens the Viewers tab (`focus_card` / `show_card` with `tab: "viewers"`) instead of adding one. The sources card
+lays the sources over each other. The viewers card compares several videos, each with its own
 **Source**, along 0–100% of each video so different lengths line up.
 
 ```mermaid
@@ -340,7 +344,7 @@ config:
 ---
 flowchart LR
     lumiere["Lumiere API<br/>feedback: comments, ratings"] --> insights["insights.ts<br/>(cached 6 h)"]
-    insights -->|"data.viewers"| video["Video card<br/>Source picker"]
+    insights -->|"data.viewers"| video["Video card<br/>Source picker, Viewers tab"]
     insights -->|"data.viewers"| sources["Sources card<br/>overlaid curves, bars"]
     insights -->|"data.videos[].viewers"| viewers["Viewers card<br/>a Source picker per video"]
     studies["Study cards in the project<br/>sample results"] -->|"studySources()"| video

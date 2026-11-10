@@ -7,10 +7,10 @@ import { store } from './store.js';
 
 /**
  * The example project new people open from Lumi's welcome: the Inside Out 2 trailer (a video with real viewer data),
- * already holding a video card, its viewer insights and a study, so they see what Lumi's cards look like before
+ * already holding a video card (its viewer data on the Viewers tab) and a study, so they see what Lumi's cards look like before
  * uploading anything. It's one shared project with a fixed id, made on first visit (from the cards captured for the
- * Storybook) and made again if someone deletes it. Video and insights cards refresh from the analysis on every visit,
- * like any card.
+ * Storybook) and made again if someone deletes it. The video card refreshes from the analysis on every visit, like any
+ * card.
  */
 export const EXAMPLE_ID = 'example';
 const VIDEO_ID = 'vuvIanfCkI8R';
@@ -19,7 +19,6 @@ export const DEMO_NAME = 'Demo: Inside Out 2';
 
 const CARDS = [
 	'Inside Out 2 Reception · Inside Out 2 trailer',
-	'Inside Out 2 Reception · Inside Out 2 trailer: viewer data',
 	'Inside Out 2 Reception · Inside Out 2 trailer study'
 ];
 

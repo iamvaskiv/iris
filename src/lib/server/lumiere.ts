@@ -81,10 +81,12 @@ export const lumiere = {
 	/** Estimated viewing sessions over the last year (the API's longest window); not unique viewers. */
 	sessionCount: async (id: string) => {
 		const teamId = await lumiere.teamOf(id);
-		const res = await call<{ entries: { sessionCountEstimate: number }[] }>(
+		// The count is `sessionCount` now (it was `sessionCountEstimate`); read either, so views don't drop to 0.
+		const res = await call<{ entries: { sessionCount?: number; sessionCountEstimate?: number }[] }>(
 			`/activity${q({ teamId, view: 'engaged-videos', itemId: id, last: '365d', limit: 1 })}`
 		);
-		return res.entries[0]?.sessionCountEstimate ?? 0;
+		const entry = res.entries[0];
+		return entry?.sessionCount ?? entry?.sessionCountEstimate ?? 0;
 	},
 	createIngestion: (fileName: string, fileSize: number) =>
 		call<{ ingestionId: string; uploadUrl: string; videoId: string; studioUrl: string }>('/ingestions', {
