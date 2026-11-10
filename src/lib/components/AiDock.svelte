@@ -11,7 +11,7 @@
 
 <script lang="ts">
 	import { ChoiceList, Icon, Kbd, Orb, PromptInput, Tile } from '@latitudelabs/design-system';
-	import type { ComponentProps } from 'svelte';
+	import type { ComponentProps, Snippet } from 'svelte';
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { loadOrbVariant, orbVariant } from '#lib/orb-variant.svelte.js';
@@ -44,6 +44,8 @@
 		/** The conversation so far, oldest first, for the expanded layout (see transcript.ts). */
 		messages?: TranscriptMessage[];
 		onsubmit: (message: string) => void;
+		/** Centered only: shown in place of the input and choices, for a scripted moment (the intro, see intro.ts). */
+		below?: Snippet;
 	};
 	let {
 		reply,
@@ -59,7 +61,8 @@
 		inline = false,
 		mode = $bindable('default'),
 		messages = [],
-		onsubmit
+		onsubmit,
+		below
 	}: Props = $props();
 
 	let input = $state<HTMLTextAreaElement | null>(null);
@@ -478,7 +481,11 @@
 			label="Lumi"
 		/>
 		<div class="text-center text-heading" aria-live="polite">{@render message()}</div>
-		<div class="w-full max-w-140">{@render prompt()}</div>
+		{#if below}
+			{@render below()}
+		{:else}
+			<div class="w-full max-w-140">{@render prompt()}</div>
+		{/if}
 	</div>
 {:else}
 	<!-- Docked: one layout for all three sizes (see the script). The values that differ between sizes are set inline and

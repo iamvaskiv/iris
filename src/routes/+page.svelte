@@ -9,7 +9,7 @@
 	import { onMount } from 'svelte';
 	import { isOnboarding, markIntroSeen } from '#lib/onboarding.js';
 	import IntroScene from '#lib/components/IntroScene.svelte';
-	import { INTRO_PAUSE, INTRO_STEPS, SKIP } from '#lib/intro.js';
+	import { INTRO_PAUSE, INTRO_STEPS } from '#lib/intro.js';
 	import {
 		markWelcomed,
 		maybeIntro,
@@ -41,16 +41,25 @@
 		if (maybeWelcome() && !data.onboarding) invalidateAll();
 	}
 
-	/** An answer to one of the intro's steps: Lumi "thinks" for a moment, like a real reply, then says the next line. */
-	async function answerIntro(message: string) {
-		const step = workspaceChat.introStep!;
-		const next = step + 1;
-		if (message === SKIP || next >= INTRO_STEPS.length) return endIntro();
-		thinking = true;
-		workspaceChat.choices = [];
-		await new Promise((r) => setTimeout(r, INTRO_PAUSE));
-		thinking = false;
-		if (workspaceChat.introStep === step) showIntroStep(next);
+	/** Moves through the intro: Lumi "thinks" for a moment before each next line, like a real reply; Back is instant. */
+	async function goIntro(to: number) {
+		const from = workspaceChat.introStep;
+		if (from === null || thinking || to < 0) return;
+		if (to >= INTRO_STEPS.length) return endIntro();
+		if (to > from) {
+			thinking = true;
+			await new Promise((r) => setTimeout(r, INTRO_PAUSE));
+			thinking = false;
+			if (workspaceChat.introStep !== from) return;
+		}
+		showIntroStep(to);
+	}
+
+	function introKeys(e: KeyboardEvent) {
+		if (workspaceChat.introStep === null || e.defaultPrevented) return;
+		if (e.key === 'ArrowRight') goIntro(workspaceChat.introStep + 1);
+		else if (e.key === 'ArrowLeft') goIntro(workspaceChat.introStep - 1);
+		else if (e.key === 'Escape') endIntro();
 	}
 
 	/** What Iris is for, offered above the input until the conversation starts. */
@@ -85,14 +94,6 @@
 
 	/** Chat at the projects level: quick answers above the input; the assistant creates/opens projects only when asked. */
 	async function send(message: string) {
-		if (workspaceChat.introStep !== null) {
-			// One of the intro's answers; anything else typed ends it and goes to Lumi as usual.
-			if (INTRO_STEPS[workspaceChat.introStep].choices.includes(message))
-				return answerIntro(message);
-			markIntroSeen();
-			introEnded = true;
-			Object.assign(workspaceChat, { introStep: null, reply: '', choices: [] });
-		}
 		markWelcomed();
 		// The welcome's first two answers go straight where they say, without a round trip to Lumi.
 		if (message === WELCOME.example) {
@@ -135,6 +136,39 @@
 
 <svelte:head><title>Projects · Iris</title></svelte:head>
 
+<svelte:window onkeydown={introKeys} />
+
+<!-- The intro is scripted: in place of Lumi's input, what she's describing and the way through it. Arrow keys and
+     Escape work too. -->
+{#snippet introControls()}
+	{#if introStep !== null}
+		<div class="flex w-full flex-col items-center gap-6">
+			<IntroScene step={introStep} />
+			<div class="flex items-center gap-2" aria-hidden="true">
+				{#each INTRO_STEPS as _, i (i)}
+					<span
+						class={[
+							'h-2 rounded-full transition-all duration-300',
+							i === introStep ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/40'
+						]}
+					></span>
+				{/each}
+			</div>
+			<p class="sr-only" aria-live="polite">Step {introStep + 1} of {INTRO_STEPS.length}</p>
+			<div class="flex items-center gap-2">
+				{#if introStep > 0}
+					<Button variant="ghost" onclick={() => goIntro(introStep - 1)}>Back</Button>
+				{:else}
+					<Button variant="ghost" onclick={endIntro}>Skip</Button>
+				{/if}
+				<Button disabled={thinking} onclick={() => goIntro(introStep + 1)}
+					>{introStep === INTRO_STEPS.length - 1 ? 'Get started' : 'Next'}</Button
+				>
+			</div>
+		</div>
+	{/if}
+{/snippet}
+
 <div
 	class="min-h-dvh bg-background"
 	role="region"
@@ -166,15 +200,11 @@
 				{error}
 				bind:draft
 				onsubmit={send}
+				below={introStep === null ? undefined : introControls}
 			/>
 		</section>
 
-		{#if introStep !== null}
-			<!-- What Lumi is describing, in a small looping scene. -->
-			<section class="flex justify-center" aria-label="How Iris works">
-				<IntroScene step={introStep} />
-			</section>
-		{:else if !tilesHidden}
+		{#if !tilesHidden}
 			<section class="flex flex-col gap-4" aria-labelledby="projects-title">
 				<h1 id="projects-title" class="text-center text-title text-muted-foreground">
 					Previously on Lumiere

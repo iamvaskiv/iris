@@ -4,7 +4,6 @@
 	import { ChartColumn, Users, Video } from '@latitudelabs/design-system/icons';
 	import AiDock from '#lib/components/AiDock.svelte';
 	import { WELCOME } from '#lib/workspace-chat.svelte.js';
-	import { INTRO_STEPS } from '#lib/intro.js';
 
 	const { Story } = defineMeta({
 		title: 'Lumi/Dock',
@@ -148,17 +147,5 @@ typed. Messages sent here are only logged.`
 <Story
 	name="Centred, welcome"
 	args={{ centered: true, inline: true, reply: WELCOME.reply, choices: WELCOME.choices }}
-	template={page}
-/>
-
-<!-- "How Iris works", step one: Lumi's intro is scripted through the dock itself (see intro.ts). -->
-<Story
-	name="Centred, intro"
-	args={{
-		centered: true,
-		inline: true,
-		reply: INTRO_STEPS[0].reply,
-		choices: INTRO_STEPS[0].choices
-	}}
 	template={page}
 />

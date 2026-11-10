@@ -19,7 +19,7 @@ export function showIntroStep(step: number) {
 	Object.assign(workspaceChat, {
 		introStep: step,
 		reply: INTRO_STEPS[step].reply,
-		choices: INTRO_STEPS[step].choices
+		choices: []
 	});
 }
 
