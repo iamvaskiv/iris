@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Card, Popover, Progress, buttonVariants, cn } from '@latitudelabs/design-system';
+	import { Button, Card, Popover, buttonVariants, cn } from '@latitudelabs/design-system';
 	import { CircleCheck, Icon } from '@latitudelabs/design-system/icons';
 	import { checklist, dismissChecklist, STEPS, type Checklist } from '#lib/checklist.svelte.js';
 	import { newProject } from '#lib/new-project.js';
@@ -77,10 +77,8 @@
 				<Card.Title id="getting-started-title"
 					>{allDone ? "You're all set" : 'Getting started'}</Card.Title
 				>
-				<Card.Description>{doneCount} of {STEPS.length} done</Card.Description>
 			</Card.Header>
 			<Card.Content class="flex flex-col gap-4">
-				<Progress value={doneCount} max={STEPS.length} aria-label="Getting started progress" />
 				{#if allDone}{@render finished()}{:else}{@render list()}{/if}
 			</Card.Content>
 		</Card.Root>
@@ -93,10 +91,7 @@
 				<span class="text-muted-foreground">{doneCount}/{STEPS.length}</span>
 			</Popover.Trigger>
 			<Popover.Content align="end" class="flex w-80 flex-col gap-4" aria-label="Getting started">
-				<div class="flex flex-col gap-2">
-					<p class="text-title">Getting started</p>
-					<Progress value={doneCount} max={STEPS.length} aria-label="Getting started progress" />
-				</div>
+				<p class="text-title">Getting started</p>
 				{#if allDone}{@render finished()}{:else}{@render list()}{/if}
 			</Popover.Content>
 		</Popover.Root>

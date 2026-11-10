@@ -12,7 +12,8 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   and offers three first steps: **Show me an example**, **Upload my own video** (opens a new project to drop it into)
   and **What can you do?** Any answer or message ends it; it's remembered per device.
 - **Getting started checklist**: five steps from your first video to viewer feedback (upload your first video,
-  review the analysed video, ask a question about it, start a study, review viewer feedback). It's the first tile on
+  review the analysed video, ask a question about it, start a study, review viewer feedback), with no count or
+  progress bar beside them. It's the first tile on
   the projects page, with **Start a project** on the first step, and a pill at the top right of every project page
   ("Next: … 2/5") that opens the whole list. Steps tick off by themselves as you do them in your own projects (the
   example doesn't count). Once all five are done, **Hide checklist** removes it; restarting onboarding brings it back
