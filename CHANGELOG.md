@@ -96,6 +96,16 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 **Project page (experimental)**
 
+- **A map of the cards**: in place of each lane's ‹ 1/2 › arrows, a small map at the top left shows every card as a
+  tiny card in its whole proportions (all at one scale), a row per lane. The card in focus is white and raised, at full
+  size, the others one grey and smaller; hover one for its name, click it to go there. Under it, bird's eye as a grey
+  icon button (zoom out to see everything, zoom in to come back). The cards now start just right of the map, so the
+  left margin is only as wide as the map needs, and stays put as focus moves.
+- **Cards scrolled past blur away**: a card that slides left past the lanes' margin fades behind the same progressive
+  blur as the header (strongest at the window's edge, clear by the cards), instead of showing sharp behind the map.
+- **Lane titles above their cards**: each lane's name now sits just above its cards, in line with their left edge,
+  in small faint grey capitals, instead of in a column beside them (bird's eye keeps them beside).
+
 - **Next steps above Lumi's dock**: a lane's suggested next steps no longer sit beside its last card (which was
   narrowed to make room, so every card now keeps its full width). The focused lane's steps are a row of slides just
   above Lumi's input and as wide as it, one step each on one line, scrolling sideways (the mouse wheel too) and snapping to each; the row's edges

@@ -3,7 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { Button, Dialog, buttonVariants } from '@latitudelabs/design-system';
-	import { ChevronLeft, ChevronRight, Icon, X } from '@latitudelabs/design-system/icons';
+	import { ChevronLeft, Icon, X } from '@latitudelabs/design-system/icons';
 	import { page } from '$app/state';
 	import { beforeNavigate, replaceState } from '$app/navigation';
 	import { endOnboarding, markIntroSeen } from '#lib/onboarding.js';
@@ -16,7 +16,9 @@
 	import AiDock, { timeOfDayGreeting, type DockMode } from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import BrandButton from '#lib/components/BrandButton.svelte';
-	import BirdsEyeIcon from '#lib/components/BirdsEyeIcon.svelte';
+	import ZoomIcon from '#lib/components/ZoomIcon.svelte';
+	import ProgressiveBlur from '#lib/components/ProgressiveBlur.svelte';
+	import PageMap from '#lib/components/PageMap.svelte';
 	import CardPagination from '#lib/components/CardPagination.svelte';
 	import AssetsSidebar from '#lib/components/AssetsSidebar.svelte';
 	import { cardUses } from '#lib/assets.js';
@@ -436,10 +438,17 @@
 	let laneCurrent = $state<Record<string, string>>({});
 	const laneEls: Record<string, HTMLElement> = {};
 	const rowEls: Record<string, HTMLElement> = {};
-	const LANE_TOP = 16; // below the header, like full-size cards
+	const LANE_TOP = 48; // below the header: room for the lane's title above its cards
 	const LANE_GAP = 48; // from a lane's cards to the next lane's, with a line halfway
 	const LANE_PEEK = 112; // kept at the bottom of the view for the next lane (LANE_GAP of it before the lane starts)
-	const LANE_TITLE = 224; // the lane titles' column (sm:w-56 below): room for a name of a few words on one line
+	const LANE_TITLE = 224; // bird's eye: the lane titles' column beside the cards (sm:w-56 below)
+	const MAP_INSET = 24; // the card map's distance from the window's left edge, and from the cards
+	/** The card map's width (top left, beside the lanes): the lanes' left gutter follows it. */
+	let mapWidth = $state(0);
+	/** Bird's eye view: every card at once, scaled down (see setBirdsEye). */
+	let birdsEye = $state(false);
+	/** The card map shows with lanes (not in bird's eye), once there's more than one card. */
+	const mapShown = $derived(lanesOn && !birdsEye && laneList.length > 0 && project.cards.length > 1);
 	const ROW_PAD = 8; // inside a lane's row, so the cards' delete buttons and shadows aren't clipped
 	const CARD_GAP = 40;
 	const WHEEL_STEP = 150; // wheel travel (px) before moving on to the next lane or card
@@ -452,7 +461,9 @@
 	 * scrolled past is cut at the window's edge, as on the right.
 	 */
 	const sideTitles = new MediaQuery('min-width: 640px');
-	const rowStart = $derived((sideTitles.current ? LANE_TITLE : 0) + ROW_PAD);
+	const rowStart = $derived(
+		(sideTitles.current ? (mapShown ? 2 * MAP_INSET + mapWidth : MAP_INSET) : 0) + ROW_PAD
+	);
 
 	const laneOf = (key: string | undefined) =>
 		laneList.find((l) => l.slots.some((s) => s.key === key));
@@ -639,7 +650,6 @@
 	// stays the list size. Cards fly between their place in the list and in the grid (FLIP: measure before and after
 	// the switch, then animate the difference away). Click a card, or press Escape, to go back to it.
 
-	let birdsEye = $state(false);
 	let birdScale = $state(0.3);
 	/** While cards fly back to the list: the list's "out of focus" shrink waits, so they land exactly. */
 	let flying = $state(false);
@@ -923,7 +933,6 @@
 			>
 				{#each laneList as lane (lane.key)}
 					{@const current = currentOf(lane)}
-					{@const at = lane.slots.indexOf(current)}
 					{@const last = lane.slots.at(-1)!}
 					<!-- A click anywhere in a lane that isn't the focused one (its title, the room beside its cards) brings it
 					     in, at its current card; a click on one of its cards brings in that card instead (handled there
@@ -940,41 +949,22 @@
 							if (!birdsEye && laneOf(focusedSlot) !== lane) go(current.key);
 						}}
 					>
-						<!-- Over the row's start (except in bird's eye): clicks and the wheel pass through to a card under it,
-						     all but the arrows. -->
+						<!-- The lane's title: above its cards, in line with their left edge (in bird's eye, beside them). -->
 						<div
 							class={[
-								'flex shrink-0 flex-col gap-2 px-4 sm:w-56 sm:pt-(--row-pad) sm:pr-4 sm:pl-6',
-								!birdsEye && 'sm:pointer-events-none sm:absolute sm:left-0 sm:z-10'
+								'flex shrink-0 flex-col gap-2',
+								birdsEye
+									? 'px-4 sm:w-56 sm:pt-(--row-pad) sm:pr-4 sm:pl-6'
+									: 'pointer-events-none absolute top-4 z-10'
 							]}
 							style:--row-pad="{ROW_PAD}px"
+							style:left={birdsEye ? undefined : `${rowStart}px`}
 						>
-							<h2 class="text-body font-medium">{lane.title}</h2>
-							{#if lane.slots.length > 1 && !birdsEye}
-								<div class="pointer-events-auto flex items-center gap-1">
-									<Button
-										variant="ghost"
-										size="icon-sm"
-										aria-label="Previous card in {lane.title}"
-										disabled={at <= 0}
-										onclick={() => stepCard(lane, -1)}
-									>
-										<ChevronLeft />
-									</Button>
-									<span class="text-caption text-muted-foreground tabular-nums"
-										>{at + 1}/{lane.slots.length}</span
-									>
-									<Button
-										variant="ghost"
-										size="icon-sm"
-										aria-label="Next card in {lane.title}"
-										disabled={at >= lane.slots.length - 1}
-										onclick={() => stepCard(lane, 1)}
-									>
-										<ChevronRight />
-									</Button>
-								</div>
-							{/if}
+							<h2
+								class="text-caption font-medium tracking-wider text-muted-foreground/70 uppercase"
+							>
+								{lane.title}
+							</h2>
 						</div>
 						<div
 							bind:this={rowEls[lane.key]}
@@ -1201,35 +1191,47 @@
 	{/if}
 
 	{#if project.cards.length > 1 && introStep === null}
-		<!-- Bird's eye toggle: bottom of the left safe zone, level with the bottom of Lumi's dock. With lanes the left side
-		     holds their titles (the next lane's peeks in there), so it moves to the right, clear of the scrollbar. -->
+		<!-- The lanes' left margin: cards scrolled past it blur away towards the window's edge, as under the header. -->
+		{#if mapShown}
+			<ProgressiveBlur from="left" class="right-auto z-10" style="width: {rowStart}px" />
+		{/if}
+		<!-- Top left, level with the lane's title: with lanes, a map of the cards to get around (the lanes' left gutter
+		     is as wide as it), and under it the bird's eye toggle. In bird's eye (titles beside the cards), just the
+		     toggle, bottom left. -->
 		<div
-			class={['absolute hidden w-20 justify-center sm:flex', !lanesOn && 'left-0']}
-			style:right={lanesOn ? `${scrollbarWidth}px` : undefined}
-			style:bottom="{DOCK_GAP}px"
+			bind:clientWidth={mapWidth}
+			class="absolute z-20 hidden flex-col items-start gap-2 sm:flex"
+			style:left="{MAP_INSET}px"
+			style:top={mapShown ? `${HEADER + 16}px` : undefined}
+			style:bottom={mapShown ? undefined : `${DOCK_GAP}px`}
 		>
+			{#if mapShown}
+				<PageMap
+					lanes={laneList}
+					focused={focusedSlot}
+					size={(slot) => ({
+						width: cardWidths[slot.key] ?? 0,
+						height: cardHeights[slot.key] ?? 0
+					})}
+					{laneHeight}
+					onselect={go}
+				/>
+			{/if}
 			<TooltipGroup>
-				<Tooltip
-					text={birdsEye ? 'Back to cards' : "Bird's eye"}
-					side={lanesOn ? 'left' : 'right'}
-					describes={false}
-				>
+				<Tooltip text={birdsEye ? 'Back to cards' : "Bird's eye"} side="right" describes={false}>
 					{#snippet children({ props })}
-						<!-- Just the icon, no button surface: faint at rest, full strength on hover, focus or while the view is
-						     on. -->
-						<button
+						<!-- An icon button: zoom out to bird's eye, zoom in to come back. -->
+						<Button
 							{...props}
-							type="button"
-							class={[
-								'flex rounded-sm transition-colors outline-none hover:text-foreground focus-visible:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50',
-								birdsEye ? 'text-foreground' : 'text-foreground/40'
-							]}
-							aria-label="Bird's eye"
+							variant="ghost"
+							size="icon-sm"
+							class="-ml-1.5 text-muted-foreground"
+							aria-label={birdsEye ? 'Back to cards' : "Bird's eye"}
 							aria-pressed={birdsEye}
 							onclick={() => setBirdsEye(!birdsEye)}
 						>
-							<BirdsEyeIcon class="size-8" />
-						</button>
+							<ZoomIcon zoom={birdsEye ? 'in' : 'out'} />
+						</Button>
 					{/snippet}
 				</Tooltip>
 			</TooltipGroup>
