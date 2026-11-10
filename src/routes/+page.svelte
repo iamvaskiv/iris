@@ -6,7 +6,7 @@
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import CardPreview from '#lib/components/CardPreview.svelte';
 	import GettingStarted from '#lib/components/GettingStarted.svelte';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
 	import { isOnboarding, markTourSeen } from '#lib/onboarding.js';
 	import TourScene from '#lib/components/TourScene.svelte';
 	import { TOUR_DONE, TOUR_STEPS } from '#lib/intro.js';
@@ -47,6 +47,44 @@
 		if (to >= TOUR_STEPS.length) return endTour();
 		showTourStep(to);
 	}
+
+	// The tour's entrance, on its first screen: brand-coloured blobs drift in from the corners and meet where Lumi's orb
+	// sits; at that peak she appears, then her line types out, then the scene, the button, the dots and Skip arrive one
+	// after another. Not when coming Back to the first screen, and not with reduced motion.
+	const ENTRANCE = { orb: 1400, speak: 1750, done: 4600 };
+	let entrance = $state(false);
+	/** Before the tour starts on a first visit (server render, until mount): Lumi waits out of sight for her entrance. */
+	const pending = $derived(data.tour && !tourEnded && workspaceChat.tourStep === null);
+	let spoken = $state(true);
+	/** Where Lumi's orb is (the blobs' meeting point), in px from the viewport's top left. */
+	let meet = $state({ x: 0, y: 0 });
+	let timers: ReturnType<typeof setTimeout>[] = [];
+	let lastTourStep: number | null = null;
+	$effect(() => {
+		const step = workspaceChat.tourStep;
+		if (step === 0 && lastTourStep === null) startEntrance();
+		if (step !== 0 && entrance) stopEntrance();
+		lastTourStep = step;
+	});
+	async function startEntrance() {
+		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		stopEntrance();
+		entrance = true;
+		spoken = false;
+		await tick();
+		const orb = document.querySelector('[data-dock] > :first-child')?.getBoundingClientRect();
+		if (orb) meet = { x: orb.left + orb.width / 2, y: orb.top + orb.height / 2 };
+		timers = [
+			setTimeout(() => (spoken = true), ENTRANCE.speak),
+			setTimeout(() => (entrance = false), ENTRANCE.done)
+		];
+	}
+	function stopEntrance() {
+		timers.forEach(clearTimeout);
+		entrance = false;
+		spoken = true;
+	}
+	onDestroy(stopEntrance);
 
 	function tourKeys(e: KeyboardEvent) {
 		if (workspaceChat.tourStep === null || e.defaultPrevented) return;
@@ -136,9 +174,11 @@
 {#snippet tourControls()}
 	{#if tourStep !== null}
 		<div class="flex w-full flex-col items-center gap-6">
-			<TourScene step={tourStep} />
+			<div class={['flex w-full justify-center', entrance && 'rise rise-scene']}>
+				<TourScene step={tourStep} />
+			</div>
 			<p class="sr-only" aria-live="polite">Step {tourStep + 1} of {TOUR_STEPS.length}</p>
-			<div class="flex items-center gap-2">
+			<div class={['flex items-center gap-2', entrance && 'rise rise-buttons']}>
 				{#if tourStep > 0}
 					<Button variant="ghost" onclick={() => goTour(tourStep - 1)}>Back</Button>
 				{/if}
@@ -153,7 +193,10 @@
 <!-- Where we are in it, at the bottom of the screen (outside the dock, whose transform would hold it). -->
 {#if tourStep !== null}
 	<div
-		class="fixed bottom-8 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2"
+		class={[
+			'fixed bottom-8 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2',
+			entrance && 'rise rise-last'
+		]}
 		aria-hidden="true"
 	>
 		{#each TOUR_STEPS as _, i (i)}
@@ -168,7 +211,11 @@
 {/if}
 
 <div
-	class="min-h-dvh bg-background"
+	class={[
+		'relative isolate min-h-dvh bg-background',
+		entrance && 'entrance',
+		pending && 'entrance-pending'
+	]}
 	role="region"
 	aria-label="Projects"
 	ondragenter={(e) => carriesFiles(e) && dragDepth++}
@@ -176,6 +223,24 @@
 	ondragover={(e) => carriesFiles(e) && e.preventDefault()}
 	ondrop={drop}
 >
+	{#if entrance}
+		<!-- The entrance's blobs: from the corners to Lumi's orb, where they dissolve as she appears. -->
+		<div
+			class="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+			style:--meet-x="{meet.x}px"
+			style:--meet-y="{meet.y}px"
+			aria-hidden="true"
+		>
+			{#each [{ colour: 'bg-brand-3', x: '8%', y: '10%', delay: 0 }, { colour: 'bg-brand-2', x: '92%', y: '18%', delay: 80 }, { colour: 'bg-brand-4', x: '85%', y: '92%', delay: 160 }, { colour: 'bg-brand-1', x: '12%', y: '85%', delay: 120 }] as b (b.colour)}
+				<div
+					class={['converge absolute size-[50vmax] rounded-full', b.colour]}
+					style:--start-x={b.x}
+					style:--start-y={b.y}
+					style:animation-delay="{b.delay}ms"
+				></div>
+			{/each}
+		</div>
+	{/if}
 	{#if dragDepth > 0}
 		<div
 			class="pointer-events-none fixed inset-4 z-20 flex items-center justify-center rounded-xl bg-card/90 shadow-raised"
@@ -186,7 +251,7 @@
 	<!-- During the tour, nothing but Lumi and a way out: Skip where the nav usually is. -->
 	{#if tilesHidden}
 		<!-- As tall as the header, so Lumi stays put when it comes back. -->
-		<div class="flex h-30 items-center justify-end px-8">
+		<div class={['flex h-30 items-center justify-end px-8', entrance && 'rise rise-last']}>
 			<Button variant="ghost" onclick={endTour}>Skip</Button>
 		</div>
 	{:else}
@@ -199,7 +264,8 @@
 			<AiDock
 				centered
 				inline
-				reply={workspaceChat.reply}
+				reply={spoken ? workspaceChat.reply : ''}
+				greeting={spoken && !pending ? undefined : ' '}
 				choices={workspaceChat.choices}
 				{suggestions}
 				{thinking}
@@ -293,6 +359,96 @@
 </div>
 
 <style>
+	/* The tour's entrance (see startEntrance). The blobs travel from their corner to Lumi's orb, shrinking as they go,
+	   and dissolve there as she appears (ENTRANCE.orb, ~1.4s). */
+	.converge {
+		translate: -50% -50%;
+		/* Washes of colour rather than shapes: far softer than blur-3xl. Scaling down shrinks the blur with them. */
+		filter: blur(120px);
+		animation: converge 1.9s cubic-bezier(0.55, 0, 0.35, 1) both;
+		--peak: 0.5;
+	}
+	:global(.dark) .converge {
+		--peak: 0.8;
+	}
+	@keyframes converge {
+		0% {
+			left: var(--start-x);
+			top: var(--start-y);
+			scale: 1;
+			opacity: 0;
+		}
+		25% {
+			opacity: var(--peak);
+		}
+		72% {
+			left: var(--meet-x);
+			top: var(--meet-y);
+			scale: 0.22;
+			opacity: var(--peak);
+		}
+		100% {
+			left: var(--meet-x);
+			top: var(--meet-y);
+			scale: 0.05;
+			opacity: 0;
+		}
+	}
+	.entrance-pending :global([data-dock] > :first-child) {
+		opacity: 0;
+	}
+	/* Lumi forms where they meet: from a blur to her orb, with a little overshoot. */
+	.entrance :global([data-dock] > :first-child) {
+		animation: born 0.9s 1.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+	}
+	@keyframes born {
+		0% {
+			opacity: 0;
+			scale: 0.3;
+			filter: blur(12px);
+		}
+		60% {
+			opacity: 1;
+			scale: 1.12;
+			filter: blur(0);
+		}
+		100% {
+			scale: 1;
+		}
+	}
+	/* Then, after her line has typed out: the scene, the button, and last the dots and Skip. */
+	.rise {
+		animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+	}
+	.rise-scene {
+		animation-delay: 2.9s;
+	}
+	.rise-buttons {
+		animation-delay: 3.3s;
+	}
+	.rise-last {
+		animation-delay: 3.6s;
+	}
+	@keyframes rise {
+		from {
+			opacity: 0;
+			translate: 0 12px;
+		}
+	}
+	/* The dots are centred with a transform: keep it while they rise. */
+	.rise-last.fixed {
+		animation-name: rise-centred;
+	}
+	@keyframes rise-centred {
+		from {
+			opacity: 0;
+			translate: -50% 12px;
+		}
+		to {
+			translate: -50% 0;
+		}
+	}
+
 	/* The demo project glows in the brand colours, to stand out from the person's own projects. */
 	.demo {
 		box-shadow:
