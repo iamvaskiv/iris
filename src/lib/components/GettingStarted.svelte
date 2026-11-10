@@ -146,6 +146,10 @@
 		--secondary: color-mix(in oklab, var(--brand-4) 10%, transparent);
 		--secondary-foreground: var(--brand-4);
 		--border: color-mix(in oklab, var(--brand-4) 25%, transparent);
+		/* A crisper edge than other cards: a tinted outline (drawn over the colours) and a stronger hairline. */
+		--elevation-hairline: color-mix(in oklab, var(--brand-2) 30%, transparent);
+		outline: 1px solid color-mix(in oklab, var(--brand-4) 22%, transparent);
+		outline-offset: -1px;
 	}
 	.blob {
 		opacity: 0.45;
@@ -158,6 +162,8 @@
 		--secondary: color-mix(in oklab, var(--neutral-0) 15%, transparent);
 		--secondary-foreground: var(--neutral-0);
 		--border: color-mix(in oklab, var(--neutral-0) 40%, transparent);
+		--elevation-hairline: color-mix(in oklab, var(--brand-2) 45%, transparent);
+		outline-color: color-mix(in oklab, var(--neutral-0) 25%, transparent);
 	}
 	:global(.dark) .blob {
 		opacity: 1;
