@@ -5,6 +5,7 @@
 	import AiDock from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import CardPreview from '#lib/components/CardPreview.svelte';
+	import GettingStarted from '#lib/components/GettingStarted.svelte';
 	import { onMount } from 'svelte';
 	import { isOnboarding } from '#lib/onboarding.js';
 	import {
@@ -134,6 +135,8 @@
 				Previously on Lumiere
 			</h1>
 			<div class="grid grid-cols-1 gap-8 sm:grid-cols-2">
+				<!-- First, until it's hidden: the steps from someone's first video to viewer feedback. -->
+				<GettingStarted variant="tile" />
 				{#each data.projects as project (project.id)}
 					<a
 						href="/projects/{project.id}"

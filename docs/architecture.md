@@ -78,7 +78,36 @@ shows the welcome again.
 
 The welcome (or a restart) also starts the **onboarding sequence**, kept in the `iris_onboarding` cookie
 (`src/lib/onboarding.ts`) so the server can filter: while it's on, the projects page and Lumi's project list hold only
-the example. Leaving the example, or opening any other project (a new draft included), ends it. Its first two answers
+the example. Leaving the example, or opening any other project (a new draft included), ends it.
+
+The **Getting started** checklist (`src/lib/checklist.svelte.ts`, `GettingStarted.svelte`) is the first tile on the
+projects page and a pill in the project page's header. It's kept in the `iris_checklist` cookie, read by the root
+layout's server load so the page renders it as the browser has it. Steps tick off on the project page, never in the
+example:
+
+````mermaid
+---
+config:
+  look: classic
+---
+flowchart LR
+    subgraph page["Project page (not the example)"]
+        cards["Cards on screen"]
+        dock["Message typed or picked<br/>in Lumi's dock"]
+    end
+    cards -- "upload card" --> s1["1 · Upload your first video"]
+    cards -- "video card" --> s2["2 · Review the analysed video"]
+    dock -- "project has a video card" --> s3["3 · Ask a question about it"]
+    cards -- "study card" --> s4["4 · Start a study"]
+    cards -- "insights, viewers or sources card,<br/>or a study with sample results" --> s5["5 · Review viewer feedback"]
+    s1 & s2 & s3 & s4 & s5 --> cookie[("iris_checklist cookie")]
+    cookie --> tile["Tile on the projects page"] & pill["Pill in the project header"]
+
+    classDef ui stroke:#4c7dff,fill:#4c7dff33
+    classDef storage stroke:#918b98,fill:#918b9833
+    class page,cards,dock,tile,pill,s1,s2,s3,s4,s5 ui
+    class cookie storage
+``` Its first two answers
 go straight where they say; anything else is a normal question to Lumi. The example project is one shared project
 (`id: example`, `src/lib/server/example.ts`) built from the cards captured for the Storybook and saved on its first
 visit or on the projects page whenever it's missing, with Lumi's intro already in its conversation.
@@ -114,7 +143,7 @@ flowchart TB
     class on,off ui
     class lumi ai
     class store storage
-```
+````
 
 ## How a question flows
 

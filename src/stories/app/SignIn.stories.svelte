@@ -18,6 +18,12 @@ nothing here.`
 	});
 </script>
 
-<Story name="Default" args={{ data: {}, form: null, params: {} }} />
+<Story
+	name="Default"
+	args={{ data: { checklist: { done: [], dismissed: false } }, form: null, params: {} }}
+/>
 
-<Story name="Wrong password" args={{ data: {}, form: { wrong: true }, params: {} }} />
+<Story
+	name="Wrong password"
+	args={{ data: { checklist: { done: [], dismissed: false } }, form: { wrong: true }, params: {} }}
+/>

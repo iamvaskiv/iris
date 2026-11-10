@@ -7,6 +7,9 @@
 	import { page } from '$app/state';
 	import { beforeNavigate, replaceState } from '$app/navigation';
 	import { endOnboarding } from '#lib/onboarding.js';
+	import { completeSteps, type StepId } from '#lib/checklist.svelte.js';
+	import { isFielding } from '#lib/cards/study/fielding.js';
+	import GettingStarted from '#lib/components/GettingStarted.svelte';
 	import { resolve } from '$app/paths';
 	import AiDock, { timeOfDayGreeting, type DockMode } from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
@@ -37,6 +40,24 @@
 	$effect(() => {
 		if (!data.project.example) endOnboarding();
 	});
+	// "Getting started" steps tick off from what's in the person's own projects (the example doesn't count).
+	$effect(() => {
+		if (project.example) return;
+		const steps: StepId[] = [];
+		for (const c of project.cards) {
+			if (c.type === 'upload') steps.push('upload');
+			if (c.type === 'video') steps.push('review');
+			if (c.type === 'study') steps.push('study');
+			if (['insights', 'viewers', 'sources'].includes(c.type) || isFielding(c))
+				steps.push('feedback');
+		}
+		completeSteps(...steps);
+	});
+	/** What the person sends Lumi themself (not the automatic message when an upload finishes). */
+	function ask(message: string) {
+		if (!project.example && project.cards.some((c) => c.type === 'video')) completeSteps('ask');
+		return send(message);
+	}
 	beforeNavigate((nav) => {
 		if (data.project.example && nav.to?.url.pathname !== page.url.pathname) endOnboarding();
 	});
@@ -824,10 +845,9 @@
 	>
 		<!-- Sticky inside the scroll area (so the scrollbar stays outside the blur); the negative margin lets
 		     cards scroll up underneath it instead of the header taking space in the flow. -->
-		<AppHeader
-			class="-mb-25"
-			crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]}
-		/>
+		<AppHeader class="-mb-25" crumbs={[{ label: 'Projects', href: '/' }, { label: project.name }]}>
+			{#snippet end()}<GettingStarted variant="pill" />{/snippet}
+		</AppHeader>
 		{#if project.cards.length > 0 && lanesOn}
 			<!-- Lanes (experimental): one per topic, its title (and arrows) on the left, its cards in a row that scrolls
 			     sideways. In bird's eye view each lane's cards wrap beside its title, from the top left. -->
@@ -1182,7 +1202,7 @@
 		bind:mode={dockMode}
 		{messages}
 		bind:height={dockHeight}
-		onsubmit={send}
+		onsubmit={ask}
 	/>
 </div>
 

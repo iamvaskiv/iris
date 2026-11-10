@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import { Breadcrumb, cn, NavItem } from '@latitudelabs/design-system';
 	import Logo from './Logo.svelte';
@@ -8,7 +9,16 @@
 	 * Workspace pages (no `crumbs`): the logo on the left and the app nav, with the current page selected.
 	 * Inside a project: pass `crumbs` for "Projects / name" and no nav.
 	 */
-	let { crumbs, class: className }: { crumbs?: Crumb[]; class?: string } = $props();
+	let {
+		crumbs,
+		end,
+		class: className
+	}: {
+		crumbs?: Crumb[];
+		/** Inside a project: what sits on the right, where the nav is on workspace pages. */
+		end?: Snippet;
+		class?: string;
+	} = $props();
 
 	const nav = [
 		{ label: 'Projects', href: '/' },
@@ -66,6 +76,8 @@
 			{#each nav as item (item.label)}
 				<NavItem href={item.href} current={isCurrent(item.href)}>{item.label}</NavItem>
 			{/each}
+		{:else}
+			{@render end?.()}
 		{/if}
 	</nav>
 </header>
