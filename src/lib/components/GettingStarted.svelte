@@ -70,16 +70,26 @@
 
 {#if !state.dismissed}
 	{#if variant === 'tile'}
+		<!-- `dark` scopes the dark theme to the card: every role inside (text, hints, the button) turns light-on-dark,
+		     which reads on the brand colours in either theme. -->
 		<Card.Root
-			class={cn('relative isolate h-72 overflow-hidden', className)}
+			class={cn('getting-started dark relative isolate h-72 overflow-hidden bg-brand-4', className)}
 			aria-labelledby="getting-started-title"
 		>
-			<!-- A soft glow of the brand colours (the same as Lumi's orb) on the right, away from the text: onboarding
-			     is a brand moment. -->
+			<!-- The brand colours (Lumi's orb) across the whole card: onboarding is a brand moment. They drift while the
+			     card is hovered, and stop where they are when it isn't. -->
 			<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-				<div class="absolute -top-12 -right-8 size-44 rounded-full bg-brand-3/50 blur-3xl"></div>
-				<div class="absolute top-24 -right-16 size-48 rounded-full bg-brand-2/40 blur-3xl"></div>
-				<div class="absolute -right-4 -bottom-16 size-40 rounded-full bg-brand-4/40 blur-3xl"></div>
+				<div
+					class="blob blob-1 absolute -top-20 -left-12 size-64 rounded-full bg-brand-3 blur-3xl"
+				></div>
+				<div
+					class="blob blob-2 absolute -top-8 -right-16 size-64 rounded-full bg-brand-2 blur-3xl"
+				></div>
+				<div
+					class="blob blob-3 absolute -bottom-24 left-1/4 size-64 rounded-full bg-brand-1 blur-3xl"
+				></div>
+				<!-- A little depth under the text. -->
+				<div class="absolute inset-0 bg-gradient-to-r from-background/40 to-transparent"></div>
 			</div>
 			<Card.Header>
 				<Card.Title id="getting-started-title"
@@ -105,3 +115,49 @@
 		</Popover.Root>
 	{/if}
 {/if}
+
+<style>
+	.blob {
+		animation: 4s ease-in-out infinite alternate paused;
+		transition: scale 0.6s ease-out;
+	}
+	.blob-1 {
+		animation-name: drift-1;
+	}
+	.blob-2 {
+		animation-name: drift-2;
+		animation-duration: 5s;
+	}
+	.blob-3 {
+		animation-name: drift-3;
+		animation-duration: 3.5s;
+	}
+	:global(.getting-started:hover) .blob {
+		animation-play-state: running;
+		scale: 1.15;
+	}
+	@keyframes drift-1 {
+		to {
+			translate: 55% 35%;
+		}
+	}
+	@keyframes drift-2 {
+		to {
+			translate: -60% 45%;
+		}
+	}
+	@keyframes drift-3 {
+		to {
+			translate: 40% -55%;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.blob {
+			animation: none;
+			transition: none;
+		}
+		:global(.getting-started:hover) .blob {
+			scale: none;
+		}
+	}
+</style>
