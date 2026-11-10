@@ -8,14 +8,13 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 **Onboarding**
 
-- **How Iris works**: on your first visit (and after restarting onboarding), Lumi introduces herself and Iris in her
-  own dock on the projects page, before her welcome: her orb, her reply animation and a moment of "thinking" before
-  each line ("Hi, I'm Lumi. Ask me anything about your videos…", "I answer with cards…", "Ask a follow-up and I'll
-  update the card…"). Answer with her choices (**Tell me more**, **Go on**, **Got it**, or **Skip the intro**; number
-  keys work as usual), or type anything to ask her straight away. A small looping scene sits where the project tiles
-  go meanwhile: a question typing itself, cards popping in, a card updating instead of a second one appearing (still
-  with reduced motion). Shown once per browser. Her welcome then picks up from there: "Let's start with a video. Want
-  to see a demo first, or bring your own?"
+- **How Iris works**: on your first visit (and after restarting onboarding), three steps play in Lumi's own dock on
+  the projects page, before her welcome, with her orb, reply animation and a moment of "thinking" before each one:
+  **Ask Lumi anything**, **Lumi answers in cards** and **Cards keep up with you**, each with a line explaining it.
+  Answer with **Next**, **Skip** or (at the end) **Get started**; number keys work as usual, and typing anything asks
+  Lumi straight away. A small looping scene sits where the project tiles go meanwhile: a question typing itself, cards
+  popping in, a card updating instead of a second one appearing (still with reduced motion). Shown once per browser;
+  her welcome follows.
 - **Lumi's welcome**: the first time someone opens the projects page, Lumi says what she does (answers with cards)
   and offers three first steps: **Show me a demo**, **Upload my own video** (opens a new project to drop it into)
   and **What can you do?** Any answer or message ends it; it's remembered per device.

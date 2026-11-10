@@ -44,10 +44,10 @@ export type WorkspaceResponse = {
 /** Set once someone has answered Lumi's welcome (or chatted at all), so it isn't shown again on this device. */
 const WELCOMED = 'iris.welcomed';
 
-/** Lumi's welcome for someone new, right after her intro: a first step to pick. */
+/** Lumi's welcome for someone new: what she does, and a first step to pick. */
 export const WELCOME = {
-	// Lumi introduced herself in "How Iris works" just before, so this picks up from there.
-	reply: "Let's start with a video. Want to see a **demo** first, or bring your own?",
+	reply:
+		"Hi, I'm **Lumi**. Ask me about a video and I'll answer with cards: its scenes and characters, what viewers thought, side-by-side comparisons.\n\nWant to see a demo first?",
 	example: 'Show me a demo',
 	upload: 'Upload my own video',
 	choices: ['Show me a demo', 'Upload my own video', 'What can you do?']
