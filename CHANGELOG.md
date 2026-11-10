@@ -10,8 +10,8 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 - **First-visit tour**: on your first visit to the projects page (and after restarting onboarding), a scripted tour
   plays in Lumi's own dock, before her welcome, with nothing else on screen but **Skip** in the top-right corner. It
-  opens with an entrance: soft washes of the brand colours drift in from the corners and gather where Lumi sits, and
-  at that moment her orb forms there; then her line types out, and the scene, the button, the dots and Skip arrive one
+  opens with an entrance: soft washes of the brand colours slowly bloom at the edges of the screen, and at
+  their peak Lumi's orb appears as they all vanish at once; then her line types out, and the scene, the button, the dots and Skip arrive one
   after another (not with reduced motion, or when coming Back). Lumi says hello first (**Hey, I'm Lumi**: "Your video intelligence. I'll help you uncover insights about your videos, and
   so much more."), with a tile for each thing she does, then four steps in her own voice, each with a small looping
   scene (in soft brand tints) right under her line: **See what's in your

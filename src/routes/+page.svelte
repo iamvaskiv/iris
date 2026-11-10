@@ -6,7 +6,7 @@
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import CardPreview from '#lib/components/CardPreview.svelte';
 	import GettingStarted from '#lib/components/GettingStarted.svelte';
-	import { onDestroy, onMount, tick } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { isOnboarding, markTourSeen } from '#lib/onboarding.js';
 	import TourScene from '#lib/components/TourScene.svelte';
 	import { TOUR_DONE, TOUR_STEPS } from '#lib/intro.js';
@@ -48,16 +48,14 @@
 		showTourStep(to);
 	}
 
-	// The tour's entrance, on its first screen: brand-coloured blobs drift in from the corners and meet where Lumi's orb
-	// sits; at that peak she appears, then her line types out, then the scene, the button, the dots and Skip arrive one
-	// after another. Not when coming Back to the first screen, and not with reduced motion.
+	// The tour's entrance, on its first screen: brand-coloured blobs slowly bloom at the edges of the screen; at their
+	// peak Lumi appears and they all vanish at once; then her line types out, then the scene, the button, the dots and
+	// Skip arrive one after another. Not when coming Back to the first screen, and not with reduced motion.
 	const ENTRANCE = { orb: 1400, speak: 1750, done: 4600 };
 	let entrance = $state(false);
 	/** Before the tour starts on a first visit (server render, until mount): Lumi waits out of sight for her entrance. */
 	const pending = $derived(data.tour && !tourEnded && workspaceChat.tourStep === null);
 	let spoken = $state(true);
-	/** Where Lumi's orb is (the blobs' meeting point), in px from the viewport's top left. */
-	let meet = $state({ x: 0, y: 0 });
 	let timers: ReturnType<typeof setTimeout>[] = [];
 	let lastTourStep: number | null = null;
 	$effect(() => {
@@ -66,14 +64,11 @@
 		if (step !== 0 && entrance) stopEntrance();
 		lastTourStep = step;
 	});
-	async function startEntrance() {
+	function startEntrance() {
 		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 		stopEntrance();
 		entrance = true;
 		spoken = false;
-		await tick();
-		const orb = document.querySelector('[data-dock] > :first-child')?.getBoundingClientRect();
-		if (orb) meet = { x: orb.left + orb.width / 2, y: orb.top + orb.height / 2 };
 		timers = [
 			setTimeout(() => (spoken = true), ENTRANCE.speak),
 			setTimeout(() => (entrance = false), ENTRANCE.done)
@@ -224,19 +219,13 @@
 	ondrop={drop}
 >
 	{#if entrance}
-		<!-- The entrance's blobs: from the corners to Lumi's orb, where they dissolve as she appears. -->
-		<div
-			class="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
-			style:--meet-x="{meet.x}px"
-			style:--meet-y="{meet.y}px"
-			aria-hidden="true"
-		>
-			{#each [{ colour: 'bg-brand-3', x: '8%', y: '10%', delay: 0 }, { colour: 'bg-brand-2', x: '92%', y: '18%', delay: 80 }, { colour: 'bg-brand-4', x: '85%', y: '92%', delay: 160 }, { colour: 'bg-brand-1', x: '12%', y: '85%', delay: 120 }] as b (b.colour)}
+		<!-- The entrance's blobs: they bloom where they are, at the edges, and vanish together as Lumi appears. -->
+		<div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+			{#each [{ colour: 'bg-brand-3', x: '0%', y: '12%' }, { colour: 'bg-brand-2', x: '100%', y: '28%' }, { colour: 'bg-brand-4', x: '88%', y: '100%' }, { colour: 'bg-brand-1', x: '10%', y: '96%' }] as b (b.colour)}
 				<div
-					class={['converge absolute size-[50vmax] rounded-full', b.colour]}
-					style:--start-x={b.x}
-					style:--start-y={b.y}
-					style:animation-delay="{b.delay}ms"
+					class={['bloom absolute size-[50vmax] rounded-full', b.colour]}
+					style:left={b.x}
+					style:top={b.y}
 				></div>
 			{/each}
 		</div>
@@ -359,45 +348,36 @@
 </div>
 
 <style>
-	/* The tour's entrance (see startEntrance). The blobs travel from their corner to Lumi's orb, shrinking as they go,
-	   and dissolve there as she appears (ENTRANCE.orb, ~1.4s). */
-	.converge {
+	/* The tour's entrance (see startEntrance). The blobs slowly bloom in place at the edges; at their peak (ENTRANCE.orb,
+	   ~1.4s) Lumi appears and they all vanish at once. */
+	.bloom {
 		translate: -50% -50%;
-		/* Washes of colour rather than shapes: far softer than blur-3xl. Scaling down shrinks the blur with them. */
+		/* Washes of colour rather than shapes: far softer than blur-3xl. */
 		filter: blur(120px);
-		animation: converge 1.9s cubic-bezier(0.55, 0, 0.35, 1) both;
+		animation: bloom 1.5s ease-out both;
 		--peak: 0.5;
 	}
-	:global(.dark) .converge {
+	:global(.dark) .bloom {
 		--peak: 0.8;
 	}
-	@keyframes converge {
+	@keyframes bloom {
 		0% {
-			left: var(--start-x);
-			top: var(--start-y);
-			scale: 1;
 			opacity: 0;
+			scale: 0.85;
 		}
-		25% {
+		93% {
 			opacity: var(--peak);
-		}
-		72% {
-			left: var(--meet-x);
-			top: var(--meet-y);
-			scale: 0.22;
-			opacity: var(--peak);
+			scale: 1;
 		}
 		100% {
-			left: var(--meet-x);
-			top: var(--meet-y);
-			scale: 0.05;
 			opacity: 0;
+			scale: 1;
 		}
 	}
 	.entrance-pending :global([data-dock] > :first-child) {
 		opacity: 0;
 	}
-	/* Lumi forms where they meet: from a blur to her orb, with a little overshoot. */
+	/* At the blobs' peak, Lumi appears: from a blur to her orb, with a little overshoot. */
 	.entrance :global([data-dock] > :first-child) {
 		animation: born 0.9s 1.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 	}
