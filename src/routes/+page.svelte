@@ -52,6 +52,22 @@
 	// peak Lumi appears and they all vanish at once; then her line types out, then the scene, the button, the dots and
 	// Skip arrive one after another. Not when coming Back to the first screen, and not with reduced motion.
 	const ENTRANCE = { orb: 1400, speak: 1750, done: 4600 };
+	/**
+	 * The blobs, around all four edges: stretched and turned ellipses of mixed sizes that overlap, so they read as washes
+	 * of colour rather than circles. Each blooms at its own pace (`grow`, seconds), and all vanish together.
+	 */
+	const BLOOMS = [
+		{ colour: 'bg-brand-3', x: '4%', y: '6%', w: 34, h: 20, r: -18, grow: 1.1 },
+		{ colour: 'bg-brand-2', x: '28%', y: '-2%', w: 26, h: 14, r: 8, grow: 1.3 },
+		{ colour: 'bg-brand-3', x: '62%', y: '0%', w: 22, h: 12, r: -6, grow: 1.2 },
+		{ colour: 'bg-brand-2', x: '98%', y: '18%', w: 30, h: 18, r: 32, grow: 1.0 },
+		{ colour: 'bg-brand-4', x: '102%', y: '58%', w: 24, h: 30, r: -12, grow: 1.3 },
+		{ colour: 'bg-brand-4', x: '82%', y: '100%', w: 36, h: 18, r: 14, grow: 1.15 },
+		{ colour: 'bg-brand-1', x: '48%', y: '104%', w: 28, h: 12, r: -4, grow: 1.35 },
+		{ colour: 'bg-brand-1', x: '14%', y: '96%', w: 30, h: 20, r: 24, grow: 1.05 },
+		{ colour: 'bg-brand-2', x: '-2%', y: '64%', w: 20, h: 28, r: -20, grow: 1.25 },
+		{ colour: 'bg-brand-3', x: '-4%', y: '34%', w: 18, h: 24, r: 10, grow: 1.4 }
+	];
 	let entrance = $state(false);
 	/** Before the tour starts on a first visit (server render, until mount): Lumi waits out of sight for her entrance. */
 	const pending = $derived(data.tour && !tourEnded && workspaceChat.tourStep === null);
@@ -221,11 +237,15 @@
 	{#if entrance}
 		<!-- The entrance's blobs: they bloom where they are, at the edges, and vanish together as Lumi appears. -->
 		<div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-			{#each [{ colour: 'bg-brand-3', x: '0%', y: '12%' }, { colour: 'bg-brand-2', x: '100%', y: '28%' }, { colour: 'bg-brand-4', x: '88%', y: '100%' }, { colour: 'bg-brand-1', x: '10%', y: '96%' }] as b (b.colour)}
+			{#each BLOOMS as b, i (i)}
 				<div
-					class={['bloom absolute size-[50vmax] rounded-full', b.colour]}
+					class={['bloom absolute rounded-full', b.colour]}
 					style:left={b.x}
 					style:top={b.y}
+					style:width="{b.w}vmax"
+					style:height="{b.h}vmax"
+					style:rotate="{b.r}deg"
+					style:--grow="{b.grow}s"
 				></div>
 			{/each}
 		</div>
@@ -352,26 +372,30 @@
 	   ~1.4s) Lumi appears and they all vanish at once. */
 	.bloom {
 		translate: -50% -50%;
-		/* Washes of colour rather than shapes: far softer than blur-3xl. */
-		filter: blur(120px);
-		animation: bloom 1.5s ease-out both;
+		/* Washes of colour rather than shapes. */
+		filter: blur(90px);
+		/* Each grows at its own pace, then all vanish together at the peak (1.4s). */
+		animation:
+			bloom var(--grow) ease-out both,
+			vanish 0.1s 1.4s linear forwards;
 		--peak: 0.5;
 	}
 	:global(.dark) .bloom {
-		--peak: 0.8;
+		--peak: 0.75;
 	}
 	@keyframes bloom {
-		0% {
+		from {
 			opacity: 0;
-			scale: 0.85;
+			scale: 0.8;
 		}
-		93% {
+		to {
 			opacity: var(--peak);
 			scale: 1;
 		}
-		100% {
+	}
+	@keyframes vanish {
+		to {
 			opacity: 0;
-			scale: 1;
 		}
 	}
 	.entrance-pending :global([data-dock] > :first-child) {
