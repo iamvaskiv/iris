@@ -88,7 +88,7 @@
 					<div class="grid flex-1 grid-cols-2 gap-3">
 						<!-- A video card: poster and a few lines. -->
 						<div class="card-a flex flex-col gap-2 rounded-md bg-card p-3 shadow-raised">
-							<div class="aspect-video w-full rounded-sm bg-brand"></div>
+							<div class="aspect-video w-full rounded-sm bg-brand opacity-50"></div>
 							<div class="h-2 w-3/4 rounded-full bg-foreground/70"></div>
 							<div class="h-2 w-1/2 rounded-full bg-muted"></div>
 						</div>
@@ -97,9 +97,9 @@
 							<div class="h-2 w-2/3 rounded-full bg-foreground/70"></div>
 							<span class="text-title">174</span>
 							<div class="flex flex-1 items-end gap-1">
-								<div class="h-3/4 flex-1 rounded-sm bg-brand-2"></div>
-								<div class="h-1/2 flex-1 rounded-sm bg-brand-3"></div>
-								<div class="h-1/4 flex-1 rounded-sm bg-brand-4"></div>
+								<div class="h-3/4 flex-1 rounded-sm bg-brand-2/50"></div>
+								<div class="h-1/2 flex-1 rounded-sm bg-brand-3/50"></div>
+								<div class="h-1/4 flex-1 rounded-sm bg-brand-4/50"></div>
 							</div>
 						</div>
 					</div>
@@ -115,10 +115,10 @@
 							<span class="updated"><Badge variant="success">Updated</Badge></span>
 						</div>
 						<div class="flex flex-1 items-end gap-2">
-							<div class="bar bar-1 flex-1 rounded-sm bg-brand-2"></div>
-							<div class="bar bar-2 flex-1 rounded-sm bg-brand-3"></div>
-							<div class="bar bar-3 flex-1 rounded-sm bg-brand-4"></div>
-							<div class="bar bar-4 flex-1 rounded-sm bg-brand-1"></div>
+							<div class="bar bar-1 flex-1 rounded-sm bg-brand-2/50"></div>
+							<div class="bar bar-2 flex-1 rounded-sm bg-brand-3/50"></div>
+							<div class="bar bar-3 flex-1 rounded-sm bg-brand-4/50"></div>
+							<div class="bar bar-4 flex-1 rounded-sm bg-brand-1/50"></div>
 						</div>
 					</div>
 					<!-- What would have been a second card slides onto the first and merges into it. -->

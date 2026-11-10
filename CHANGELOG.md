@@ -9,12 +9,14 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 **Onboarding**
 
 - **First-visit tour**: on your first visit to the projects page (and after restarting onboarding), a scripted tour
-  plays in Lumi's own dock, before her welcome, with nothing else on screen but **Skip** in the top-right corner. Four
-  steps, written for someone new, each with a small looping scene right under Lumi's line: **See what's in your
+  plays in Lumi's own dock, before her welcome, with nothing else on screen but **Skip** in the top-right corner. Lumi
+  says hello first (**Hey, I'm Lumi**: "Your video intelligence. I'll help you uncover insights about your videos, and
+  so much more."), with a tile for each thing she does, then four steps in her own voice, each with a small looping
+  scene (in soft brand tints) right under her line: **See what's in your
   video** (a video's scenes filling its timeline, characters and themes popping in), **Ask real viewers** (questions
   sliding in, pinned to moments in the video), **Learn how it landed** (the numbers, a sentiment curve drawing
   itself, a standout comment) and **Compare your videos** (two cuts' scores racing, one marked as preferred).
-  **Back** / **Next** under the scene, **Let's go** at the end; arrow keys and Escape work too. Shown once per browser.
+  **Back** / **Next** under the scene, step dots at the bottom of the screen, **Let's go** at the end; arrow keys and Escape work too. Shown once per browser.
 - **How Iris works** now plays the first time you open a project (the demo, usually), with only Lumi and **Skip** on
   screen (no breadcrumb, checklist or view toggle): **Just ask**, **Answers come as cards** and **Your cards stay up
   to date**, ending with **Got it**. Then her dock moves down to the bottom as the cards appear. Not when you arrive

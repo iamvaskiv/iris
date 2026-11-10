@@ -146,19 +146,26 @@
 					>{tourStep === TOUR_STEPS.length - 1 ? TOUR_DONE : 'Next'}</Button
 				>
 			</div>
-			<div class="flex items-center gap-2" aria-hidden="true">
-				{#each TOUR_STEPS as _, i (i)}
-					<span
-						class={[
-							'h-2 rounded-full transition-all duration-300',
-							i === tourStep ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/40'
-						]}
-					></span>
-				{/each}
-			</div>
 		</div>
 	{/if}
 {/snippet}
+
+<!-- Where we are in it, at the bottom of the screen (outside the dock, whose transform would hold it). -->
+{#if tourStep !== null}
+	<div
+		class="fixed bottom-8 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2"
+		aria-hidden="true"
+	>
+		{#each TOUR_STEPS as _, i (i)}
+			<span
+				class={[
+					'h-2 rounded-full transition-all duration-300',
+					i === tourStep ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/40'
+				]}
+			></span>
+		{/each}
+	</div>
+{/if}
 
 <div
 	class="min-h-dvh bg-background"

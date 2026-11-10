@@ -5,7 +5,7 @@
  * means below it. Both play once per browser; restarting onboarding replays them.
  *
  * - The tour (TOUR_STEPS, TourScene.svelte): on someone's first visit to the projects page, before Lumi's welcome:
- *   what Iris does for them.
+ *   Lumi says hello, then what she does for them, in her own voice.
  * - "How Iris works" (INTRO_STEPS, IntroScene.svelte): the first time they open a project: how working with Lumi
  *   goes. The dock sits centred with the cards out of sight meanwhile, then moves down as they appear.
  */
@@ -16,11 +16,15 @@ export const INTRO_DONE = 'Got it';
 export const TOUR_STEPS = [
 	{
 		reply:
-			"**See what's in your video**\n\nAdd a video and Lumi watches it for you. You'll get its scenes, who's in it, the themes and everything that's said."
+			"**Hey, I'm Lumi**\n\nYour video intelligence. I'll help you uncover insights about your videos, and so much more. Here's a quick look."
 	},
 	{
 		reply:
-			'**Ask real viewers**\n\nCurious what people think? Lumi writes the questions for you and pins each one to the right moment in your video.'
+			"**See what's in your video**\n\nAdd a video and I'll watch it for you: its scenes, who's in it, the themes and everything that's said."
+	},
+	{
+		reply:
+			"**Ask real viewers**\n\nCurious what people think? I'll write the questions and pin each one to the right moment in your video."
 	},
 	{
 		reply:

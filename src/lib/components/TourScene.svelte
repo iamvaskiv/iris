@@ -1,11 +1,18 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import { Badge, cn } from '@latitudelabs/design-system';
-	import { Icon, Play } from '@latitudelabs/design-system/icons';
+	import {
+		ChartColumn,
+		Icon,
+		Play,
+		Sparkles,
+		Users,
+		Video
+	} from '@latitudelabs/design-system/icons';
 
 	/**
-	 * The small looping scene under Lumi during the first-visit tour (TOUR_STEPS in intro.ts), one per thing Iris does:
-	 * a video broken down, a study drafted, viewers' feelings over time, two videos compared (one marked as preferred). Decorative: what Lumi says
+	 * The small looping scene under Lumi during the first-visit tour (TOUR_STEPS in intro.ts): Lumi's hello (a tile
+	 * per thing she does), then one per thing: a video broken down, a study drafted, viewers' feelings over time, two videos compared (one marked as preferred). Decorative: what Lumi says
 	 * above it carries the meaning. Every scene loops every 6s and shows its finished state with reduced motion.
 	 */
 	let { step, class: className }: { step: number; class?: string } = $props();
@@ -25,20 +32,34 @@
 			out:fade={{ duration: 150 }}
 		>
 			{#if step === 0}
+				<!-- Hello: what's coming, one tile per thing Lumi does. -->
+				<div class="scene-hello grid h-full grid-cols-2 content-center gap-3 p-6">
+					{#each [{ icon: Video, label: 'Video analysis' }, { icon: Users, label: 'Viewer studies' }, { icon: Sparkles, label: 'Insights' }, { icon: ChartColumn, label: 'Comparison' }] as t, i (t.label)}
+						<div class="tile tile-{i + 1} flex items-center gap-3 rounded-md bg-muted p-3">
+							<span
+								class="flex size-8 shrink-0 items-center justify-center rounded-sm bg-card text-muted-foreground"
+								><Icon icon={t.icon} class="size-4" /></span
+							>
+							<span class="text-body">{t.label}</span>
+						</div>
+					{/each}
+				</div>
+			{:else if step === 1}
 				<!-- Video analysis: the poster, its scenes filling the timeline, then what's in it. -->
 				<div class="scene-analysis flex h-full items-center gap-5 p-6">
 					<div class="flex w-48 shrink-0 flex-col gap-2">
-						<div class="relative flex aspect-video items-center justify-center rounded-sm bg-brand">
+						<div class="relative isolate flex aspect-video items-center justify-center">
+							<div class="absolute inset-0 -z-10 rounded-sm bg-brand opacity-50"></div>
 							<span
 								class="flex size-8 items-center justify-center rounded-full bg-card/80 text-foreground"
 								><Icon icon={Play} class="size-4" /></span
 							>
 						</div>
 						<div class="flex h-2 gap-0.5 overflow-hidden rounded-full bg-muted">
-							<div class="seg seg-1 rounded-full bg-brand-3"></div>
-							<div class="seg seg-2 rounded-full bg-brand-2"></div>
-							<div class="seg seg-3 rounded-full bg-brand-1"></div>
-							<div class="seg seg-4 rounded-full bg-brand-4"></div>
+							<div class="seg seg-1 rounded-full bg-brand-3/50"></div>
+							<div class="seg seg-2 rounded-full bg-brand-2/50"></div>
+							<div class="seg seg-3 rounded-full bg-brand-1/50"></div>
+							<div class="seg seg-4 rounded-full bg-brand-4/50"></div>
 						</div>
 						<div class="h-2 w-3/4 rounded-full bg-muted"></div>
 					</div>
@@ -54,17 +75,17 @@
 						</div>
 					</div>
 				</div>
-			{:else if step === 1}
+			{:else if step === 2}
 				<!-- Viewer studies: questions slide in, each pinned to a moment on the video's timeline. -->
 				<div class="scene-study flex h-full flex-col gap-3 p-6">
 					<div class="flex items-center gap-3">
-						<div class="aspect-video w-20 shrink-0 rounded-sm bg-brand"></div>
+						<div class="aspect-video w-20 shrink-0 rounded-sm bg-brand opacity-50"></div>
 						<div class="relative h-1.5 flex-1 rounded-full bg-muted">
 							<span
-								class="pin pin-1 absolute top-1/2 left-1/4 size-3 -translate-1/2 rounded-full bg-category-green"
+								class="pin pin-1 absolute top-1/2 left-1/4 size-3 -translate-1/2 rounded-full bg-category-green/60"
 							></span>
 							<span
-								class="pin pin-2 absolute top-1/2 left-3/4 size-3 -translate-1/2 rounded-full bg-category-orange"
+								class="pin pin-2 absolute top-1/2 left-3/4 size-3 -translate-1/2 rounded-full bg-category-orange/60"
 							></span>
 						</div>
 					</div>
@@ -88,7 +109,7 @@
 						</div>
 					</div>
 				</div>
-			{:else if step === 2}
+			{:else if step === 3}
 				<!-- Insights: the numbers, then how viewers felt along the video, and a comment from its high point. -->
 				<div class="scene-insights flex h-full flex-col gap-3 p-6">
 					<div class="stats flex gap-6">
@@ -130,7 +151,7 @@
 			{:else}
 				<!-- Comparison: two videos side by side, their scores racing, one marked as landing better. -->
 				<div class="scene-compare grid h-full grid-cols-2 gap-4 p-6">
-					{#each [{ poster: 'bg-brand', bar: 'bar-a', label: 'Trailer' }, { poster: 'bg-brand-4', bar: 'bar-b', label: 'Teaser' }] as v, i (v.label)}
+					{#each [{ poster: 'bg-brand opacity-50', bar: 'bar-a', label: 'Trailer' }, { poster: 'bg-brand-4/50', bar: 'bar-b', label: 'Teaser' }] as v, i (v.label)}
 						<div class="flex flex-col gap-2">
 							<div class={['aspect-video w-full rounded-sm', v.poster]}></div>
 							<div class="flex items-center justify-between gap-2">
@@ -140,7 +161,11 @@
 							</div>
 							<div class="h-2 w-full overflow-hidden rounded-full bg-muted">
 								<div
-									class={['h-full rounded-full', v.bar, i === 0 ? 'bg-brand-2' : 'bg-brand-4']}
+									class={[
+										'h-full rounded-full',
+										v.bar,
+										i === 0 ? 'bg-brand-2/50' : 'bg-brand-4/50'
+									]}
 								></div>
 							</div>
 							<div class="h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -149,7 +174,7 @@
 										'h-full rounded-full',
 										v.bar,
 										'second',
-										i === 0 ? 'bg-brand-3' : 'bg-brand-1'
+										i === 0 ? 'bg-brand-3/50' : 'bg-brand-1/50'
 									]}
 								></div>
 							</div>
@@ -162,6 +187,7 @@
 </div>
 
 <style>
+	.scene-hello .tile,
 	.scene-analysis .seg,
 	.scene-analysis .chip,
 	.scene-study .pin,
@@ -174,6 +200,35 @@
 	.scene-compare .bar-b,
 	.scene-compare .lead {
 		animation: 6s ease-out infinite both;
+	}
+
+	/* Hello: the four tiles pop in one after the other. */
+	.tile-1 {
+		animation-name: pop-5;
+	}
+	.tile-2 {
+		animation-name: pop-20;
+	}
+	.tile-3 {
+		animation-name: pop-35;
+	}
+	.tile-4 {
+		animation-name: pop-50;
+	}
+	@keyframes pop-5 {
+		0%,
+		5% {
+			opacity: 0;
+			scale: 0.6;
+		}
+		12%,
+		92% {
+			opacity: 1;
+			scale: 1;
+		}
+		100% {
+			opacity: 0;
+		}
 	}
 
 	/* Video analysis: the timeline fills scene by scene, then the chips pop in. */
@@ -277,7 +332,7 @@
 	}
 	.curve {
 		fill: none;
-		stroke: var(--brand-2);
+		stroke: color-mix(in oklab, var(--brand-2) 60%, transparent);
 		stroke-width: 2.5;
 		stroke-linecap: round;
 		stroke-dasharray: 1;
@@ -285,7 +340,7 @@
 		animation-name: draw;
 	}
 	.area {
-		fill: color-mix(in oklab, var(--brand-2) 15%, transparent);
+		fill: color-mix(in oklab, var(--brand-2) 8%, transparent);
 		animation-name: fade-50;
 	}
 	.comment {
@@ -541,6 +596,7 @@
 
 	/* Without motion: every scene shows its finished state, still. */
 	@media (prefers-reduced-motion: reduce) {
+		.scene-hello .tile,
 		.scene-analysis .seg,
 		.scene-analysis .chip,
 		.scene-study .pin,

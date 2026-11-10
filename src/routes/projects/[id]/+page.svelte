@@ -819,16 +819,6 @@
 					>{introStep === INTRO_STEPS.length - 1 ? INTRO_DONE : 'Next'}</Button
 				>
 			</div>
-			<div class="flex items-center gap-2" aria-hidden="true">
-				{#each INTRO_STEPS as _, i (i)}
-					<span
-						class={[
-							'h-2 rounded-full transition-all duration-300',
-							i === introStep ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/40'
-						]}
-					></span>
-				{/each}
-			</div>
 		</div>
 	{/if}
 {/snippet}
@@ -1237,6 +1227,23 @@
 					{/snippet}
 				</Tooltip>
 			</TooltipGroup>
+		</div>
+	{/if}
+
+	<!-- Where we are in it, at the bottom of the screen (outside the dock, whose transform would hold it). -->
+	{#if introStep !== null}
+		<div
+			class="fixed bottom-8 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2"
+			aria-hidden="true"
+		>
+			{#each INTRO_STEPS as _, i (i)}
+				<span
+					class={[
+						'h-2 rounded-full transition-all duration-300',
+						i === introStep ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/40'
+					]}
+				></span>
+			{/each}
 		</div>
 	{/if}
 
