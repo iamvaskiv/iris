@@ -4,6 +4,7 @@
 	import { ChartColumn, Plus, Users, Video } from '@latitudelabs/design-system/icons';
 	import AiDock from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
+	import BrandButton from '#lib/components/BrandButton.svelte';
 	import CardPreview from '#lib/components/CardPreview.svelte';
 	import GettingStarted from '#lib/components/GettingStarted.svelte';
 	import { onDestroy, onMount } from 'svelte';
@@ -49,9 +50,9 @@
 	}
 
 	// The tour's entrance, on its first screen: brand-coloured blobs slowly bloom at the edges of the screen; at their
-	// peak Lumi appears and they all vanish at once; then her line types out, then the scene, the button, the dots and
-	// Skip arrive one after another. Not when coming Back to the first screen, and not with reduced motion.
-	const ENTRANCE = { orb: 1400, speak: 1750, done: 4600 };
+	// peak Lumi appears and they all vanish at once; then her line types out, then the button, the dots and Skip arrive
+	// one after another. Not when coming Back to the first screen, and not with reduced motion.
+	const ENTRANCE = { orb: 1400, speak: 1750, done: 3800 };
 	/**
 	 * The blobs, around all four edges: stretched and turned ellipses of mixed sizes that overlap, so they read as washes
 	 * of colour rather than circles. Each blooms at its own pace (`grow`, seconds), and all vanish together.
@@ -185,16 +186,19 @@
 {#snippet tourControls()}
 	{#if tourStep !== null}
 		<div class="flex w-full flex-col items-center gap-6">
-			<div class={['flex w-full justify-center', entrance && 'rise rise-scene']}>
-				<TourScene step={tourStep} />
-			</div>
+			<!-- Lumi's hello (the first step) stands on its own; the rest show what she's describing. -->
+			{#if tourStep > 0}
+				<div class="flex w-full justify-center">
+					<TourScene step={tourStep} />
+				</div>
+			{/if}
 			<p class="sr-only" aria-live="polite">Step {tourStep + 1} of {TOUR_STEPS.length}</p>
 			<div class={['flex items-center gap-2', entrance && 'rise rise-buttons']}>
 				{#if tourStep > 0}
 					<Button variant="ghost" onclick={() => goTour(tourStep - 1)}>Back</Button>
 				{/if}
-				<Button onclick={() => goTour(tourStep + 1)}
-					>{tourStep === TOUR_STEPS.length - 1 ? TOUR_DONE : 'Next'}</Button
+				<BrandButton onclick={() => goTour(tourStep + 1)}
+					>{tourStep === TOUR_STEPS.length - 1 ? TOUR_DONE : 'Next'}</BrandButton
 				>
 			</div>
 		</div>
@@ -420,18 +424,15 @@
 			scale: 1;
 		}
 	}
-	/* Then, after her line has typed out: the scene, the button, and last the dots and Skip. */
+	/* Then, after her line has typed out: the button, and last the dots and Skip. */
 	.rise {
 		animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 	}
-	.rise-scene {
-		animation-delay: 2.9s;
-	}
 	.rise-buttons {
-		animation-delay: 3.3s;
+		animation-delay: 2.6s;
 	}
 	.rise-last {
-		animation-delay: 3.6s;
+		animation-delay: 2.9s;
 	}
 	@keyframes rise {
 		from {

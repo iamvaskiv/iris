@@ -15,6 +15,7 @@
 	import { resolve } from '$app/paths';
 	import AiDock, { timeOfDayGreeting, type DockMode } from '#lib/components/AiDock.svelte';
 	import AppHeader from '#lib/components/AppHeader.svelte';
+	import BrandButton from '#lib/components/BrandButton.svelte';
 	import BirdsEyeIcon from '#lib/components/BirdsEyeIcon.svelte';
 	import CardPagination from '#lib/components/CardPagination.svelte';
 	import AssetsSidebar from '#lib/components/AssetsSidebar.svelte';
@@ -815,8 +816,8 @@
 				{#if introStep > 0}
 					<Button variant="ghost" onclick={() => goIntro(introStep! - 1)}>Back</Button>
 				{/if}
-				<Button onclick={() => goIntro(introStep! + 1)}
-					>{introStep === INTRO_STEPS.length - 1 ? INTRO_DONE : 'Next'}</Button
+				<BrandButton onclick={() => goIntro(introStep! + 1)}
+					>{introStep === INTRO_STEPS.length - 1 ? INTRO_DONE : 'Next'}</BrandButton
 				>
 			</div>
 		</div>

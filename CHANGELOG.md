@@ -14,12 +14,12 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
   the screen, and at
   their peak Lumi's orb appears as they all vanish at once; then her line types out, and the scene, the button, the dots and Skip arrive one
   after another (not with reduced motion, or when coming Back). Lumi says hello first (**Hey, I'm Lumi**: "Your video intelligence. I'll help you uncover insights about your videos, and
-  so much more."), with a tile for each thing she does, then four steps in her own voice, each with a small looping
+  so much more."), on its own, then four steps in her own voice, each with a small looping
   scene (in soft brand tints) right under her line: **See what's in your
   video** (a video's scenes filling its timeline, characters and themes popping in), **Ask real viewers** (questions
   sliding in, pinned to moments in the video), **Learn how it landed** (the numbers, a sentiment curve drawing
   itself, a standout comment) and **Compare your videos** (two cuts' scores racing, one marked as preferred).
-  **Back** / **Next** under the scene, step dots at the bottom of the screen, **Let's go** at the end; arrow keys and Escape work too. Shown once per browser.
+  **Back** / **Next** under the scene (Next in the Getting started card's colours), step dots at the bottom of the screen, **Let's go** at the end; arrow keys and Escape work too. Shown once per browser.
 - **How Iris works** now plays the first time you open a project (the demo, usually), as an overlay on top of it: the
   project stays in place, dimmed and blurred under a scrim (and out of reach until it closes), with Lumi, the scene,
   Back / Next and **Skip** on top: **Just ask**, **Answers come as cards** and **Your cards stay up

@@ -11,8 +11,8 @@
 	} from '@latitudelabs/design-system/icons';
 
 	/**
-	 * The small looping scene under Lumi during the first-visit tour (TOUR_STEPS in intro.ts): Lumi's hello (a tile
-	 * per thing she does), then one per thing: a video broken down, a study drafted, viewers' feelings over time, two videos compared (one marked as preferred). Decorative: what Lumi says
+	 * The small looping scene under Lumi during the first-visit tour (TOUR_STEPS in intro.ts), one per thing Lumi does
+	 * (steps 1-4; her hello, step 0, has none): a video broken down, a study drafted, viewers' feelings over time, two videos compared (one marked as preferred). Decorative: what Lumi says
 	 * above it carries the meaning. Every scene loops every 6s and shows its finished state with reduced motion.
 	 */
 	let { step, class: className }: { step: number; class?: string } = $props();
@@ -31,20 +31,7 @@
 			in:fade={{ duration: 300, delay: 100 }}
 			out:fade={{ duration: 150 }}
 		>
-			{#if step === 0}
-				<!-- Hello: what's coming, one tile per thing Lumi does. -->
-				<div class="scene-hello grid h-full grid-cols-2 content-center gap-3 p-6">
-					{#each [{ icon: Video, label: 'Video analysis' }, { icon: Users, label: 'Viewer studies' }, { icon: Sparkles, label: 'Insights' }, { icon: ChartColumn, label: 'Comparison' }] as t, i (t.label)}
-						<div class="tile tile-{i + 1} flex items-center gap-3 rounded-md bg-muted p-3">
-							<span
-								class="flex size-8 shrink-0 items-center justify-center rounded-sm bg-card text-muted-foreground"
-								><Icon icon={t.icon} class="size-4" /></span
-							>
-							<span class="text-body">{t.label}</span>
-						</div>
-					{/each}
-				</div>
-			{:else if step === 1}
+			{#if step === 1}
 				<!-- Video analysis: the poster, its scenes filling the timeline, then what's in it. -->
 				<div class="scene-analysis flex h-full items-center gap-5 p-6">
 					<div class="flex w-48 shrink-0 flex-col gap-2">
@@ -187,7 +174,6 @@
 </div>
 
 <style>
-	.scene-hello .tile,
 	.scene-analysis .seg,
 	.scene-analysis .chip,
 	.scene-study .pin,
@@ -200,35 +186,6 @@
 	.scene-compare .bar-b,
 	.scene-compare .lead {
 		animation: 6s ease-out infinite both;
-	}
-
-	/* Hello: the four tiles pop in one after the other. */
-	.tile-1 {
-		animation-name: pop-5;
-	}
-	.tile-2 {
-		animation-name: pop-20;
-	}
-	.tile-3 {
-		animation-name: pop-35;
-	}
-	.tile-4 {
-		animation-name: pop-50;
-	}
-	@keyframes pop-5 {
-		0%,
-		5% {
-			opacity: 0;
-			scale: 0.6;
-		}
-		12%,
-		92% {
-			opacity: 1;
-			scale: 1;
-		}
-		100% {
-			opacity: 0;
-		}
 	}
 
 	/* Video analysis: the timeline fills scene by scene, then the chips pop in. */
@@ -596,7 +553,6 @@
 
 	/* Without motion: every scene shows its finished state, still. */
 	@media (prefers-reduced-motion: reduce) {
-		.scene-hello .tile,
 		.scene-analysis .seg,
 		.scene-analysis .chip,
 		.scene-study .pin,
