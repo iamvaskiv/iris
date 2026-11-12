@@ -32,6 +32,7 @@ typed. Messages sent here are only logged.`
 <Story
 	name="Docked, reply"
 	args={{
+		mode: 'default',
 		reply:
 			'The clip has two themes, and they are on the new card. Coping with Change shows in the reaction shot.'
 	}}
@@ -40,13 +41,14 @@ typed. Messages sent here are only logged.`
 
 <Story
 	name="Docked, thinking"
-	args={{ reply: 'Looking at the characters…', thinking: true }}
+	args={{ mode: 'default', reply: 'Looking at the characters…', thinking: true }}
 	template={page}
 />
 
 <Story
 	name="Docked, choices"
 	args={{
+		mode: 'default',
 		reply:
 			'You have two Inside Out 2 videos: the 14-second clip and the full trailer. Which one should I compare?',
 		choices: ['Use the 14s clip', 'Use the full trailer']
@@ -57,13 +59,18 @@ typed. Messages sent here are only logged.`
 <Story
 	name="Docked, formatted reply"
 	args={{
+		mode: 'default',
 		reply:
 			'Only the first Inside Out 2 upload has real audience data: **1,470 views**.\n\n- The second upload: 3 responses, 0 views\n- A Man Called Otto: 2 responses, no rating\n- The 14-second clip: no audience data'
 	}}
 	template={page}
 />
 
-<Story name="Docked, error" args={{ error: "Couldn't start the upload (500)." }} template={page} />
+<Story
+	name="Docked, error"
+	args={{ mode: 'default', error: "Couldn't start the upload (500)." }}
+	template={page}
+/>
 
 <Story
 	name="Compact"
@@ -76,6 +83,24 @@ typed. Messages sent here are only logged.`
 />
 
 <Story name="Compact, thinking" args={{ mode: 'compact', thinking: true }} template={page} />
+
+<!-- What a reply looks like when it lands: in a bubble above the dock, pointing at Lumi. -->
+<Story
+	name="Compact, reply bubble"
+	args={{
+		mode: 'compact',
+		bubble: true,
+		reply:
+			'The clip has two themes, and they are on the new card. Coping with Change shows in the reaction shot.'
+	}}
+	template={page}
+/>
+
+<Story
+	name="Compact, thinking bubble"
+	args={{ mode: 'compact', bubble: true, thinking: true }}
+	template={page}
+/>
 
 <Story
 	name="Compact, choices"

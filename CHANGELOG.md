@@ -4,6 +4,41 @@ What changed in Iris, newest first. Add a line under today's date with every cha
 notable behind-the-scenes ones); the app Storybook shows this file as its **Changelog** page. The deployed app
 (`iris.<account>.workers.dev`) runs whatever was last released with `pnpm run deploy`.
 
+## 2026-11-12
+
+**Lumi**
+
+- **Plain grey input on the projects page**: Lumi's input in the middle of the page is the plain grey field again; only
+  the dock at the bottom of a project keeps her colours.
+- **Ask Lumi's glow moves aside**: over something you can ask about, the glow sits just above-right of the cursor
+  instead of under it, and the hint opens from it, their top-left corners lined up, growing down and away. The glow waits for the pointer
+  to rest half a second, then fades in and pulses slowly; the hint follows 1.5 seconds later. Moving on hides them and
+  starts the wait over.
+- **Tall cards run to the line**: a card taller than its lane is now cut off right at the line between lanes, instead
+  of a little above it. Scrolled down inside, its top edge gets the same line with a soft shadow under it, and while
+  there's more below, a soft shadow rises from the line at its bottom, so it reads as sliding under at both ends.
+- **One step past the cards (topic lanes)**: stepping sideways past a lane's last card brings in a **next steps**
+  slot with Lumi's next steps for that topic (just the steps, in her dock's colours, centred in the lane), and stepping down past the last lane brings in a **New topic** lane with
+  ideas for something the project hasn't covered (Lumi writes them alongside the lanes' next steps; the projects page's
+  starters until then). Picking one asks Lumi. The next steps no longer slide above the dock (`LaneSuggestions` is
+  gone; `LaneNext` replaces it, with stories). In the card map they only show while you're on one, as a white dot (after the lane's cards, or on a row of its own for the new topic lane); bird's eye leaves them out.
+- **Compact dock by default, replies in a speech bubble**: a project opens with Lumi's dock at its smallest (her orb
+  beside the input; everyone starts there once, even if they had picked another size). While she thinks and when her
+  reply lands, it pops up in a bubble just above the dock, in her colours, its tail pointing at her orb. × or Escape
+  closes it; a bigger dock shows the reply inside as before. New stories: Compact, reply bubble and thinking bubble.
+- **Lanes hold still**: the cards and the next steps above Lumi's dock no longer shake from side to side. The card
+  map (top left) now floats over a fixed gutter instead of setting its width: the gutter followed the map's width,
+  which follows the cards', and the two kept nudging each other by a pixel.
+- **The dock stays on top**: the next lane's title, peeking out at the bottom, no longer draws over Lumi's dock.
+- **Italics in Lumi's replies**: a title she writes in _asterisks_ shows in italics instead of with the asterisks
+  (`reply-format.ts`); she's told to keep italics for film and video titles.
+- **Choices in Lumi's colours**: in the dock, her numbered choices and the "Something else…" field are a translucent
+  white with a faint tinted edge and text in her ink, instead of grey on top of her colours.
+
+**Header**
+
+- **No "(alpha)" label**: the logo is the Lumiere ring, wordmark and `iris_project` tag only (header and sign-in page).
+
 ## 2026-11-10
 
 **For developers**
@@ -169,6 +204,7 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 ## 2026-10-30
 
 **Cards**
+
 - **Viewers card**: how viewers reacted to two to four videos, compared. Ask Lumi to "compare how viewers reacted to
   these videos". A row per video in its own colour, with its poster (play opens it in the card, with a playhead
   along the curves), a **Source** picker (Lumiere's real viewers, or any study in the project that shows the video and

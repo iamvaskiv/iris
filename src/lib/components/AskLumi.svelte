@@ -3,23 +3,29 @@
 	import { questionAt } from '#lib/ask-lumi.js';
 
 	/**
-	 * The page's Ask Lumi layer (one per page): over anything a card marked `askable`, a soft glow follows the
-	 * cursor, and right-clicking sends that thing's question to Lumi (`onask`) instead of opening the browser's menu.
-	 * When the pointer rests with the glow on, a hint shows the question it would ask, revealing word by word like
-	 * Lumi's replies, under a small "Right-click to ask Lumi". Leaving the window,
-	 * scrolling or Escape clears it. Long-press on touch screens opens the same way (it fires the same event), though
+	 * The page's Ask Lumi layer (one per page): over anything a card marked `askable`, right-clicking sends that thing's
+	 * question to Lumi (`onask`) instead of opening the browser's menu. Once the pointer has rested there a moment, a
+	 * soft glow fades in just above-right of it, pulsing slowly; resting on, a hint opens from the glow with the question
+	 * it would ask, revealing word by word like Lumi's replies, under a small "Right-click to ask Lumi". Moving on hides
+	 * them and the wait starts over. Leaving the window, scrolling or Escape clears it. Long-press on touch screens opens the same way (it fires the same event), though
 	 * there's no glow or hint there.
 	 */
 	let { onask }: { onask: (question: string) => void } = $props();
 
-	/** How long the pointer rests (with the glow on) before the hint shows, and how far it can drift meanwhile. */
-	const REST_MS = 1400;
+	/** How long the pointer rests before the glow shows, then how much longer before the hint does, and how far it can
+	 *  drift meanwhile. */
+	const GLOW_MS = 500;
+	const HINT_MS = 1500;
 	const DRIFT = 4;
-	/** The hint sits this far above-right of the cursor, clear of what you're pointing at (and of what hangs below the
-	 *  pointer, like the Timeline's summary box). */
+	/** The glow's spot: this far right of the cursor and LIFT above it, clear of what you're pointing at. The hint opens
+	 *  from there, the glow at its top-left corner. */
 	const OFFSET = 16;
+	const LIFT = 40;
 
+	/** Where the pointer is, over something askable (null: it isn't). */
 	let glow = $state<{ x: number; y: number } | null>(null);
+	/** The glow is showing: the pointer has rested GLOW_MS. */
+	let shown = $state(false);
 	/** The question for where the pointer rests, shown in the hint (null: no hint). */
 	let hint = $state<{ question: string; words: string[]; delay: number } | null>(null);
 	/** A brief swell of the glow once a question is sent. */
@@ -29,7 +35,9 @@
 
 	function letGo() {
 		clearTimeout(timer);
+		timer = undefined;
 		glow = null;
+		shown = false;
 		hint = null;
 	}
 
@@ -41,22 +49,34 @@
 	/** Near the window's right edge the hint opens to the left of the cursor; near the top, below it. */
 	const flipX = $derived(!!glow && glow.x > window.innerWidth - 320);
 	const flipY = $derived(!!glow && glow.y < 160);
+	/** Where the glow sits, and the hint's corner: above-right of the cursor (left of it near the right edge, below it
+	 *  near the top). */
+	const spot = $derived(
+		glow && {
+			x: flipX ? glow.x - OFFSET : glow.x + OFFSET,
+			y: flipY ? glow.y + OFFSET : glow.y - LIFT
+		}
+	);
 
 	function onpointermove(e: PointerEvent) {
 		if (e.pointerType === 'touch') return;
 		if (!questionAt(e)) return letGo();
 		glow = { x: e.clientX, y: e.clientY };
-		// Small drift doesn't count as moving; otherwise the hint goes and the wait starts over.
-		if (Math.hypot(e.clientX - rest.x, e.clientY - rest.y) <= DRIFT && (hint || timer)) return;
+		// Small drift doesn't count as moving; otherwise the glow and hint go and the wait starts over.
+		if (Math.hypot(e.clientX - rest.x, e.clientY - rest.y) <= DRIFT && (shown || timer)) return;
 		rest = { x: e.clientX, y: e.clientY };
+		shown = false;
 		hint = null;
 		clearTimeout(timer);
 		timer = setTimeout(() => {
-			timer = undefined;
-			// The question for where the pointer rests now (a chart asks about the moment under it).
-			const now = glow && questionAt(e);
-			if (now) hint = hintFor(now.question);
-		}, REST_MS);
+			shown = true;
+			timer = setTimeout(() => {
+				timer = undefined;
+				// The question for where the pointer rests now (a chart asks about the moment under it).
+				const now = glow && questionAt(e);
+				if (now) hint = hintFor(now.question);
+			}, HINT_MS);
+		}, GLOW_MS);
 	}
 
 	function oncontextmenu(e: MouseEvent) {
@@ -71,6 +91,7 @@
 		setTimeout(() => {
 			sent = false;
 			glow = null;
+			shown = false;
 		}, 450);
 		onask(target.question);
 	}
@@ -96,32 +117,35 @@
 	});
 </script>
 
-<!-- The glow: a soft wash of Lumi's colours around the cursor, saying "you can ask about this"; it swells as a
+<!-- The glow: a soft wash of Lumi's colours just above-right of the cursor, saying "you can ask about this", its corner
+     where the hint's will be. It fades in once the pointer has rested, then pulses slowly; it swells away as a
      question goes. -->
-{#if glow}
+{#if spot && (shown || sent)}
 	<div
 		class={[
-			'pointer-events-none fixed z-50 size-10 -translate-1/2 rounded-full bg-brand blur-md transition-[opacity,scale] duration-300 motion-safe:animate-in motion-safe:fade-in-0',
-			sent ? 'scale-200 opacity-0 motion-reduce:scale-100' : 'opacity-30'
+			'glow pointer-events-none fixed z-50 size-10 rounded-full bg-brand blur-md',
+			// Its top corner on the hint's: top-left, or top-right when the hint opens to the left. It pulses about its
+			// own centre.
+			flipX && '-translate-x-full',
+			sent && 'sent'
 		]}
-		style:left="{glow.x}px"
-		style:top="{glow.y}px"
+		style:left="{spot.x}px"
+		style:top="{spot.y}px"
 		aria-hidden="true"
 	></div>
 {/if}
 
 <!-- The hint, once the pointer rests with the glow on: the question it would ask (revealing like Lumi's replies) under
-     a small "Right-click to ask Lumi", in the Getting started card's brand wash, softer still. Above-right of the
-     cursor, flipping left near the right edge and below near the top. -->
-{#if glow && hint}
+     a small "Right-click to ask Lumi", in the Getting started card's brand wash, softer still. Its top-left corner on
+     the glow (top-right near the window's right edge), growing down and away from the cursor. -->
+{#if spot && hint}
 	<div
 		class={[
 			'hint pointer-events-none fixed z-50 flex w-max max-w-72 flex-col gap-0.5 rounded-md px-3 py-2 motion-safe:animate-in motion-safe:duration-300 motion-safe:fade-in-0',
-			flipX && '-translate-x-full',
-			!flipY && '-translate-y-full'
+			flipX && '-translate-x-full'
 		]}
-		style:left="{flipX ? glow.x - OFFSET : glow.x + OFFSET}px"
-		style:top="{flipY ? glow.y + OFFSET : glow.y - OFFSET / 2}px"
+		style:left="{spot.x}px"
+		style:top="{spot.y}px"
 		aria-hidden="true"
 	>
 		<span class="text-caption opacity-60">Right-click to ask Lumi</span>
@@ -171,6 +195,47 @@
 			),
 			color-mix(in oklab, var(--brand-4) 45%, var(--neutral-900));
 		box-shadow: 0 2px 12px color-mix(in oklab, var(--brand-4) 30%, transparent);
+	}
+	/* The glow fades in, then pulses slowly (a breath every ~2.4s); it swells away as a question goes. */
+	.glow {
+		opacity: 0.3;
+		animation:
+			glow-in 300ms ease-out both,
+			glow-pulse 1.2s ease-in-out 300ms infinite alternate;
+	}
+	.glow.sent {
+		animation: glow-swell 450ms ease-out forwards;
+	}
+	@keyframes glow-in {
+		from {
+			opacity: 0;
+		}
+	}
+	@keyframes glow-pulse {
+		from {
+			opacity: 0.3;
+			scale: 1;
+		}
+		to {
+			opacity: 0.18;
+			scale: 1.25;
+		}
+	}
+	@keyframes glow-swell {
+		from {
+			opacity: 0.3;
+		}
+		to {
+			opacity: 0;
+			scale: 2;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.glow,
+		.glow.sent {
+			animation: none;
+			opacity: 0.3;
+		}
 	}
 	/* As Lumi's replies (AiDock): each word fades in out of a slight blur, one after another. */
 	.reveal-word {

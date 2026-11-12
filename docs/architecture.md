@@ -63,7 +63,7 @@ flowchart TB
 | Part          | Where                                                          | What it does                                                                                                                                                                |
 | ------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Pages         | `src/routes`                                                   | Projects page (tiles, Lumi, drop a video → new project), project page (card stack, or topic lanes with Settings → Experimental; focus, uploads), assets, settings, `/login` |
-| Cards         | `src/lib/cards`                                                | Video (Overview · Timeline · Viewers tabs), Insights (older cards), Comparison, Sources, List, Quotes, Table, Text, Upload, Study; built from design-system components                                                         |
+| Cards         | `src/lib/cards`                                                | Video (Overview · Timeline · Viewers tabs), Insights (older cards), Comparison, Sources, List, Quotes, Table, Text, Upload, Study; built from design-system components      |
 | Password gate | `src/hooks.server.ts`                                          | Production only: a session cookie from `SITE_PASSWORD`, otherwise `/login`                                                                                                  |
 | Lumi          | `src/lib/server/agent.ts`, `workspace-agent.ts`                | Claude tool loops: read analysis and insights, browse the library across the user's teams, add/update/focus cards                                                           |
 | Card data     | `src/lib/server/video-card.ts`, `insights.ts`, `comparison.ts` | Fill cards from Lumiere; insights cached for six hours                                                                                                                      |
@@ -325,6 +325,44 @@ sequenceDiagram
     SC->>SC: switch to results, badge "Sample data"
 ```
 
+## Topic lanes: one step past the cards
+
+With Settings → Experimental → Topic lanes, the project page groups cards by topic (`cards/lanes.ts`): one lane per
+topic, its cards in a row, lanes down the page. The wheel (or a swipe) steps a whole lane down or a card along, and
+both go one step past the cards. After each lane's last card is its **what's next** slot: Lumi's next steps for that
+topic (`cards/suggestions.ts`, written by `server/suggestions.ts` after a turn), each sending itself to Lumi. Below the
+last lane is an empty **new topic** lane with ideas for something the project hasn't covered (stored under `~new`, written in
+the same call, the projects page's starters until then). Neither is a card: the card map shows one only while you're on it (a white dot), bird's eye leaves them out, and the
+project's focused card stays the last one there was.
+
+```mermaid
+---
+config:
+  look: classic
+---
+flowchart LR
+    subgraph l1["Lane: Videos"]
+        a1["Card"] --> a2["Card"] --> an["What's next<br/>its next steps"]
+    end
+    subgraph l2["Lane: a study"]
+        b1["Setup"] --> b2["Insights"] --> bn["What's next<br/>follow-ups first"]
+    end
+    subgraph l3["New topic lane"]
+        cn["What else<br/>new directions"]
+    end
+    l1 -- "wheel down" --> l2 -- "wheel down" --> l3
+    an & bn & cn -- "pick one" --> lumi["Lumi<br/>chat turn"]
+    lumi -- "writes next steps<br/>and new directions" --> store[("project.suggestions<br/>by lane key, ~new")]
+    store --> an & bn & cn
+
+    classDef ui stroke:#4c7dff,fill:#4c7dff33
+    classDef ai stroke:#f424ff,fill:#f424ff33
+    classDef storage stroke:#918b98,fill:#918b9833
+    class l1,l2,l3,a1,a2,an,b1,b2,bn,cn ui
+    class lumi ai
+    class store storage
+```
+
 ## What a study's results answer
 
 Sample results answer what the study set out to learn, not just tally it. When Lumi writes them (`sampleResults` in
@@ -354,7 +392,7 @@ flowchart LR
     per --> pane["Questions tab<br/>takeaways, themes, spread, video strip, responses"]
     numbers --> pane
     next --> overview
-    next --> slides["Lane next steps"]
+    next --> slides["Lane next steps<br/>in its what's-next slot"]
 
     classDef ui stroke:#4c7dff,fill:#4c7dff33
     classDef server stroke:#00bd32,fill:#00bd3233

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { cardSize } from '#lib/cards/registry.js';
 	import type { Lane, Slot } from '#lib/cards/lanes.js';
+	import { NEW_LANE } from '#lib/cards/suggestions.js';
 	import Tooltip from './Tooltip.svelte';
 	import TooltipGroup from './TooltipGroup.svelte';
 
@@ -9,7 +10,8 @@
 	 * card in it (left to right), each in its whole card's proportions (a tall card that scrolls in its lane is drawn
 	 * tall), all at one scale (a lane's height is 18px), top-aligned like the cards. The card in focus is white and
 	 * raised (a shadow and a hairline edge), at full size; the rest are one grey, drawn smaller (60%) so they pack to the
-	 * left. Clicking one goes to it; hovering names it.
+	 * left. Clicking one goes to it; hovering names it. The steps past the cards (a lane's next steps, the new topic lane
+	 * below the last) only show while you're on one: a white dot after that lane's cards, or on a row of its own.
 	 */
 	let {
 		lanes,
@@ -19,7 +21,7 @@
 		onselect
 	}: {
 		lanes: Lane[];
-		/** The focused slot's key. */
+		/** The focused slot's key (`next:<lane>` on a step past the cards). */
 		focused: string | undefined;
 		/** A card's whole rendered size (0 before it's measured), however much of it its lane shows. */
 		size: (slot: Slot) => { width: number; height: number };
@@ -48,6 +50,9 @@
 	 * left gutter that follows it, doesn't shift as focus moves.
 	 */
 	const GAP = 4;
+	/** The dot standing for a step past the cards, while it has focus. */
+	const DOT = 6;
+	const nextOn = (key: string) => focused === `next:${key}`;
 	const width = $derived(
 		Math.max(
 			0,
@@ -55,13 +60,24 @@
 				const small = lane.slots.map((slot) => box(slot, false).width);
 				const full = lane.slots.map((slot) => box(slot, true).width);
 				const sum = small.reduce((n, w) => n + w, 0) + GAP * (lane.slots.length - 1);
-				return sum + Math.max(0, ...full.map((w, i) => w - small[i]));
+				return sum + Math.max(0, ...full.map((w, i) => w - small[i])) + GAP + DOT;
 			})
 		)
 	);
 	const label = (lane: Lane, slot: Slot) =>
 		`${lane.title}: ${slot.card.title}${slot.part === 'insights' ? ' (insights)' : ''}`;
 </script>
+
+{#snippet dot()}
+	<!-- Only a marker of where you are: the steps themselves are on the page. -->
+	<li class="flex self-center" aria-hidden="true">
+		<span
+			class="block rounded-full bg-card shadow-raised ring-1 ring-foreground/15"
+			style:width="{DOT}px"
+			style:height="{DOT}px"
+		></span>
+	</li>
+{/snippet}
 
 <nav aria-label="Cards" class="flex flex-col gap-1.5" style:width="{width}px">
 	<TooltipGroup>
@@ -97,7 +113,11 @@
 						</Tooltip>
 					</li>
 				{/each}
+				{#if nextOn(lane.key)}{@render dot()}{/if}
 			</ul>
 		{/each}
+		{#if nextOn(NEW_LANE)}
+			<ul class="flex" aria-label="New topic">{@render dot()}</ul>
+		{/if}
 	</TooltipGroup>
 </nav>

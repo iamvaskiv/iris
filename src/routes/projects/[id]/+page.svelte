@@ -27,8 +27,8 @@
 	import TooltipGroup from '#lib/components/TooltipGroup.svelte';
 	import { cardComponent, cardSize } from '#lib/cards/registry.js';
 	import { lanes, slotCardId, type Lane } from '#lib/cards/lanes.js';
-	import { laneSuggestions } from '#lib/cards/suggestions.js';
-	import LaneSuggestions from '#lib/components/LaneSuggestions.svelte';
+	import { laneSuggestions, NEW_LANE, newLaneSuggestions } from '#lib/cards/suggestions.js';
+	import LaneNext from '#lib/components/LaneNext.svelte';
 	import { experimental, loadExperimental } from '#lib/experimental.svelte.js';
 	import { shareProjectCards } from '#lib/cards/viewer-sources.js';
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
@@ -83,13 +83,13 @@
 	let thinking = $state(false);
 	let error = $state('');
 	let draft = $state('');
-	/** Lumi's dock size, changed with its pull tab. */
-	let dockMode = $state<DockMode>('default');
+	/** Lumi's dock size, changed with its pull tab. Compact to start with: her replies pop up in a bubble above it. */
+	let dockMode = $state<DockMode>('compact');
 
 	// Lumi's dock remembers its state on this device: its size (everywhere), and an unsent message (per project), so a
 	// reload or coming back later picks up where you left off. Read after mount (not during server rendering); written
 	// only after that, so the defaults never overwrite what was saved.
-	const DOCK_KEY = 'iris.dock.mode';
+	const DOCK_KEY = 'iris.dock.mode.v2'; // v2: compact became the default, so everyone starts there once
 	const draftKey = $derived(`iris.dock.draft.${data.project.id}`);
 	let dockRestored = $state(false);
 	onMount(() => {
@@ -420,7 +420,8 @@
 
 	function setFocus(id: string | undefined) {
 		focusedSlot = id;
-		project.focusedId = id && slotCardId(id);
+		// The empty "what's next" slots aren't cards: the project's focused card stays the last one that was.
+		if (!id || !isNext(id)) project.focusedId = id && slotCardId(id);
 	}
 
 	let frame = 0;
@@ -453,10 +454,28 @@
 
 	const lanesOn = $derived(experimental.lanes);
 	const laneList = $derived(lanes(project.cards));
+	/**
+	 * One step past the cards both ways: after each lane's last card an empty "what's next" slot (its key `next:<lane>`),
+	 * and below the last lane an empty lane (no cards, just its slot) for starting something new. Both offer Lumi's next
+	 * steps (see LaneNext). Stepping, snapping and focus go through these; the card map and bird's eye only show cards.
+	 */
+	const nextKey = (lane: Lane) => `next:${lane.key}`;
+	const isNext = (key: string) => key.startsWith('next:');
+	const newLane: Lane = { key: NEW_LANE, title: 'New topic', slots: [] };
+	const navLanes = $derived([...laneList, newLane]);
+	/** A lane's places to step through: its cards' slots, then its next slot. */
+	const laneKeys = (lane: Lane) => [...lane.slots.map((s) => s.key), nextKey(lane)];
 	/** What the user has asked so far: suggestions they already sent aren't offered again. */
 	const asked = $derived(messages.filter((m) => m.from === 'user').map((m) => m.text));
 	/** The focused slot (a card, or one side of a study); `project.focusedId` is its card. */
 	let focusedSlot = $state<string | undefined>(project.focusedId);
+	/** Cards taller than their lane that have been scrolled down inside: their top edge shows a line and a shadow. */
+	let cardScrolled = $state<Record<string, boolean>>({});
+	/** Cards scrolled all the way down inside: nothing more below, so no shadow at their bottom edge. */
+	let cardAtEnd = $state<Record<string, boolean>>({});
+	/** Whether a card is cut off at the line below its lane, with more of it to scroll to. */
+	const cutBelow = (key: string) =>
+		(cardHeights[key] ?? 0) > laneHeight + LANE_GAP / 2 && !cardAtEnd[key];
 	/** Each lane's current card: where it stays while another lane has focus. */
 	let laneCurrent = $state<Record<string, string>>({});
 	const laneEls: Record<string, HTMLElement> = {};
@@ -466,12 +485,16 @@
 	const LANE_PEEK = 112; // kept at the bottom of the view for the next lane (LANE_GAP of it before the lane starts)
 	const LANE_TITLE = 224; // bird's eye: the lane titles' column beside the cards (sm:w-56 below)
 	const MAP_INSET = 24; // the card map's distance from the window's left edge, and from the cards
-	/** The card map's width (top left, beside the lanes): the lanes' left gutter follows it. */
-	let mapWidth = $state(0);
+	/** Room the lanes leave for the card map (top left). Fixed: the map floats over this gutter rather than setting it.
+	 *  When the gutter followed the map's measured width, which follows the cards' widths, the two could keep nudging
+	 *  each other by a pixel and the lanes (and the dock's next steps) shook from side to side. */
+	const MAP_GUTTER = 48;
 	/** Bird's eye view: every card at once, scaled down (see setBirdsEye). */
 	let birdsEye = $state(false);
 	/** The card map shows with lanes (not in bird's eye), once there's more than one card. */
-	const mapShown = $derived(lanesOn && !birdsEye && laneList.length > 0 && project.cards.length > 1);
+	const mapShown = $derived(
+		lanesOn && !birdsEye && laneList.length > 0 && project.cards.length > 1
+	);
 	const ROW_PAD = 8; // inside a lane's row, so the cards' delete buttons and shadows aren't clipped
 	const CARD_GAP = 40;
 	const WHEEL_STEP = 150; // wheel travel (px) before moving on to the next lane or card
@@ -485,18 +508,19 @@
 	 */
 	const sideTitles = new MediaQuery('min-width: 640px');
 	const rowStart = $derived(
-		(sideTitles.current ? (mapShown ? 2 * MAP_INSET + mapWidth : MAP_INSET) : 0) + ROW_PAD
+		(sideTitles.current ? (mapShown ? 2 * MAP_INSET + MAP_GUTTER : MAP_INSET) : 0) + ROW_PAD
 	);
 
 	const laneOf = (key: string | undefined) =>
-		laneList.find((l) => l.slots.some((s) => s.key === key));
-	/** The focused lane, and its next steps: shown as slides above Lumi's dock. */
-	const focusedLane = $derived(lanesOn ? laneOf(focusedSlot) : undefined);
-	const focusedNext = $derived(
-		focusedLane ? laneSuggestions(focusedLane, project.suggestions, asked) : []
-	);
+		key ? navLanes.find((l) => laneKeys(l).includes(key)) : undefined;
+	/** What a lane's next slot offers: its next steps (the new lane: ways to start something new). */
+	const nextOf = (lane: Lane) =>
+		lane.key === NEW_LANE
+			? newLaneSuggestions(project.suggestions, asked)
+			: laneSuggestions(lane, project.suggestions, asked);
+	/** A lane's current place (a card's slot or its next slot): where it stays while another lane has focus. */
 	const currentOf = (lane: Lane) =>
-		lane.slots.find((s) => s.key === laneCurrent[lane.key]) ?? lane.slots[0];
+		laneKeys(lane).find((k) => k === laneCurrent[lane.key]) ?? laneKeys(lane)[0];
 
 	const scrollRow = (row: HTMLElement, el: HTMLElement, behavior: ScrollBehavior) =>
 		row.scrollTo({
@@ -533,20 +557,21 @@
 		const from = autoScrolling
 			? laneOf(focusedSlot)
 			: nearest(
-					laneList,
+					navLanes,
 					(l) => laneEls[l.key],
 					'top',
 					scroller.getBoundingClientRect().top + HEADER
 				);
-		const at = from ? laneList.indexOf(from) : -1;
-		const lane = laneList[at < 0 ? 0 : at + by];
-		if (lane) go(currentOf(lane).key);
+		const at = from ? navLanes.indexOf(from) : -1;
+		const lane = navLanes[at < 0 ? 0 : at + by];
+		if (lane) go(currentOf(lane));
 	}
 
 	function stepCard(lane: Lane | undefined, by: number) {
 		if (!lane) return;
-		const slot = lane.slots[lane.slots.indexOf(currentOf(lane)) + by];
-		if (slot) go(slot.key);
+		const keys = laneKeys(lane);
+		const key = keys[keys.indexOf(currentOf(lane)) + by];
+		if (key) go(key);
 	}
 
 	/**
@@ -624,7 +649,7 @@
 		if (!sideways) return stepLane(Math.sign(gesture.sum));
 		// Sideways: the lane under the pointer (it may be the one peeking in), else the focused one.
 		const under = (e.target as Element).closest<HTMLElement>('[data-lane]')?.dataset.lane;
-		stepCard(laneList.find((l) => l.key === under) ?? laneOf(focusedSlot), Math.sign(gesture.sum));
+		stepCard(navLanes.find((l) => l.key === under) ?? laneOf(focusedSlot), Math.sign(gesture.sum));
 	}
 
 	/** Wheel events can only be held back (resistance) from a listener that isn't passive. */
@@ -652,18 +677,18 @@
 	/** After the page scrolled some other way (touch, the scrollbar, keys): the lane under the header takes focus. */
 	function laneScrollEnd() {
 		const top = scroller.getBoundingClientRect().top + HEADER;
-		const lane = nearest(laneList, (l) => laneEls[l.key], 'top', top);
-		if (lane && lane !== laneOf(focusedSlot)) setFocus(currentOf(lane).key);
+		const lane = nearest(navLanes, (l) => laneEls[l.key], 'top', top);
+		if (lane && lane !== laneOf(focusedSlot)) setFocus(currentOf(lane));
 	}
 
 	/** After a lane scrolled sideways by itself (touch): the card at its left edge is its current one. */
 	function rowScrollEnd(lane: Lane) {
 		if (autoScrolling || birdsEye) return;
 		const left = (rowEls[lane.key]?.getBoundingClientRect().left ?? 0) + rowStart;
-		const slot = nearest(lane.slots, (s) => cardEl(s.key), 'left', left);
-		if (!slot) return;
-		laneCurrent[lane.key] = slot.key;
-		if (laneOf(focusedSlot) === lane) setFocus(slot.key);
+		const key = nearest(laneKeys(lane), cardEl, 'left', left);
+		if (!key) return;
+		laneCurrent[lane.key] = key;
+		if (laneOf(focusedSlot) === lane) setFocus(key);
 	}
 
 	// ── Bird's eye view ────────────────────────────────────────────────────────────────────────────────
@@ -735,7 +760,7 @@
 			if (lanesOn)
 				for (const lane of laneList) {
 					const row = rowEls[lane.key];
-					const el = cardEl(currentOf(lane).key);
+					const el = cardEl(currentOf(lane));
 					if (row && el) scrollRow(row, el, 'instant');
 				}
 			if (focusId) position(focusId, 'instant');
@@ -866,15 +891,6 @@
 {/snippet}
 
 <!-- The focused lane's next steps, above Lumi's dock (not while she offers choices of her own). -->
-{#snippet nextSteps()}
-	<LaneSuggestions
-		suggestions={focusedNext}
-		topic={focusedLane?.title ?? ''}
-		key={focusedLane?.key}
-		disabled={thinking}
-		onselect={send}
-	/>
-{/snippet}
 
 <svelte:head><title>{project.name} · Iris</title></svelte:head>
 
@@ -954,9 +970,10 @@
 					: LANE_PEEK - LANE_GAP}px"
 				style:--card-height="{laneHeight}px"
 			>
-				{#each laneList as lane (lane.key)}
+				<!-- With the empty lane for something new at the end (not in bird's eye, which only shows cards). -->
+				{#each birdsEye ? laneList : navLanes as lane (lane.key)}
 					{@const current = currentOf(lane)}
-					{@const last = lane.slots.at(-1)!}
+					{@const next = nextKey(lane)}
 					<!-- A click anywhere in a lane that isn't the focused one (its title, the room beside its cards) brings it
 					     in, at its current card; a click on one of its cards brings in that card instead (handled there
 					     first). The keyboard has the cards and the arrows. -->
@@ -969,7 +986,7 @@
 						style:height={birdsEye ? undefined : `${LANE_TOP + laneHeight + LANE_GAP}px`}
 						style:padding-top={birdsEye ? undefined : `${LANE_TOP - ROW_PAD}px`}
 						onclick={() => {
-							if (!birdsEye && laneOf(focusedSlot) !== lane) go(current.key);
+							if (!birdsEye && laneOf(focusedSlot) !== lane) go(current);
 						}}
 					>
 						<!-- The lane's title: above its cards, in line with their left edge (in bird's eye, beside them). -->
@@ -1047,15 +1064,24 @@
 									}}
 								>
 									<!-- Scrolls a card taller than its lane, on its own; its padding (cancelled by the margin) keeps the
-									     card's shadow from being clipped. In bird's eye view it shows the part the lane does. -->
+									     card's shadow from being clipped. A tall card runs on past the lane, cut off right at the
+									     line between lanes (halfway down the gap; the box starts 4px above the card). In bird's eye
+									     view it shows the part the lane does. -->
 									<div
 										class={birdsEye
 											? 'overflow-hidden'
 											: '-m-1 overflow-y-auto overscroll-contain p-1'}
 										style:max-height={birdsEye
 											? `${laneHeight * birdScale}px`
-											: `${laneHeight + 8}px`}
+											: `${laneHeight + 4 + LANE_GAP / 2}px`}
 										style:border-radius={birdsEye ? 'inherit' : undefined}
+										onscroll={(e) => {
+											const el = e.currentTarget;
+											const scrolled = el.scrollTop > 0;
+											const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+											if (scrolled !== !!cardScrolled[slot.key]) cardScrolled[slot.key] = scrolled;
+											if (atEnd !== !!cardAtEnd[slot.key]) cardAtEnd[slot.key] = atEnd;
+										}}
 									>
 										<div
 											bind:offsetHeight={cardHeights[slot.key]}
@@ -1068,18 +1094,67 @@
 											<CardView card={slot.card} part={slot.part} />
 										</div>
 									</div>
+									{#if !birdsEye && cardScrolled[slot.key]}
+										<!-- Scrolled down inside: a line like the one between lanes along its top edge, with a soft
+										     shadow under it, so the card reads as sliding under the lane's top. -->
+										<div
+											aria-hidden="true"
+											transition:fade={{ duration: 150 }}
+											class="pointer-events-none absolute inset-x-0 -top-1 z-10 h-4 border-t border-border bg-linear-to-b from-foreground/8 to-transparent"
+										></div>
+									{/if}
+									{#if !birdsEye && cutBelow(slot.key)}
+										<!-- Cut off at the line below the lane, with more to scroll to: the same soft shadow, rising
+										     from that line, so it reads as going under. -->
+										<div
+											aria-hidden="true"
+											transition:fade={{ duration: 150 }}
+											class="pointer-events-none absolute inset-x-0 -bottom-1 z-10 h-4 bg-linear-to-t from-foreground/8 to-transparent"
+										></div>
+									{/if}
 									<!-- A study's insights go with it: deleting is on its setup. -->
 									{#if !birdsEye && slot.part !== 'insights'}{@render deleteButton(slot.card)}{/if}
 								</div>
 							{/each}
 							{#if !birdsEye}
-								<!-- After the last card: room so it too can come to the lane's left edge. -->
-								{#if lane.slots.length > 1}
-									<div
-										class="shrink-0"
-										style:min-width="{Math.max(0, roomAfter - (cardWidths[last.key] ?? 0))}px"
-									></div>
-								{/if}
+								<!-- One step past the last card: what Lumi could add next (in the empty lane, how to start
+								     something new), centred in the whole visible lane. Dimmed like a card out of focus; a click
+								     brings it in. -->
+								<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+								<div
+									id="card-{next}"
+									bind:offsetWidth={cardWidths[next]}
+									class={[
+										'flex shrink-0 snap-start items-center justify-center transition-opacity duration-300',
+										next !== focusedSlot && 'opacity-60 hover:opacity-100'
+									]}
+									style:width="{roomAfter + CARD_GAP}px"
+									style:height="{laneHeight}px"
+									onclick={() => {
+										if (next !== focusedSlot) go(next);
+									}}
+								>
+									{#if lane.key === NEW_LANE}
+										<LaneNext
+											label="Something new"
+											suggestions={nextOf(lane)}
+											disabled={thinking}
+											onselect={send}
+										/>
+									{:else}
+										<LaneNext
+											label="Next steps"
+											suggestions={nextOf(lane)}
+											disabled={thinking}
+											onselect={send}
+										/>
+									{/if}
+								</div>
+								<!-- After it: room so it too can come to the lane's left edge. -->
+								<div
+									class="shrink-0"
+									style:min-width="{Math.max(0, roomAfter - (cardWidths[next] ?? 0))}px"
+								></div>
 							{/if}
 						</div>
 						{#if !birdsEye}
@@ -1219,10 +1294,9 @@
 			<ProgressiveBlur from="left" class="right-auto z-10" style="width: {rowStart}px" />
 		{/if}
 		<!-- Top left, level with the lane's title: with lanes, a map of the cards to get around (the lanes' left gutter
-		     is as wide as it), and under it the bird's eye toggle. In bird's eye (titles beside the cards), just the
+		     leaves room for it), and under it the bird's eye toggle. In bird's eye (titles beside the cards), just the
 		     toggle, bottom left. -->
 		<div
-			bind:clientWidth={mapWidth}
 			class="absolute z-20 hidden flex-col items-start gap-2 sm:flex"
 			style:left="{MAP_INSET}px"
 			style:top={mapShown ? `${HEADER + 16}px` : undefined}
@@ -1311,9 +1385,6 @@
 			{messages}
 			bind:height={dockHeight}
 			onsubmit={ask}
-			above={introStep === null && !birdsEye && !project.choices?.length && focusedNext.length
-				? nextSteps
-				: undefined}
 		/>
 	</div>
 </div>

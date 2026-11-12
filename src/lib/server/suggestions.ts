@@ -1,6 +1,11 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { lanes, type Lane } from '#lib/cards/lanes.js';
-import { laneSuggestions, MAX_SUGGESTIONS } from '#lib/cards/suggestions.js';
+import {
+	laneSuggestions,
+	MAX_SUGGESTIONS,
+	NEW_LANE,
+	newLaneSuggestions
+} from '#lib/cards/suggestions.js';
 import type { Card, CardOp } from '#lib/cards/types.js';
 import type { Project } from '#lib/projects.js';
 import { transcript } from '#lib/transcript.js';
@@ -9,7 +14,8 @@ import { claude, FAST_MODEL } from './llm.js';
 /**
  * Lumi's next steps for each lane after a turn (experimental lanes; see `cards/suggestions.ts`). A lane keeps its
  * suggestions until its cards change or all of them have been asked; then Lumi writes new ones, in one small call for
- * every lane that needs them.
+ * every lane that needs them. The same call writes ideas for the empty lane below the others (`NEW_LANE`): directions the
+ * project hasn't taken yet, rewritten whenever its cards change.
  */
 export async function nextSuggestions(project: Project, ops: CardOp[], history: unknown[]) {
 	const all = lanes(project.cards).filter((l) => l.slots.some((s) => s.card.type !== 'upload'));
@@ -22,10 +28,18 @@ export async function nextSuggestions(project: Project, ops: CardOp[], history: 
 		const fresh = laneSuggestions(lane, project.suggestions, asked);
 		if (fresh.length && !lane.slots.some((s) => changed.has(s.card.id))) kept[lane.key] = fresh;
 	}
+	const stored = project.suggestions?.[NEW_LANE];
+	if (stored?.length && !changed.size) {
+		const fresh = newLaneSuggestions(project.suggestions, asked);
+		if (fresh.length) kept[NEW_LANE] = fresh;
+	}
 	const needed = all.filter((l) => !kept[l.key]);
-	if (!needed.length) return kept;
+	if (!needed.length && kept[NEW_LANE]) return kept;
 	try {
-		return { ...kept, ...(await write(project, needed, conversation.slice(-6))) };
+		return {
+			...kept,
+			...(await write(project, all, needed, !kept[NEW_LANE], conversation.slice(-6)))
+		};
 	} catch (e) {
 		console.warn('No lane suggestions:', String(e));
 		return kept;
@@ -46,9 +60,14 @@ const schema = {
 				required: ['topic', 'suggestions'],
 				additionalProperties: false
 			}
+		},
+		newTopic: {
+			type: 'array',
+			items: { type: 'string' },
+			description: 'Next steps that start something new, beyond the topics so far.'
 		}
 	},
-	required: ['lanes'],
+	required: ['lanes', 'newTopic'],
 	additionalProperties: false
 };
 
@@ -65,7 +84,9 @@ const describe = (c: Card) =>
 
 async function write(
 	project: Project,
+	all: Lane[],
 	needed: Lane[],
+	newTopic: boolean,
 	conversation: { from: string; text: string }[]
 ): Promise<Record<string, string[]>> {
 	const topics = needed
@@ -74,6 +95,7 @@ async function write(
 				`Topic "${l.title}":\n${[...new Set(l.slots.map((s) => s.card))].map(describe).join('\n')}`
 		)
 		.join('\n\n');
+	const covered = all.map((l) => `"${l.title}"`).join(', ');
 	const talk = conversation.map((m) => `${m.from}: ${m.text.slice(0, 400)}`).join('\n');
 	const res = await claude().messages.create({
 		model: FAST_MODEL,
@@ -82,7 +104,11 @@ async function write(
 		messages: [
 			{
 				role: 'user',
-				content: `You are Lumi, the assistant in Iris, an app for understanding videos and asking audiences about them. A project's cards are grouped by topic, and after each topic's last card the user sees 2-3 next steps they can click to ask you. Write them for each topic below.
+				content: `You are Lumi, the assistant in Iris, an app for understanding videos and asking audiences about them. A project's cards are grouped by topic, and after each topic's last card the user sees 2-3 next steps they can click to ask you. Write them for each topic below${needed.length ? '' : ' (none this time)'}.${
+					newTopic
+						? ` Below the last topic there's also room to start something new: write 2-3 next steps for that too (newTopic), each a direction the project hasn't taken yet (the topics so far: ${covered || 'none'}), such as analysing another video, asking viewers, or comparing.`
+						: ' Leave newTopic empty.'
+				}
 
 Each next step is written as the user's request to you, 2-6 words ("What will people think about it?", "Compare the endings", "Add a question about Anxiety"). Make them specific to that topic's cards and to what the user is trying to do, and don't suggest what the cards or conversation already answer.
 
@@ -98,14 +124,16 @@ ${talk || '(none yet)'}`
 	const text = res.content.find((b): b is Anthropic.TextBlock => b.type === 'text')?.text;
 	if (!text) throw new Error('No suggestions written');
 	const out: Record<string, string[]> = {};
-	for (const { topic, suggestions } of (
-		JSON.parse(text) as { lanes: { topic: string; suggestions: string[] }[] }
-	).lanes) {
+	const parsed = JSON.parse(text) as {
+		lanes: { topic: string; suggestions: string[] }[];
+		newTopic?: string[];
+	};
+	const tidy = (list: string[]) =>
+		[...new Set(list.map((s) => s.trim()).filter(Boolean))].slice(0, MAX_SUGGESTIONS);
+	if (newTopic && parsed.newTopic?.length) out[NEW_LANE] = tidy(parsed.newTopic);
+	for (const { topic, suggestions } of parsed.lanes) {
 		const lane = needed.find((l) => l.title.toLowerCase() === topic.trim().toLowerCase());
-		const list = [...new Set(suggestions.map((s) => s.trim()).filter(Boolean))].slice(
-			0,
-			MAX_SUGGESTIONS
-		);
+		const list = tidy(suggestions);
 		if (lane && list.length) out[lane.key] = list;
 	}
 	return out;

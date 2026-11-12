@@ -11,9 +11,11 @@
 
 <script lang="ts">
 	import { ChoiceList, Icon, Kbd, Orb, PromptInput, Tile } from '@latitudelabs/design-system';
+	import { X } from '@latitudelabs/design-system/icons';
 	import type { ComponentProps, Snippet } from 'svelte';
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import { loadOrbVariant, orbVariant } from '#lib/orb-variant.svelte.js';
 	import { blocks, type Run } from '#lib/reply-format.js';
 	import type { TranscriptMessage } from '#lib/transcript.js';
@@ -41,6 +43,10 @@
 		 *  readers); errors and choices still show. `default`: the latest reply above the input. `expanded`: the whole
 		 *  conversation (`messages`), scrollable, above the input. */
 		mode?: DockMode;
+		/** Compact only, bindable: Lumi's latest message in a speech bubble just above the dock, its tail pointing at her
+		 *  orb. Opens by itself while she thinks and when her reply lands; closes with its × or Escape, when the dock
+		 *  changes size, or with an error (which compact shows in the dock). */
+		bubble?: boolean;
 		/** The conversation so far, oldest first, for the expanded layout (see transcript.ts). */
 		messages?: TranscriptMessage[];
 		onsubmit: (message: string) => void;
@@ -62,7 +68,8 @@
 		suggestions = [],
 		centered = false,
 		inline = false,
-		mode = $bindable('default'),
+		mode = $bindable('compact'),
+		bubble = $bindable(false),
 		messages = [],
 		onsubmit,
 		below,
@@ -122,11 +129,32 @@
 		return () => clearTimeout(t);
 	});
 	const orbState = $derived(thinking ? 'thinking' : speaking ? 'speaking' : 'idle');
+	// The bubble opens when Lumi starts thinking and stays for her reply (the greeting on load doesn't open it).
+	$effect(() => {
+		if (thinking) bubble = true;
+	});
+	$effect(() => {
+		if (speaking && !error) bubble = true;
+	});
+	/** The bubble grows out of its tail (bottom left, by the orb) and shrinks back into it. */
+	function bubbleIn(_: Element) {
+		const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		return {
+			duration: still ? 0 : 260,
+			easing: cubicOut,
+			css: (t: number) =>
+				`opacity: ${t}; transform-origin: 30px 100%; scale: ${0.85 + 0.15 * t}; translate: 0 ${(1 - t) * 6}px`
+		};
+	}
+	const showBubble = $derived(
+		bubble && mode === 'compact' && !centered && !error && (thinking || !!shown)
+	);
 	/** Change size. The dock is one layout for all three sizes, so this only changes the values that differ between
 	 *  them (conversation height, padding, input offset, orb position); CSS transitions animate those (see below). */
 	function setMode(next: DockMode) {
 		if (next === mode) return;
 		mode = next;
+		bubble = false; // larger sizes show the reply in the dock; back to compact, it stays tucked away
 		if (viewport) viewport.scrollTop = 0; // newest message in view (the conversation scrolls from the bottom)
 	}
 	/** One size smaller (`-1`) or larger (`1`), or undefined at either end. */
@@ -330,7 +358,7 @@
 	});
 
 	/** A word (or the whitespace after it) of a reply; `i` numbers the words in reading order, -1 for whitespace. */
-	type Word = { text: string; bold: boolean; i: number };
+	type Word = { text: string; bold: boolean; italic: boolean; i: number };
 
 	/**
 	 * The reply's paragraphs and lists (see reply-format.ts), split into words that reveal one after another. The delay
@@ -343,7 +371,7 @@
 				r.text
 					.split(/(\s+)/)
 					.filter(Boolean)
-					.map((w) => ({ text: w, bold: r.bold, i: w.trim() ? n++ : -1 }))
+					.map((w) => ({ text: w, bold: r.bold, italic: r.italic, i: w.trim() ? n++ : -1 }))
 			);
 		const parts = blocks(text).map((b) =>
 			b.kind === 'paragraph'
@@ -356,6 +384,7 @@
 	/** Enter anywhere on the page focuses the prompt, unless the user is in another field or on a control. With
 	 *  choices showing, number keys pick one (not while typing in a field). */
 	function onkeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape' && showBubble && !e.defaultPrevented) return void (bubble = false);
 		// The number after the last choice belongs to the "Something else…" field: it focuses it.
 		const n = showChoices && /^[1-9]$/.test(e.key) ? Number(e.key) : 0;
 		const pick = n && n <= choices.length + 1 ? (choices[n - 1] ?? 'field') : undefined;
@@ -389,7 +418,7 @@
 {#snippet line(words: Word[], delay: number)}
 	{#each words as w, k (k)}
 		{#if w.i >= 0}<span
-				class={['reveal-word', w.bold && 'font-medium']}
+				class={['reveal-word', w.bold && 'font-medium', w.italic && 'italic']}
 				style:animation-delay="{w.i * delay}ms">{w.text}</span
 			>{:else}{w.text}{/if}
 	{/each}
@@ -431,6 +460,7 @@
 {#snippet fieldKey()}<Kbd aria-hidden="true">{choices.length + 1}</Kbd>{/snippet}
 
 {#snippet prompt()}
+	{@const branded = !showChoices && !centered}
 	<div class="flex flex-col gap-1">
 		{#if showSuggestions}
 			<ul class="mb-3 grid grid-cols-3 gap-3" aria-label="Ways to start">
@@ -452,9 +482,10 @@
 		{/if}
 		<!-- Same field in both cases, so focus and the draft survive choices appearing and going. On its own it's dressed
 		     like the onboarding's Continue button (BrandButton): Lumi's colours washed behind it, a brand-purple edge and
-		     glow. As the last of Lumi's choices ("Something else…") it's a plain input, like the choices above it. -->
-		<div class={['relative isolate overflow-hidden rounded-lg', !showChoices && 'brand-field']}>
-			{#if !showChoices}
+		     glow, but only in the dock at the bottom. Centred (the empty state) and as the last of Lumi's choices
+		     ("Something else…") it's the plain grey input. -->
+		<div class={['relative isolate overflow-hidden rounded-lg', branded && 'brand-field']}>
+			{#if branded}
 				<span class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
 					<span class="blob blob-1 absolute -top-10 -left-6 size-28 rounded-full bg-brand-3 blur-xl"
 					></span>
@@ -466,7 +497,7 @@
 				</span>
 			{/if}
 			<PromptInput
-				class={showChoices ? undefined : 'bg-transparent'}
+				class={branded ? 'bg-transparent' : undefined}
 				bind:ref={input}
 				bind:value={draft}
 				placeholder={showChoices ? 'Something else…' : placeholder}
@@ -514,7 +545,8 @@
 		data-dock
 		{onfocusin}
 		class={[
-			'brand-dock fixed bottom-8 left-1/2 isolate flex w-full max-w-140 -translate-x-1/2 flex-col rounded-xl bg-card px-2 pb-2 shadow-raised',
+			// z-30: over the lanes, their titles (z-10) and the card map (z-20); under the assets pane and scrim (z-40).
+			'brand-dock fixed bottom-8 left-1/2 isolate z-30 flex w-full max-w-140 -translate-x-1/2 flex-col rounded-xl bg-card px-2 pb-2 shadow-raised',
 			ready && 'dock-animate'
 		]}
 		class:pull-release={pullStart === null}
@@ -536,10 +568,61 @@
 			<span class="blob blob-3 absolute top-1/3 left-1/2 size-40 rounded-full bg-brand-4 blur-3xl"
 			></span>
 		</span>
-		{#if above && mode !== 'expanded'}
-			<!-- As wide as the dock, just above it. -->
-			<div class="absolute inset-x-0 bottom-full mb-2">
-				{@render above()}
+		{#if (above && mode !== 'expanded') || showBubble}
+			<!-- Just above the dock (clear of the pull tab when compact): the next steps, as wide as the dock, and under
+			     them Lumi's speech bubble, nearest her orb. -->
+			<div
+				class={[
+					'absolute inset-x-0 bottom-full flex flex-col items-start gap-3',
+					mode === 'compact' ? 'mb-5' : 'mb-2'
+				]}
+			>
+				{#if above && mode !== 'expanded'}
+					<div class="w-full">{@render above()}</div>
+				{/if}
+				{#if showBubble}
+					<!-- Already read out by the conversation log in the dock, so hidden from screen readers here. -->
+					<div
+						class="lumi-bubble relative max-w-[85%]"
+						transition:bubbleIn
+						aria-hidden="true"
+						data-bubble
+					>
+						<div
+							class="relative isolate max-h-[40vh] overflow-y-auto rounded-lg bg-card py-3 pr-10 pl-4 text-body-lg"
+						>
+							<!-- Lumi's colours, as on the dock, kept off the bottom-left corner so the tail matches. -->
+							<span
+								class="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-lg"
+								aria-hidden="true"
+							>
+								<span
+									class="blob absolute -top-16 -right-10 size-44 rounded-full bg-brand-3 blur-3xl"
+								></span>
+								<span
+									class="blob absolute -right-16 -bottom-20 size-48 rounded-full bg-brand-2 blur-3xl"
+								></span>
+								<span
+									class="blob absolute -top-20 left-1/3 size-32 rounded-full bg-brand-4 blur-3xl"
+								></span>
+							</span>
+							{@render message()}
+						</div>
+						<button
+							type="button"
+							class="absolute top-2 right-2 flex size-7 items-center justify-center rounded-full text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+							aria-label="Hide Lumi's reply"
+							tabindex="-1"
+							onclick={() => (bubble = false)}
+						>
+							<Icon icon={X} class="size-4" />
+						</button>
+						<!-- The tail: a turned square, half under the bubble, its point down toward the orb. -->
+						<span
+							class="bubble-tail pointer-events-none absolute -bottom-1.5 left-6 size-3.5 rotate-45 bg-card"
+						></span>
+					</div>
+				{/if}
 			</div>
 		{/if}
 		<!-- In the taller top padding, or just above the dock when compact, whose padding is even all round. Drag or
@@ -840,6 +923,25 @@
 			translate: none;
 		}
 	}
+	/* Lumi's speech bubble above the compact dock: the dock's card, wash, ink and tinted edge, its shadow on the bubble
+	   and tail together (a drop shadow follows their outline). */
+	.lumi-bubble {
+		filter: drop-shadow(0 0 1px var(--elevation-raised-outline))
+			drop-shadow(0 6px 18px var(--elevation-raised-drop));
+	}
+	.lumi-bubble > div {
+		box-shadow: inset 0 0 0 1px var(--lumi-edge-faint);
+	}
+	.lumi-bubble .blob {
+		opacity: 0.16;
+	}
+	:global(.dark) .lumi-bubble .blob {
+		opacity: 0.26;
+	}
+	/* The tail's two outer sides carry the edge; it covers the bubble's edge where they join. */
+	.bubble-tail {
+		box-shadow: inset -1px -1px 0 0 var(--lumi-edge-faint);
+	}
 	/* The dock: the same wash as its input, fainter, with a lightly tinted edge (the card's shadow stays). */
 	/* The dock's text in the brand's ink too, to match its input: purple in light mode, a warm white in dark. */
 	.brand-dock {
@@ -849,6 +951,16 @@
 		color: var(--lumi-ink);
 		outline: 1px solid color-mix(in oklab, var(--brand-4) 10%, transparent);
 		outline-offset: -1px;
+		/* Lumi's choices and the "Something else…" field: a translucent white over her colours rather than grey, so the
+		   wash shows through; text and placeholder in her ink (the hover tints toward it). */
+		--secondary: color-mix(in oklab, var(--neutral-0) 60%, transparent);
+		--secondary-foreground: var(--lumi-ink);
+		--input: var(--secondary);
+		--placeholder: var(--lumi-ink-soft);
+	}
+	.brand-dock :global([data-slot='choice']),
+	.brand-dock :not(.brand-field) > :global([data-slot='prompt-input']) {
+		box-shadow: inset 0 0 0 1px var(--lumi-edge-faint);
 	}
 	.brand-dock > span > .blob {
 		opacity: 0.12;
@@ -856,6 +968,7 @@
 	:global(.dark) .brand-dock {
 		--muted-foreground: color-mix(in oklab, var(--lumi-ink) 65%, transparent);
 		outline-color: color-mix(in oklab, var(--neutral-0) 10%, transparent);
+		--secondary: color-mix(in oklab, var(--neutral-0) 7%, transparent);
 	}
 	:global(.dark) .brand-dock > span > .blob {
 		opacity: 0.22;
