@@ -6,6 +6,11 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 ## 2026-11-12
 
+**For developers**
+
+- **Fathom analytics**: the deployed site loads Fathom's script (site `SFRJLREY`) from the root layout, and it counts
+  the app's page changes too. The dev server leaves it out, so local visits aren't counted.
+
 **Settings**
 
 - **Lumiere library off**: the switch is shown but greyed out, and the server keeps library access off whatever was

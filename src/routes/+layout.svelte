@@ -11,6 +11,11 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<!-- Fathom analytics, on the deployed site only (the dev server would count every local visit). It follows the
+	     app's own page changes by itself. -->
+	{#if !dev}
+		<script src="https://cdn.usefathom.com/script.js" data-site="SFRJLREY" defer></script>
+	{/if}
 </svelte:head>
 
 <!-- Restart onboarding from anywhere (also in Settings → Assistant). -->
