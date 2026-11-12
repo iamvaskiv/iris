@@ -29,7 +29,7 @@ export type Card = {
 	title: string;
 	subtitle?: string;
 	/**
-	 * The topic the card belongs to, set by Lumi: cards with the same topic share a lane (experimental lanes). Without
+	 * The topic the card belongs to, set by Lumi: cards with the same topic share a lane. Without
 	 * one, rules in `lanes.ts` place the card.
 	 */
 	topic?: string;

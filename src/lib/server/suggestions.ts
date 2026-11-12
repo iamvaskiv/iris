@@ -12,7 +12,7 @@ import { transcript } from '#lib/transcript.js';
 import { claude, FAST_MODEL } from './llm.js';
 
 /**
- * Lumi's next steps for each lane after a turn (experimental lanes; see `cards/suggestions.ts`). A lane keeps its
+ * Lumi's next steps for each lane after a turn (see `cards/suggestions.ts`). A lane keeps its
  * suggestions until its cards change or all of them have been asked; then Lumi writes new ones, in one small call for
  * every lane that needs them. The same call writes ideas for the empty lane below the others (`NEW_LANE`): directions the
  * project hasn't taken yet, rewritten whenever its cards change.

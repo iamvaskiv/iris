@@ -1,7 +1,7 @@
 import type { Card } from './types';
 
 /**
- * Experimental lanes: the project page groups cards by topic, one horizontal lane per topic, lanes stacked down the
+ * Lanes: the project page groups cards by topic, one horizontal lane per topic, lanes stacked down the
  * page in the order their first card arrived. A study takes two places in its lane: its setup, then its insights to the
  * right of it.
  */

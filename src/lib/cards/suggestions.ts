@@ -2,7 +2,7 @@ import type { Lane } from './lanes';
 import type { StudyData } from './types';
 
 /**
- * Next steps offered at the end of each lane (experimental lanes), in the empty "what's next" slot after its last card,
+ * Next steps offered at the end of each lane, in the empty "what's next" slot after its last card,
  * written as the user's request; clicking one sends it to Lumi. Lumi writes them (`suggest_next`, stored on the project by lane key): for the lanes a turn touched, and for
  * any lane that has none. A study showing results offers its follow-ups first. Ones already asked are left out.
  */

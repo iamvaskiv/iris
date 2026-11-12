@@ -29,7 +29,7 @@
 	import { lanes, slotCardId, type Lane } from '#lib/cards/lanes.js';
 	import { laneSuggestions, NEW_LANE, newLaneSuggestions } from '#lib/cards/suggestions.js';
 	import LaneNext from '#lib/components/LaneNext.svelte';
-	import { experimental, loadExperimental } from '#lib/experimental.svelte.js';
+	import { experimental } from '#lib/experimental.svelte.js';
 	import { shareProjectCards } from '#lib/cards/viewer-sources.js';
 	import type { Card, CardOp, ChatResponse } from '#lib/cards/types.js';
 	import { takePendingVideo } from '#lib/new-project.js';
@@ -142,7 +142,6 @@
 	let scroller: HTMLElement;
 
 	onMount(() => {
-		loadExperimental();
 		// A question typed on the projects page arrives as ?q=…
 		const q = page.url.searchParams.get('q');
 		// A video dropped on the projects page arrives here to be uploaded into this new project.
@@ -444,8 +443,8 @@
 		if (id) setFocus(id);
 	}
 
-	// ── Lanes (experimental) ───────────────────────────────────────────────────────────────────────────
-	// With Settings → Experimental → Topic lanes on, cards are grouped by topic (`lanes.ts`): one horizontal lane per
+	// ── Lanes ───────────────────────────────────────────────────────────────────────────
+	// Cards are grouped by topic (`lanes.ts`): one horizontal lane per
 	// topic, its cards aligned top left, the lanes stacked down the page. A lane is a little shorter than the visible area,
 	// so the next one peeks in below; a card taller than its lane scrolls inside it, on its own. The wheel moves a whole
 	// lane at a time (shift + wheel, or a sideways swipe: a card), but only after some travel and once per gesture, so a
@@ -959,7 +958,7 @@
 			{#snippet end()}{#if !project.example}<GettingStarted variant="pill" />{/if}{/snippet}
 		</AppHeader>
 		{#if project.cards.length > 0 && lanesOn}
-			<!-- Lanes (experimental): one per topic, its title (and arrows) on the left, its cards in a row that scrolls
+			<!-- Lanes: one per topic, its title (and arrows) on the left, its cards in a row that scrolls
 			     sideways. In bird's eye view each lane's cards wrap beside its title, from the top left. -->
 			<div
 				class={['flex flex-col', birdsEye && 'pr-8']}

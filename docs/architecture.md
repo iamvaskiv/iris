@@ -60,14 +60,14 @@ flowchart TB
     class data,d1,files storage
 ```
 
-| Part          | Where                                                          | What it does                                                                                                                                                                |
-| ------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pages         | `src/routes`                                                   | Projects page (tiles, Lumi, drop a video → new project), project page (card stack, or topic lanes with Settings → Experimental; focus, uploads), assets, settings, `/login` |
-| Cards         | `src/lib/cards`                                                | Video (Overview · Timeline · Viewers tabs), Insights (older cards), Comparison, Sources, List, Quotes, Table, Text, Upload, Study; built from design-system components      |
-| Password gate | `src/hooks.server.ts`                                          | Production only: a session cookie from `SITE_PASSWORD`, otherwise `/login`                                                                                                  |
-| Lumi          | `src/lib/server/agent.ts`, `workspace-agent.ts`                | Claude tool loops: read analysis and insights, browse the library across the user's teams, add/update/focus cards                                                           |
-| Card data     | `src/lib/server/video-card.ts`, `insights.ts`, `comparison.ts` | Fill cards from Lumiere; insights cached for six hours                                                                                                                      |
-| Store         | `src/lib/server/store.ts`                                      | Projects, assets, insights, settings as JSON documents; versioned updates retried on conflict                                                                               |
+| Part          | Where                                                          | What it does                                                                                                                                                           |
+| ------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pages         | `src/routes`                                                   | Projects page (tiles, Lumi, drop a video → new project), project page (topic lanes; focus, uploads), assets, settings, `/login`                                        |
+| Cards         | `src/lib/cards`                                                | Video (Overview · Timeline · Viewers tabs), Insights (older cards), Comparison, Sources, List, Quotes, Table, Text, Upload, Study; built from design-system components |
+| Password gate | `src/hooks.server.ts`                                          | Production only: a session cookie from `SITE_PASSWORD`, otherwise `/login`                                                                                             |
+| Lumi          | `src/lib/server/agent.ts`, `workspace-agent.ts`                | Claude tool loops: read analysis and insights, browse the library across the user's teams, add/update/focus cards                                                      |
+| Card data     | `src/lib/server/video-card.ts`, `insights.ts`, `comparison.ts` | Fill cards from Lumiere; insights cached for six hours                                                                                                                 |
+| Store         | `src/lib/server/store.ts`                                      | Projects, assets, insights, settings as JSON documents; versioned updates retried on conflict                                                                          |
 
 ## First visit
 
@@ -327,7 +327,7 @@ sequenceDiagram
 
 ## Topic lanes: one step past the cards
 
-With Settings → Experimental → Topic lanes, the project page groups cards by topic (`cards/lanes.ts`): one lane per
+The project page groups cards by topic (`cards/lanes.ts`): one lane per
 topic, its cards in a row, lanes down the page. The wheel (or a swipe) steps a whole lane down or a card along, and
 both go one step past the cards. After each lane's last card is its **what's next** slot: Lumi's next steps for that
 topic (`cards/suggestions.ts`, written by `server/suggestions.ts` after a turn), each sending itself to Lumi. Below the

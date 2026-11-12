@@ -14,13 +14,10 @@
 	import { dev } from '$app/env';
 	import AppHeader from '#lib/components/AppHeader.svelte';
 	import { restartOnboarding, RESTART_KEYS } from '#lib/workspace-chat.svelte.js';
-	import { experimental, loadExperimental, setLanes } from '#lib/experimental.svelte.js';
 	import { loadOrbVariant, orbVariant, useOrbVariant } from '#lib/orb-variant.svelte.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-	// svelte-ignore state_referenced_locally
-	let libraryAccess = $state(data.settings.libraryAccess);
 	let error = $state('');
 	// Restarting rebuilds the example before leaving for the projects page, which takes a moment.
 	let restarting = $state(false);
@@ -49,22 +46,7 @@
 	];
 	onMount(() => {
 		loadOrbVariant();
-		loadExperimental();
 	});
-
-	// Applies immediately, like every switch.
-	async function save(checked: boolean) {
-		error = '';
-		const res = await fetch('/api/settings', {
-			method: 'PATCH',
-			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify({ libraryAccess: checked })
-		});
-		if (!res.ok) {
-			libraryAccess = !checked;
-			error = 'Couldn’t save the setting. Try again.';
-		}
-	}
 </script>
 
 <svelte:head><title>Settings · Iris</title></svelte:head>
@@ -123,14 +105,16 @@
 						<Label for="library-access">Lumiere library</Label>
 						<p id="library-access-description" class="text-caption text-muted-foreground">
 							Let the assistant browse and use any video in the connected Lumiere workspace. When
-							off, it only knows the videos in your projects and never mentions Lumiere.
+							off, it only knows the videos in your projects and never mentions Lumiere. Not
+							available for now.
 						</p>
 					</div>
+					<!-- Switched off for now (see settings.ts): shown, but can't be turned on. -->
 					<Switch
 						id="library-access"
 						aria-describedby="library-access-description"
-						bind:checked={libraryAccess}
-						onCheckedChange={save}
+						checked={data.settings.libraryAccess}
+						disabled
 					/>
 				</div>
 				<div class="flex items-start justify-between gap-4">
@@ -157,31 +141,6 @@
 					</div>
 				</div>
 				{#if error}<p class="text-caption text-destructive" role="alert">{error}</p>{/if}
-			</Card.Content>
-		</Card.Root>
-
-		<!-- Remembered on this device, like the theme. -->
-		<Card.Root>
-			<Card.Header>
-				<Card.Title>Experimental</Card.Title>
-			</Card.Header>
-			<Card.Content>
-				<div class="flex items-start justify-between gap-4">
-					<div class="flex flex-col gap-1">
-						<Label for="topic-lanes">Topic lanes</Label>
-						<p id="topic-lanes-description" class="text-caption text-muted-foreground">
-							Group a project's cards by topic, one horizontal lane per topic: a study's setup with
-							its insights beside it, videos side by side. When off, cards stack in one column. Only
-							on this device.
-						</p>
-					</div>
-					<Switch
-						id="topic-lanes"
-						aria-describedby="topic-lanes-description"
-						checked={experimental.lanes}
-						onCheckedChange={setLanes}
-					/>
-				</div>
 			</Card.Content>
 		</Card.Root>
 	</main>

@@ -6,6 +6,13 @@ notable behind-the-scenes ones); the app Storybook shows this file as its **Chan
 
 ## 2026-11-12
 
+**Settings**
+
+- **Lumiere library off**: the switch is shown but greyed out, and the server keeps library access off whatever was
+  saved, so Lumi only knows the project's videos.
+- **No Experimental section**: topic lanes are now the only layout of the project page (on for everyone, including
+  anyone who had switched them off).
+
 **Lumi**
 
 - **Plain grey input on the projects page**: Lumi's input in the middle of the page is the plain grey field again; only

@@ -45,7 +45,7 @@ fewer people got. The follow-ups Lumi suggests become the lane's next steps. Pic
 and read its individual responses; pick an option or theme to see who chose it. Older results (before answers) show
 their two insights and the four generic numbers.
 
-With **topic lanes** on (Settings → Experimental), a study takes two places in its lane: its setup (\`part="setup"\`,
+In **topic lanes**, a study takes two places in its lane: its setup (\`part="setup"\`,
 shown even while fielding) and, to the right of it, its insights (\`part="insights"\`): the results, or until there are
 some, an empty state with the **Fake responses** switch.`
 				}
